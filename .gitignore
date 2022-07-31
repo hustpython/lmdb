@@ -1,0 +1,5 @@
+pkg
+vendor
+*.exe*
+*tmp*
+.idea
