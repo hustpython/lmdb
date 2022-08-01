@@ -19,3 +19,6 @@ DELETE
 ![](./readmeimg/4.PNG)
 PUT
 ![](./readmeimg/5.PNG)
+
+获取本地数据
+![](./readmeimg/6.PNG)

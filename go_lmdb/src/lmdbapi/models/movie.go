@@ -4,11 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"time"
 )
 
 type Movie struct {
-	Id    string
 	Path  string
 	Cover string
 }
@@ -19,7 +17,7 @@ var (
 
 func init() {
 	MovieList = make(map[string]*Movie)
-	MovieList["movie_12121"] = &Movie{"1212", "D://1.mp4", "D:/1.png"}
+	MovieList["0"] = &Movie{"D://1.mp4", "D:/1.png"}
 }
 
 func GetMovieByID(uid string) (*Movie, error) {
@@ -36,9 +34,9 @@ func GetAllMovies() map[string]*Movie {
 }
 
 func AddMovie(m Movie) string {
-	m.Id = "movie_" + strconv.FormatInt(time.Now().UnixNano(), 10)
-	MovieList[m.Id] = &m
-	return m.Id
+	id := strconv.Itoa(len(MovieList))
+	MovieList[id] = &m
+	return id
 }
 
 func DelMovie(uid string) {

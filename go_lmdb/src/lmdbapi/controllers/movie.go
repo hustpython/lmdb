@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"lmdbapi/util"
 	"net/http"
 
 	"github.com/astaxie/beego"
@@ -73,5 +74,20 @@ func (m *MovieController) UpdateMovie() {
 func (m *MovieController) setParamInvalid(errorMsg string) {
 	m.Ctx.Output.SetStatus(http.StatusBadRequest)
 	m.Data["json"] = errorMsg
+	m.ServeJSON()
+}
+
+// /v1/movie/refresh {
+//    "MinSize" :400,
+//	"MovieExt" :".mp4|.mkv|.rmvb"
+//}
+func (m *MovieController) RefreshMovies() {
+	var searchRule models.Rule
+	json.Unmarshal(m.Ctx.Input.RequestBody, &searchRule)
+	if searchRule.MinSize < 100 || len(searchRule.MovieExt) == 0 {
+		m.setParamInvalid("minsize or movieext invalid")
+		return
+	}
+	m.Data["json"] = util.SearchMovie(searchRule)
 	m.ServeJSON()
 }

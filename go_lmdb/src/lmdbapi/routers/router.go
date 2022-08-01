@@ -16,14 +16,11 @@ import (
 func init() {
 	ns := beego.NewNamespace("/v1",
 		beego.NSNamespace("/movie",
-			beego.NSRouter("", &controllers.MovieController{}, "GET:ShowMovies",
-			),
-			beego.NSRouter("", &controllers.MovieController{}, "POST:AddMovie",
-			),
-			beego.NSRouter("", &controllers.MovieController{}, "DELETE:DelMovie",
-			),
-			beego.NSRouter("", &controllers.MovieController{}, "PUT:UpdateMovie",
-			),
+			beego.NSRouter("", &controllers.MovieController{}, "GET:ShowMovies"),
+			beego.NSRouter("", &controllers.MovieController{}, "POST:AddMovie"),
+			beego.NSRouter("", &controllers.MovieController{}, "DELETE:DelMovie"),
+			beego.NSRouter("", &controllers.MovieController{}, "PUT:UpdateMovie"),
+			beego.NSRouter("/refresh", &controllers.MovieController{}, "POST:RefreshMovies"),
 		),
 	)
 	beego.AddNamespace(ns)
