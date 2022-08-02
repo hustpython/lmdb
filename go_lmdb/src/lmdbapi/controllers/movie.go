@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"lmdbapi/util"
 	"net/http"
 
@@ -88,6 +89,11 @@ func (m *MovieController) RefreshMovies() {
 		m.setParamInvalid("minsize or movieext invalid")
 		return
 	}
-	m.Data["json"] = util.SearchMovie(searchRule)
+	s := util.SearchMovie(searchRule)
+	m.Data["json"] = s
 	m.ServeJSON()
+	util.MovieDataViper.Set("moviepath", s)
+	util.MovieFilterViper.Set("filter", searchRule)
+	fmt.Println(util.MovieDataViper.WriteConfigAs(util.MovieDbFile))
+	fmt.Println(util.MovieFilterViper.WriteConfigAs(util.MovieFilterFile))
 }
