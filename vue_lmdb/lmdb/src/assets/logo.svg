@@ -1,0 +1,12 @@
+<svg width="561" height="220" xmlns="http://www.w3.org/2000/svg">
+ <g id="Layer_1">
+  <title>Layer 1</title>
+  <text fill-opacity="0.94" font-style="italic" font-weight="normal" xml:space="preserve" text-anchor="start" font-family="'Tourney'" font-size="200" id="svg_1" y="180" x="0" stroke-width="0" stroke="#000" fill="url(#svg_42)">LMBD</text>
+ </g>
+ <defs>
+  <linearGradient y2="0.28467" x2="0.98438" y1="0.55811" x1="0.98828" id="svg_42">
+   <stop offset="0" stop-color="#20934e"/>
+   <stop offset="1" stop-opacity="0.99609" stop-color="#007fff"/>
+  </linearGradient>
+ </defs>
+</svg>
