@@ -1,37 +1,52 @@
-package util
+package models
 
 import (
 	"github.com/jan-bar/es"
-	"lmdbapi/models"
+	"lmdbapi/util"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
+
+const (
+	movieConfigJsonPrefix = "moviepath"
+	movieFilterJsonPrefix = "filter"
+)
+
+type Filter struct {
+	MinSize  int
+	MovieExt string
+}
 
 const (
 	maxMovieNum      = 1000
 	minMovieSizeBase = 1000000 // M
 )
 
-func SearchMovie(rule models.Rule) []string {
+func GetFilter() Filter {
+	return FilterData
+}
+
+func SearchMovie(rule Filter) error {
 	err := es.EverythingSetSearch(rule.MovieExt)
 	if err != nil {
-		return nil
+		return err
 	}
 	err = es.EverythingSetMax(maxMovieNum)
 	if err != nil {
-		return nil
+		return err
 	}
 	// 设置好需要查询的内容,不然后续遍历时可能报错
 	err = es.EverythingSetRequestFlags(es.EverythingRequestFileName | es.EverythingRequestPath |
 		es.EverythingRequestDateCreated | es.EverythingRequestDateModified | es.EverythingRequestDateAccessed |
 		es.EverythingRequestSize)
 	if err != nil {
-		return nil
+		return err
 	}
 	// 定好排序规则
 	err = es.EverythingSetSort(es.EverythingSortDateModifiedAscending)
 	if err != nil {
-		return nil
+		return err
 	}
 	// 开始查询
 	es.EverythingQuery(true)
@@ -39,13 +54,14 @@ func SearchMovie(rule models.Rule) []string {
 	return procQueryData(rule)
 }
 
-func procQueryData(rule models.Rule) []string {
+func procQueryData(rule Filter) error {
+	MovieList = make(map[string]*Movie, 0)
 	num, err := es.EverythingGetNumResults()
 	if err != nil {
-		return nil
+		return err
 	}
 	minMovieSize := rule.MinSize * minMovieSizeBase
-	var res []string
+	var id = 0
 	for i := uint32(0); i < num; i++ {
 		s, err := es.EverythingGetResultSize(i)
 		if err != nil {
@@ -59,9 +75,23 @@ func procQueryData(rule models.Rule) []string {
 			continue
 		}
 		base := filepath.Ext(p)
+		id++
 		if strings.Contains(rule.MovieExt, base) {
-			res = append(res, p)
+			MovieList[strconv.Itoa(id)] = &Movie{Path: p}
 		}
 	}
-	return res
+	FilterData = rule
+	updateMovieConfig()
+	return nil
+}
+
+func updateMovieConfig() {
+	util.MovieDataViper.Set(movieConfigJsonPrefix, MovieList)
+	util.MovieDataViper.WriteConfig()
+}
+
+func UpdateFilterConfig() {
+	util.MovieFilterViper.Set(movieFilterJsonPrefix, FilterData)
+	util.MovieFilterViper.WriteConfig()
+
 }

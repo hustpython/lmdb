@@ -20,7 +20,10 @@ func init() {
 			beego.NSRouter("", &controllers.MovieController{}, "POST:AddMovie"),
 			beego.NSRouter("", &controllers.MovieController{}, "DELETE:DelMovie"),
 			beego.NSRouter("", &controllers.MovieController{}, "PUT:UpdateMovie"),
-			beego.NSRouter("/refresh", &controllers.MovieController{}, "POST:RefreshMovies"),
+		),
+		beego.NSNamespace("/filter",
+			beego.NSRouter("", &controllers.FilterController{}, "GET:GetFilter"),
+			beego.NSRouter("", &controllers.FilterController{}, "POST:PostFilter"),
 		),
 	)
 	beego.AddNamespace(ns)

@@ -3,16 +3,13 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"lmdbapi/util"
 	"net/http"
-
-	"github.com/astaxie/beego"
 
 	"lmdbapi/models"
 )
 
 type MovieController struct {
-	beego.Controller
+	ErrorController
 }
 
 // GET /v1/movie?id=movie_12121
@@ -25,8 +22,7 @@ func (m *MovieController) ShowMovies() {
 		if err == nil {
 			m.Data["json"] = uu
 		} else {
-			m.Ctx.Output.SetStatus(http.StatusNotFound)
-			m.Data["json"] = err.Error()
+			m.setNotFound(err.Error())
 		}
 	}
 	m.ServeJSON()
@@ -34,7 +30,6 @@ func (m *MovieController) ShowMovies() {
 
 // POST /v1/movie {
 //        "Path": "D://2.mp4",
-//        "Cover": "D:/3.png"
 //    }
 func (m *MovieController) AddMovie() {
 	var movie models.Movie
@@ -64,36 +59,9 @@ func (m *MovieController) UpdateMovie() {
 	json.Unmarshal(m.Ctx.Input.RequestBody, &movie)
 	uu, err := models.UpdateMovie(uid, &movie)
 	if err != nil {
-		m.Ctx.Output.SetStatus(http.StatusNotFound)
-		m.Data["json"] = err.Error()
+		m.setNotFound(fmt.Sprintf("not found updateID %s", uid))
 	} else {
 		m.Data["json"] = uu
 	}
 	m.ServeJSON()
-}
-
-func (m *MovieController) setParamInvalid(errorMsg string) {
-	m.Ctx.Output.SetStatus(http.StatusBadRequest)
-	m.Data["json"] = errorMsg
-	m.ServeJSON()
-}
-
-// /v1/movie/refresh {
-//    "MinSize" :400,
-//	"MovieExt" :".mp4|.mkv|.rmvb"
-//}
-func (m *MovieController) RefreshMovies() {
-	var searchRule models.Rule
-	json.Unmarshal(m.Ctx.Input.RequestBody, &searchRule)
-	if searchRule.MinSize < 100 || len(searchRule.MovieExt) == 0 {
-		m.setParamInvalid("minsize or movieext invalid")
-		return
-	}
-	s := util.SearchMovie(searchRule)
-	m.Data["json"] = s
-	m.ServeJSON()
-	util.MovieDataViper.Set("moviepath", s)
-	util.MovieFilterViper.Set("filter", searchRule)
-	fmt.Println(util.MovieDataViper.WriteConfigAs(util.MovieDbFile))
-	fmt.Println(util.MovieFilterViper.WriteConfigAs(util.MovieFilterFile))
 }

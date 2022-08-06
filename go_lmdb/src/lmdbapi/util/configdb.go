@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"github.com/spf13/viper"
 )
 
@@ -14,10 +15,13 @@ var (
 	MovieFilterViper = viper.New()
 )
 
-func init() {
-	MovieDataViper.SetConfigName(MovieDbFile)
-	MovieDataViper.AddConfigPath(".")
-
-	MovieFilterViper.SetConfigName(MovieFilterFile)
-	MovieFilterViper.AddConfigPath(".")
+func InitViper() {
+	MovieDataViper.SetConfigFile(MovieDbFile)
+	if err := MovieDataViper.ReadInConfig(); err != nil {
+		fmt.Println(err)
+	}
+	MovieFilterViper.SetConfigFile(MovieFilterFile)
+	if err := MovieFilterViper.ReadInConfig(); err != nil {
+		fmt.Println(err)
+	}
 }

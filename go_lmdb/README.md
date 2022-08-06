@@ -10,7 +10,7 @@ cd lmdb/go_lmdb/src/lmdbapi
 bee run
 
 测试端用postman
-
+/v1/movie
 GET
 ![](./readmeimg/2.PNG)
 POST
@@ -20,5 +20,4 @@ DELETE
 PUT
 ![](./readmeimg/5.PNG)
 
-获取本地数据
-![](./readmeimg/6.PNG)
+/v1/filter

@@ -3,21 +3,24 @@ package models
 import (
 	"errors"
 	"fmt"
+	"lmdbapi/util"
 	"strconv"
 )
 
 type Movie struct {
-	Path  string
-	Cover string
+	Path string
 }
 
 var (
-	MovieList map[string]*Movie
+	MovieList  map[string]*Movie
+	FilterData Filter
 )
 
 func init() {
 	MovieList = make(map[string]*Movie)
-	MovieList["0"] = &Movie{"D://1.mp4", "D:/1.png"}
+	util.InitViper()
+	util.MovieFilterViper.UnmarshalKey(movieFilterJsonPrefix, &FilterData)
+	util.MovieDataViper.UnmarshalKey(movieConfigJsonPrefix, &MovieList)
 }
 
 func GetMovieByID(uid string) (*Movie, error) {
@@ -36,21 +39,21 @@ func GetAllMovies() map[string]*Movie {
 func AddMovie(m Movie) string {
 	id := strconv.Itoa(len(MovieList))
 	MovieList[id] = &m
+	updateMovieConfig()
 	return id
 }
 
 func DelMovie(uid string) {
 	delete(MovieList, uid)
+	updateMovieConfig()
 }
 
 func UpdateMovie(uid string, uu *Movie) (*Movie, error) {
 	if u, ok := MovieList[uid]; ok {
-		if u.Cover != "" {
-			u.Cover = uu.Cover
-		}
 		if uu.Path != "" {
 			u.Path = uu.Path
 		}
+		updateMovieConfig()
 		return u, nil
 	}
 	return nil, errors.New("movie Not exist")
