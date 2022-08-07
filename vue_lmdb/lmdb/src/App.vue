@@ -1,22 +1,18 @@
 <template>
-  <div>
-    <Header />
-    <Bkg />
-  </div>
+  <v-app>
+    <v-main>
+      <router-view/>
+    </v-main>
+  </v-app>
 </template>
 
 <script>
-import Header from "./components/Header.vue";
-import Bkg from "./components/Bkgwithsearch.vue";
 
 export default {
-  name: "App",
-  components: {
-    Header,
-    Bkg,
-  },
+  name: 'App',
+
+  data: () => ({
+    //
+  }),
 };
 </script>
-
-<style>
-</style>
