@@ -13,11 +13,6 @@
   <div id="app"></div>
 </body>
 <style>
-  * {
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden;
-  }
   li {
     /* 去掉li前面的小圆点 */
     list-style: none;
@@ -28,7 +23,19 @@
   }
   html,body{
     height:100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
 } 
+
+:root {
+  --headerTop:64px;
+  --lightBule:rgb(3, 37, 65);
+}
 </style>
 
 </html>

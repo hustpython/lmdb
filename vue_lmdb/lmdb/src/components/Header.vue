@@ -9,7 +9,7 @@
           </a>
         </li>
         <li v-for="item in header_left_list">
-          <a href="#">{{item}}</a>
+          <a href="#">{{ item }}</a>
         </li>
       </ul>
     </div>
@@ -18,12 +18,21 @@
 
 <style>
 .header {
+  justify-content: center;
+  align-items: center;
+  height: var(--headerTop);
+  background-color: var(--lightBule);
+  top: 0;
+  left: 0;
   width: 100%;
-  height: 60px;
-  background-color: rgb(3, 37, 65);
-  margin: 0;
-  padding: 0;
-  position: absolute;
+  display: flex;
+  position: fixed;
+  z-index: 30;
+  transition: top 0.2s linear;
+  transition-property: top;
+  transition-duration: 0.2s;
+  transition-timing-function: linear;
+  transition-delay: 0s;
 }
 .header ul {
   position: relative;
@@ -56,10 +65,10 @@
 
 <script>
 export default {
- setup() {
-  return {
-    header_left_list:["影视","影评","剪辑"]
-  }
- }
+  setup() {
+    return {
+      header_left_list: ["影视", "影评", "剪辑"],
+    };
+  },
 };
 </script>
