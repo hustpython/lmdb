@@ -1,13 +1,11 @@
 <template>
-  <v-container>
-    <Header/>
-    <Middle/>
-  </v-container>
+  <Header />
+  <Middle />
 </template>
 
 <script>
 import Header from "../components/Header.vue";
-import Middle from '@/components/Middle.vue';
+import Middle from "@/components/Middle.vue";
 export default {
   components: {
     Header,
