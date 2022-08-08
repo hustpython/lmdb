@@ -9,7 +9,7 @@
         </h3>
       </div>
 
-      <div class="search" style="width: 100%; margin-top: 30px;">
+      <div class="search" style="width: 100%; margin-top: 30px">
         <form
           id="inner_search_form"
           action="/search"
@@ -30,14 +30,14 @@
               placeholder="搜索电影、剧集、影评..."
               value=""
               style="
-               color: transparent;
+                color: transparent;
                 width: 100%;
                 height: 46px;
                 line-height: 46px;
                 font-size: 1.1em;
                 color: rgba(0, 0, 0, 0.5);
-                border:0;
-                outline:none;
+                border: 0;
+                outline: none;
                 border-radius: 30px;
                 padding: 10px 20px;
                 background-color: white;
@@ -48,9 +48,9 @@
       </div>
     </div>
   </div>
-  <div class="midvideo">
+  <!-- <div class="midvideo">
     <video :src="videourl" controls="controls">></video>
-  </div>
+  </div> -->
 </template>
 
 <script>
@@ -59,7 +59,7 @@ export default {
     let imgurl = "";
     let videourl = "";
     return {
-      imgurl: require("D://img/1 (6).jpg"),
+      imgurl: require("D://img/2.jpg"),
       videourl: require("D:\\迅雷下载\\黑镜.Black.Mirror.1-4季全集【关注微信公众号：美剧叔】\\黑镜 第4季\\【关注微信公众号：美剧叔】黑镜.Black.Mirror.S04E03.mp4"),
     };
   },

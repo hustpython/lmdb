@@ -1,15 +1,18 @@
 <template>
   <Header />
-  <Middle />
+  <MiddleSearch />
+  <MiddleList/>
 </template>
 
 <script>
 import Header from "../components/Header.vue";
-import Middle from "@/components/Middle.vue";
+import MiddleSearch from "@/components/MiddleSearch.vue";
+import MiddleList from '@/components/MiddleList';
 export default {
   components: {
     Header,
-    Middle,
+    MiddleSearch,
+    MiddleList,
   },
 };
 </script>
