@@ -21,8 +21,10 @@
   a {
     text-decoration: none
   }
-  html,body{
-    height:100%;
+
+  html,
+  body {
+    height: 100%;
     margin: 0;
     padding: 0;
     overflow-x: hidden;
@@ -31,13 +33,32 @@
     height: auto;
     -ms-overflow-style: -ms-autohiding-scrollbar;
     width: 100%;
-} 
+  }
 
-:root {
-  --headerTop:64px;
-  --lightBule:rgb(3, 37, 65);
-  --headerTopScroll: 0px;
-}
+  ::-webkit-scrollbar {
+    width: 8px;
+    background-color: white;
+    opacity: 0.7;
+  }
+
+  ::-webkit-scrollbar-track {
+    width: 8px;
+    border-radius: 8px;
+
+  }
+
+  ::-webkit-scrollbar-thumb {
+    /*滚动条里面小方块*/
+    border-radius: 8px;
+    background-color: skyblue;
+    background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.2) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.2) 75%, transparent 75%, transparent);
+  }
+
+  :root {
+    --headerTop: 64px;
+    --lightBule: rgb(3, 37, 65);
+    --headerTopScroll: 0px;
+  }
 </style>
 
 </html>
