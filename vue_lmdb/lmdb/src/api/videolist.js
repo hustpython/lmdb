@@ -4,7 +4,7 @@ import httpRequest from './request'
 // 定义接口的传参
 
 
-// 获取用户信息
+// 获取Video信息
 export function GetVideList() {
     return httpRequest({
 		url: '/movie',

@@ -55,7 +55,7 @@ func SearchMovie(rule Filter) error {
 }
 
 func procQueryData(rule Filter) error {
-	MovieList = make(map[string]*Movie, 0)
+	MovieMap = make(map[string]*Movie, 0)
 	num, err := es.EverythingGetNumResults()
 	if err != nil {
 		return err
@@ -77,7 +77,7 @@ func procQueryData(rule Filter) error {
 		base := filepath.Ext(p)
 		id++
 		if strings.Contains(rule.MovieExt, base) {
-			MovieList[strconv.Itoa(id)] = &Movie{Path: p}
+			MovieMap[strconv.Itoa(id)] = &Movie{Path: p}
 		}
 	}
 	FilterData = rule
@@ -86,7 +86,7 @@ func procQueryData(rule Filter) error {
 }
 
 func updateMovieConfig() {
-	util.MovieDataViper.Set(movieConfigJsonPrefix, MovieList)
+	util.MovieDataViper.Set(movieConfigJsonPrefix, MovieMap)
 	util.MovieDataViper.WriteConfig()
 }
 

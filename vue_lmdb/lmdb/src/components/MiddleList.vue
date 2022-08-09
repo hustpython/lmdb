@@ -3,18 +3,23 @@
    <button @click="handleClick">
     在这里
    </button>
+   <ul>
+      <li v-for="item in videoData">
+          {{ item.Path}}
+        </li>
+    </ul>
   </div>
 </template>
 
 <script setup>
 import {GetVideList} from "../api/videolist"
-import {reactive} from 'vue'
+import {ref} from 'vue'
 
-const items = ["最近","最新","全部"]
+const videoData = ref([{Path:""}]);
 const handleClick = ()=> {
     console.log("click")
     GetVideList().then((res) => {
-       console.log(res)
+      videoData.value = res;
 	})
 }
 </script>

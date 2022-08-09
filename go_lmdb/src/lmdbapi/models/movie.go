@@ -12,19 +12,19 @@ type Movie struct {
 }
 
 var (
-	MovieList  map[string]*Movie
+	MovieMap   map[string]*Movie
 	FilterData Filter
 )
 
 func init() {
-	MovieList = make(map[string]*Movie)
+	MovieMap = make(map[string]*Movie)
 	util.InitViper()
 	util.MovieFilterViper.UnmarshalKey(movieFilterJsonPrefix, &FilterData)
-	util.MovieDataViper.UnmarshalKey(movieConfigJsonPrefix, &MovieList)
+	util.MovieDataViper.UnmarshalKey(movieConfigJsonPrefix, &MovieMap)
 }
 
 func GetMovieByID(uid string) (*Movie, error) {
-	uu, ok := MovieList[uid]
+	uu, ok := MovieMap[uid]
 	if ok {
 		return uu, nil
 	} else {
@@ -32,24 +32,29 @@ func GetMovieByID(uid string) (*Movie, error) {
 	}
 }
 
-func GetAllMovies() map[string]*Movie {
-	return MovieList
+func GetAllMovies() []*Movie {
+	// TODO 根据条件返回
+	var res []*Movie
+	for i := range MovieMap {
+		res = append(res, MovieMap[i])
+	}
+	return res
 }
 
 func AddMovie(m Movie) string {
-	id := strconv.Itoa(len(MovieList))
-	MovieList[id] = &m
+	id := strconv.Itoa(len(MovieMap))
+	MovieMap[id] = &m
 	updateMovieConfig()
 	return id
 }
 
 func DelMovie(uid string) {
-	delete(MovieList, uid)
+	delete(MovieMap, uid)
 	updateMovieConfig()
 }
 
 func UpdateMovie(uid string, uu *Movie) (*Movie, error) {
-	if u, ok := MovieList[uid]; ok {
+	if u, ok := MovieMap[uid]; ok {
 		if uu.Path != "" {
 			u.Path = uu.Path
 		}
