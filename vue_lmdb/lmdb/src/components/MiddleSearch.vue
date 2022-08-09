@@ -3,8 +3,12 @@
     <img :src="imgurl" alt="搜索背景图片" />
     <div class="content_wrap">
       <div class="title">
-        <h2 style="font-size: 3em; font-weight: 700; line-height: 1">欢迎！</h2>
-        <h3 style="font-size: 2em; font-weight: 600; margin: 0">
+        <h2
+          style="color: white; font-size: 3em; font-weight: 700; line-height: 1"
+        >
+          欢迎！
+        </h2>
+        <h3 style="color: white; font-size: 2em; font-weight: 600; margin: 0">
           这里是你本地所有的影视，快来探索与创作！
         </h3>
       </div>
@@ -59,7 +63,7 @@ export default {
     let imgurl = "";
     let videourl = "";
     return {
-      imgurl: require("D://img/2.jpg"),
+      imgurl: require("D://img/ys.jpg"),
       videourl: require("D:\\迅雷下载\\黑镜.Black.Mirror.1-4季全集【关注微信公众号：美剧叔】\\黑镜 第4季\\【关注微信公众号：美剧叔】黑镜.Black.Mirror.S04E03.mp4"),
     };
   },

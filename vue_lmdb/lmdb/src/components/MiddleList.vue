@@ -17,9 +17,10 @@ import {ref} from 'vue'
 
 const videoData = ref([{Path:""}]);
 const handleClick = ()=> {
-    console.log("click")
     GetVideList().then((res) => {
-      videoData.value = res;
+      if (res.code == 200) {
+         videoData.value = res.data;
+      }
 	})
 }
 </script>

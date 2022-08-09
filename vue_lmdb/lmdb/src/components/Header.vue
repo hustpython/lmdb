@@ -13,9 +13,7 @@
         </li>
       </ul>
       <div class="header-right">
-        <v-avatar class="avatar">
-          <img :src="avatarurl" alt="mxq" />
-        </v-avatar>
+        <img :src="avatarurl" alt="mxq" />
       </div>
     </div>
   </div>
@@ -50,22 +48,13 @@
 
 .header-right {
   float: right;
-  position: relative;
 }
 
-.avatar {
-  line-height: 60px;
-  vertical-align: middle;
-  margin-top: 10px;
-  height: 0 auto;
-  size: 10px;
-}
-
-.avatar img {
+.header-right > img {
   height: 40px;
   width: 40px;
-  vertical-align: middle;
-  text-align: center;
+  border-radius: 40px;
+  margin-top: 25px;
 }
 
 .header-left {
