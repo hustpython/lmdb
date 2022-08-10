@@ -77,7 +77,8 @@ func procQueryData(rule Filter) error {
 		base := filepath.Ext(p)
 		id++
 		if strings.Contains(rule.MovieExt, base) {
-			MovieMap[strconv.Itoa(id)] = &Movie{Path: p}
+			p = strings.Replace(p, "\\", "/", -1)
+			MovieMap[strconv.Itoa(id)] = &Movie{Path: p, Title: strings.Trim(filepath.Base(p), base)}
 		}
 	}
 	FilterData = rule
@@ -93,5 +94,4 @@ func updateMovieConfig() {
 func UpdateFilterConfig() {
 	util.MovieFilterViper.Set(movieFilterJsonPrefix, FilterData)
 	util.MovieFilterViper.WriteConfig()
-
 }

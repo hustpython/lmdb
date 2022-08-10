@@ -9,6 +9,7 @@ import (
 
 type Movie struct {
 	Path string
+	Title string
 }
 
 var (
