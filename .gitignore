@@ -3,3 +3,4 @@ vendor
 *.exe*
 *tmp*
 .idea
+*.json*

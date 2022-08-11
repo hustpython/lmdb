@@ -1,6 +1,0 @@
-{
-  "filter": {
-    "MinSize": 500,
-    "MovieExt": ".mp4|.rmvb|.mkv"
-  }
-}

@@ -1,14 +1,12 @@
 <template>
-  <video :src="videourl" controls="controls"></video>
+  <video :src="videourl" controls="controls" poster="../file/one.jpg">
+  </video>
 </template>
 
 <script setup>
 import { useRoute } from "vue-router";
-import {ref} from 'vue';
 const route = useRoute();
-const ls = ref("")
-ls.value = route.query.id;
-const videourl = require([ls.value]);
+const videourl = "http://localhost:9091/"+route.query.id;
 </script>
 <style>
 video {
