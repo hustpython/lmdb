@@ -122,19 +122,14 @@ div.card div.card-title a.toggle-info span.right {
   transform: rotate(-45deg);
 }
 div.card div.card-title h2 {
-  font-size: 24px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: -0.05em;
   margin: 0;
   padding: 0;
-  color: #008a93;
+  color: #000293;
 }
-div.card div.card-title h2 small {
-  display: block;
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: -0.025em;
-}
+
 div.card div.card-description {
   padding: 0 15px 10px;
   position: relative;

@@ -84,6 +84,7 @@ func procQueryData(rule Filter) error {
 	}
 	FilterData = rule
 	updateMovieConfig()
+	updateFilterConfig()
 	return nil
 }
 
@@ -92,7 +93,7 @@ func updateMovieConfig() {
 	util.MovieDataViper.WriteConfig()
 }
 
-func UpdateFilterConfig() {
+func updateFilterConfig() {
 	util.MovieFilterViper.Set(movieFilterJsonPrefix, FilterData)
 	util.MovieFilterViper.WriteConfig()
 }
