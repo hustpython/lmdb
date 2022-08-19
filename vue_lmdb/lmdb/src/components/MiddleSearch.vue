@@ -52,9 +52,6 @@
       </div>
     </div>
   </div>
-  <!-- <div class="midvideo">
-    <video :src="videourl" controls="controls">></video>
-  </div> -->
 </template>
 
 <script>

@@ -8,8 +8,8 @@ import (
 )
 
 type Movie struct {
-	Path string
-	Title string
+	VideoUrl string
+	Title    string
 }
 
 var (
@@ -56,8 +56,8 @@ func DelMovie(uid string) {
 
 func UpdateMovie(uid string, uu *Movie) (*Movie, error) {
 	if u, ok := MovieMap[uid]; ok {
-		if uu.Path != "" {
-			u.Path = uu.Path
+		if uu.VideoUrl != "" {
+			u.VideoUrl = uu.VideoUrl
 		}
 		updateMovieConfig()
 		return u, nil

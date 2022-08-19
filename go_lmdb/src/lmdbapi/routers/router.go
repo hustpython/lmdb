@@ -10,9 +10,11 @@ package routers
 import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/plugins/cors"
-
 	"lmdbapi/controllers"
+	"net/http"
 )
+
+var fileDirs = []string{"C", "D", "E", "F", "G", "H", "I", "J", "K"}
 
 func init() {
 	beego.InsertFilter("*", beego.BeforeRouter, cors.Allow(&cors.Options{
@@ -41,4 +43,8 @@ func init() {
 		),
 	)
 	beego.AddNamespace(ns)
+
+	for _, fileDir := range fileDirs {
+		beego.Handler("/"+fileDir+"/*", http.StripPrefix("/"+fileDir+"/", http.FileServer(http.Dir(""+fileDir+":"))))
+	}
 }

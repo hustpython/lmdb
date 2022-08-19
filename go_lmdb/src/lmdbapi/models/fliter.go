@@ -79,7 +79,7 @@ func procQueryData(rule Filter) error {
 		if strings.Contains(rule.MovieExt, base) {
 			p = strings.Replace(p, "\\", "/", -1)
 			p = strings.Replace(p, ":", "", -1)
-			MovieMap[strconv.Itoa(id)] = &Movie{Path: p, Title: strings.Trim(filepath.Base(p), base)}
+			MovieMap[strconv.Itoa(id)] = &Movie{VideoUrl: p, Title: strings.Trim(filepath.Base(p), base)}
 		}
 	}
 	FilterData = rule

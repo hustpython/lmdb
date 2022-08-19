@@ -29,7 +29,7 @@ func (m *MovieController) ShowMovies() {
 }
 
 // POST /v1/movie {
-//        "Path": "D://2.mp4",
+//        "VideoUrl": "D://2.mp4",
 //    }
 func (m *MovieController) AddMovie() {
 	var movie models.Movie
@@ -46,7 +46,7 @@ func (m *MovieController) DelMovie() {
 }
 
 // PUT /v1/movie?id=movie_12121 {
-//        "Path": "D://4.mp4",
+//        "VideoUrl": "D://4.mp4",
 //        "Cover": "D:/3.png"
 //    }
 func (m *MovieController) UpdateMovie() {

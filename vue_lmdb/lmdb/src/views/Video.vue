@@ -21,7 +21,7 @@ const route = useRoute();
 const videoDurtion = reactive({
   timeStr: "",
 });
-const videourl = "http://localhost:9091/" + route.query.id;
+const videourl = route.query.id;
 const handleTimeUpdate = (ev) => {};
 
 const handleLoadedata = (ev) => {
