@@ -106,6 +106,11 @@ const handleChangeBck = (index) => {
     videoData[index].Cover = mycanvas.toDataURL("image/png"); // 导出图片
   } catch (error) {
     console.log("设置失败，稍后再试", error);
+    videoData[index].TmpVideoUrl = "";
+    setTimeout(function () {
+      videoData[index].TmpVideoUrl =
+        "http://localhost:9090/" + videoData[index].VideoUrl;
+    }, 1);
   }
 };
 
@@ -206,20 +211,20 @@ const handleMouseLeave = (e, index) => {
   transform: translateZ(0);
 }
 .canvas_back {
-  height: 300px;
-  width: 300px;
+  height: 214px;
+  width: 380px;
   position: absolute;
   z-index: -100px;
   display: none;
 }
 .card-image {
-  height: 300px;
-  width: 300px;
+  height: 214px;
+  width: 380px;
   cursor: pointer;
 }
 .card-video {
-  height: 300px;
-  width: 300px;
+  height: 214px;
+  width: 380px;
   top: -60px;
   bottom: 0px;
   position: absolute;
@@ -250,7 +255,7 @@ a.btn:active {
   transition: all 0.025s 0s ease-out;
 }
 div.cards {
-  margin: 80px auto;
+  margin: 10px auto;
   max-width: 100%;
   text-align: center;
   height: 0 auto;
@@ -258,8 +263,8 @@ div.cards {
 div.card {
   background: #ffffff;
   display: inline-block;
-  margin: 20px;
-  max-width: 300px;
+  margin: 10px;
+  max-width: 380px;
   perspective: 1000;
   position: relative;
   text-align: left;
