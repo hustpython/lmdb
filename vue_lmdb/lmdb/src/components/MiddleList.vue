@@ -142,6 +142,9 @@ div.cards {
   max-width: 100%;
   text-align: center;
   height: 0 auto;
+  position: absolute;
+  top: 400px;
+  background-color: #000;
 }
 div.card {
   background: #ffffff;
