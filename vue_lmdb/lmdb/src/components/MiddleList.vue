@@ -1,5 +1,5 @@
 <template>
-  <canvas class="canvas_back" id="localcanvas"></canvas>
+  <canvas id="localcanvas" style="display: none"></canvas>
   <div v-cloak v-bind:class="{ cards: true, showing: hoverEffict.isShowing }">
     <div
       v-bind:class="{ card: true, show: index === hoverEffict.index }"
@@ -7,81 +7,44 @@
       @mouseleave="handleMouseLeave($event, index)"
       v-for="(item, index) in videoData"
     >
-      <img class="card-image" :src="item.Cover" alt="" />
-      <img />
-      <span class="card-duration">{{ item.Duration }}</span>
-      <div>
+      <div class="card-image">
+        <img :src="item.Cover" alt="" />
+        <span class="card-duration">{{ item.Duration }}</span>
+      </div>
+
+      <div class="video-mask" v-show="index === hoverEffict.index">
         <video
           :id="'video_' + index"
           muted
           preload
           autoplay
           @loadeddata="handleLoadVideo($event, index)"
-          class="card-video"
-          v-show="index === hoverEffict.index"
+          @mousemove="handleProgress($event)"
+          @click="handleVideoClick"
           :src="item.TmpVideoUrl"
         ></video>
-        <div class="bili-watch-later" v-show="index === hoverEffict.index">
-          <svg
-            class="svg-class"
+        <div class="set-cover">
+          <img
+            class="set-cover-svg"
             @click="handleChangeBck(index)"
-            width="24"
-            height="24"
-            viewBox="0 0 48 48"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
-              d="M5 10C5 8.89543 5.89543 8 7 8L41 8C42.1046 8 43 8.89543 43 10V38C43 39.1046 42.1046 40 41 40H7C5.89543 40 5 39.1046 5 38V10Z"
-              stroke="#333"
-              stroke-width="4"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-            <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
-              d="M14.5 18C15.3284 18 16 17.3284 16 16.5C16 15.6716 15.3284 15 14.5 15C13.6716 15 13 15.6716 13 16.5C13 17.3284 13.6716 18 14.5 18Z"
-              stroke="#333"
-              stroke-width="4"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-            <path
-              d="M15 24L20 28L26 21L43 34V38C43 39.1046 42.1046 40 41 40H7C5.89543 40 5 39.1046 5 38V34L15 24Z"
-              fill="none"
-              stroke="#333"
-              stroke-width="4"
-              stroke-linejoin="round"
-            />
-          </svg>
-          <span class="watch-later__tip">设为封面</span>
+            src="../assets/yl.svg"
+          />
+          <span class="set-cover-tip">设为封面</span>
+        </div>
+        <div class="video-duration-progress">
+          <span :style="'width:' + hoverEffict.progress + '%'"></span>
         </div>
       </div>
 
       <div class="card-title">
-        <a :href="'/video?id=' + item.TmpVideoUrl" class="toggle-info btn">
-          <span class="left"></span>
-          <span class="right"></span>
+        <a :href="'/video?id=' + item.TmpVideoUrl" class="toggle-info">
+          <img src="../assets/openmovie.svg" />
         </a>
-        <h2>
-          {{ item.Title }}
-          <small>INTERACTIVE HOVER EFFECT</small>
-        </h2>
+        <small>{{ item.Title }}</small>
       </div>
 
       <div class="card-flap flap1">
-        <div class="card-description">
-          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ullam,
-          recusandae!
-        </div>
-        <div class="card-flap flap2">
-          <div class="card-actions">
-            <a href="" class="btn">READ MORE</a>
-          </div>
-        </div>
+        <div class="card-description">还是挺好看的哦</div>
       </div>
     </div>
   </div>
@@ -89,7 +52,7 @@
 
 <script setup>
 import { GetVideList } from "../api/videolist";
-import { reactive, onBeforeMount } from "vue";
+import { reactive, onBeforeMount, computed } from "vue";
 import { timeFilter } from "../api/timefilter";
 
 let videoData = reactive([]);
@@ -101,7 +64,7 @@ const handleChangeBck = (index) => {
   const ctx = mycanvas.getContext("2d"); // 绘制2d
   mycanvas.width = myvideo.clientWidth; // 获取视频宽度
   mycanvas.height = myvideo.clientHeight; //获取视频高度
-  ctx.drawImage(myvideo, 0, 0, myvideo.clientWidth, myvideo.clientHeight);
+  ctx.drawImage(myvideo, 0, 0, mycanvas.width, mycanvas.height);
   try {
     videoData[index].Cover = mycanvas.toDataURL("image/png"); // 导出图片
   } catch (error) {
@@ -110,6 +73,7 @@ const handleChangeBck = (index) => {
     setTimeout(function () {
       videoData[index].TmpVideoUrl =
         "http://localhost:9090/" + videoData[index].VideoUrl;
+      hoverEffict.progress = 0;
     }, 1);
   }
 };
@@ -121,6 +85,7 @@ const handleLoadVideo = (e, index) => {
 var hoverEffict = reactive({
   index: -1,
   isShowing: false,
+  progress: 0,
 });
 // 加载后端数据
 onBeforeMount(() => {
@@ -145,115 +110,27 @@ const handleMouseLeave = (e, index) => {
   e.preventDefault();
   hoverEffict.isShowing = false;
   hoverEffict.index = -1;
+  hoverEffict.progress = 0;
+};
+
+const handleVideoClick = (e) => {
+  if (e.target.paused) {
+    e.target.play();
+  } else {
+    e.target.pause();
+  }
+};
+
+const handleProgress = (e) => {
+  if (e.target.paused) {
+    return;
+  }
+  hoverEffict.progress = (e.offsetX / e.target.clientWidth) * 100;
+  e.target.currentTime = (e.target.duration * hoverEffict.progress) / 100;
 };
 </script>
 
 <style>
-.card-duration {
-  min-width: 0;
-  flex: 1;
-  display: -webkit-flex;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  color: #008a93;
-}
-
-.bili-watch-later {
-  display: -webkit-flex;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  cursor: pointer;
-  z-index: 9;
-  transform: translateZ(0);
-}
-
-.watch-later__tip {
-  display: none;
-}
-
-.svg-class:hover + .watch-later__tip {
-  pointer-events: none;
-  user-select: none;
-  position: absolute;
-  bottom: -6px;
-  right: -10px;
-  transform: translateY(100%);
-  font-size: 12px;
-  color: #fff;
-  border-radius: 4px;
-  line-height: 18px;
-  padding: 4px 8px;
-  background-color: rgba(0, 0, 0, 0.8);
-  white-space: nowrap;
-  display: -webkit-flex;
-}
-
-.svg-class {
-  display: -webkit-flex;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  cursor: pointer;
-  transform: translateZ(0);
-}
-.canvas_back {
-  height: 214px;
-  width: 380px;
-  position: absolute;
-  z-index: -100px;
-  display: none;
-}
-.card-image {
-  height: 214px;
-  width: 380px;
-  cursor: pointer;
-}
-.card-video {
-  height: 214px;
-  width: 380px;
-  top: -60px;
-  bottom: 0px;
-  position: absolute;
-  background-color: black;
-}
-a.btn {
-  background: #0096a0;
-  border-radius: 4px;
-  box-shadow: 0 2px 0px 0 rgba(0, 0, 0, 0.25);
-  color: #ffffff;
-  display: inline-block;
-  padding: 6px 30px 8px;
-  position: relative;
-  text-decoration: none;
-  transition: all 0.1s 0s ease-out;
-}
-.no-touch a.btn:hover {
-  background: #00a2ad;
-  box-shadow: 0px 8px 2px 0 rgba(0, 0, 0, 0.075);
-  transform: translateY(-2px);
-  transition: all 0.25s 0s ease-out;
-}
-.no-touch a.btn:active,
-a.btn:active {
-  background: #008a93;
-  box-shadow: 0 1px 0px 0 rgba(255, 255, 255, 0.25);
-  transform: translate3d(0, 1px, 0);
-  transition: all 0.025s 0s ease-out;
-}
 div.cards {
   margin: 10px auto;
   max-width: 100%;
@@ -272,6 +149,123 @@ div.card {
   z-index: 1;
 }
 
+/* 封面相关 */
+
+.card-image {
+  height: 214px;
+  width: 380px;
+  cursor: pointer;
+}
+
+.card-image img {
+  height: 214px;
+  width: 380px;
+}
+
+.card-image .card-duration {
+  position: absolute;
+  bottom: 42px;
+  right: 10px;
+  height: 20px;
+  line-height: 20px;
+  transition: opacity 0.3s;
+  z-index: 5;
+  font-size: 13px;
+  background-color: rgba(43, 104, 165, 0.4);
+  color: #fff;
+  border-radius: 2px;
+  z-index: inherit;
+}
+
+/* 视频相关 */
+.video-mask {
+  height: 214px;
+  width: 380px;
+  top: 0;
+  position: absolute;
+  background-color: #000;
+}
+
+.video-mask video {
+  margin: 0;
+}
+
+video {
+  height: 214px;
+  width: 380px;
+}
+
+.set-cover {
+  display: -webkit-flex;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  z-index: 9;
+  transform: translateZ(0);
+}
+
+.set-cover-tip {
+  display: none;
+}
+
+.set-cover-svg:hover + .set-cover-tip {
+  pointer-events: none;
+  user-select: none;
+  position: absolute;
+  bottom: -6px;
+  right: -10px;
+  transform: translateY(100%);
+  font-size: 12px;
+  color: #fff;
+  border-radius: 4px;
+  line-height: 18px;
+  padding: 4px 8px;
+  background-color: rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+  display: -webkit-flex;
+}
+
+.set-cover-svg {
+  display: -webkit-flex;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  transform: translateZ(0);
+}
+
+.video-duration-progress {
+  position: absolute;
+  bottom: 0px;
+  width: 100%;
+  height: 10px;
+  border-color: rgb(0, 0, 0);
+  border-style: solid;
+  border-width: 4px 8px;
+  background: #444;
+  box-sizing: border-box;
+}
+
+.video-duration-progress span {
+  display: block;
+  background: #fff;
+  height: 2px;
+  transition: width 0.12s;
+}
+
 div.card div.card-title {
   background: #ffffff;
   padding: 6px 15px 10px;
@@ -284,7 +278,7 @@ div.card div.card-title a.toggle-info {
   padding: 0;
   position: absolute;
   right: 15px;
-  top: 10px;
+  top: 4px;
   width: 32px;
 }
 div.card div.card-title a.toggle-info span {
@@ -304,19 +298,15 @@ div.card div.card-title a.toggle-info span.right {
   left: 14px;
   transform: rotate(-45deg);
 }
-div.card div.card-title h2 {
-  font-size: 24px;
-  font-weight: 700;
-  letter-spacing: -0.05em;
-  margin: 0;
-  padding: 0;
-}
-div.card div.card-title h2 small {
+
+div.card div.card-title small {
   display: block;
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 400;
   letter-spacing: -0.025em;
+  color: cadetblue;
 }
+
 div.card div.card-description {
   padding: 0 15px 10px;
   position: relative;
@@ -356,18 +346,11 @@ div.card.show {
   transform: scale(1) !important;
   z-index: 10;
 }
-div.card.show div.card-title a.toggle-info {
-  background: #ff6666 !important;
-}
+
 div.card.show div.card-title a.toggle-info span {
   top: 15px;
 }
-div.card.show div.card-title a.toggle-info span.left {
-  right: 10px;
-}
-div.card.show div.card-title a.toggle-info span.right {
-  left: 10px;
-}
+
 div.card.show div.card-flap {
   background: #ffffff;
   transform: rotateX(0deg);
