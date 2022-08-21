@@ -67,9 +67,10 @@ import { reactive, onMounted } from "vue";
 import { timeFilter } from "@/api/timefilter";
 import { useVideoData } from "@/store/videoData";
 import { storeToRefs } from "pinia";
-import { NTabs, NTab } from "naive-ui";
+import { NTabs, NTab, useNotification } from "naive-ui";
 const defaultCover = require("../assets/classic.jpg");
 const videoDataStore = useVideoData();
+const notification = useNotification();
 
 var { videoData } = storeToRefs(videoDataStore);
 
@@ -83,6 +84,10 @@ const handleChangeBck = (index) => {
   ctx.drawImage(myvideo, 0, 0, mycanvas.width, mycanvas.height);
   try {
     videoData.value[index].Cover = mycanvas.toDataURL("image/png"); // 导出图片
+    notification.success({
+      content: videoData.value[index].Title + " : 设置背景成功",
+      duration: 3000,
+    });
   } catch (error) {
     console.log("设置失败，稍后再试", error);
     videoData.value[index].TmpVideoUrl = "";
