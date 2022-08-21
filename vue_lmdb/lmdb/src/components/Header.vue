@@ -64,11 +64,16 @@
   float: left;
   margin-right: 30px;
 }
+
 .header a {
   line-height: 60px;
   color: rgb(210, 221, 209);
   font-size: 21px;
   font-weight: 556px;
+}
+
+.header a:hover {
+  color: var(--tmdbLightGreen);
 }
 </style>
 

@@ -6,9 +6,9 @@
         <h2
           style="
             color: white;
-            font-size: 1.8em;
+            font-size: 2.2em;
             font-weight: 600;
-            line-height: 1;
+            line-height: 2;
           "
         >
           欢迎！
@@ -57,7 +57,7 @@ export default {
   setup() {
     let imgurl = "";
     return {
-      imgurl: require("../assets/2.jpg"),
+      imgurl: require("../assets/backimg.jpg"),
     };
   },
 };
@@ -84,17 +84,16 @@ export default {
   align-items: center;
   height: 0 auto;
   margin-left: 100px;
-  margin-top: 6px;
+  margin-top: 20px;
 }
 .search-input {
   color: rgb(255, 255, 255);
-  font-size: 15px;
+  font-size: 14px;
   -webkit-appearance: button;
   cursor: pointer;
   width: 80px;
   margin-left: -80px;
   height: 50px;
-  padding: 10px 26px;
   border: none;
   border-radius: 0 30px 30px 0;
   background-color: var(--tmdbLightGreen);

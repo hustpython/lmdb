@@ -1,6 +1,14 @@
 <template>
   <canvas id="localcanvas" style="display: none"></canvas>
   <div v-cloak v-bind:class="{ cards: true, showing: hoverEffict.isShowing }">
+    <div class="videoTabs">
+      <n-tabs type="bar" animated>
+        <n-tab name="1"> 最近 </n-tab>
+        <n-tab name="2"> 全部 </n-tab>
+        <n-tab name="3"> 刷新 </n-tab>
+      </n-tabs>
+    </div>
+
     <div
       v-bind:class="{ card: true, show: index === hoverEffict.index }"
       @mouseenter="handleMouseEnter($event, index)"
@@ -8,7 +16,10 @@
       v-for="(item, index) in videoData"
     >
       <div class="card-image">
-        <img :src="item.Cover" alt="" />
+        <img
+          :src="item.Cover === undefined ? defaultCover : item.Cover"
+          alt=""
+        />
         <span class="card-duration">{{ item.Duration }}</span>
       </div>
 
@@ -56,8 +67,10 @@ import { reactive, onMounted } from "vue";
 import { timeFilter } from "@/api/timefilter";
 import { useVideoData } from "@/store/videoData";
 import { storeToRefs } from "pinia";
-
+import { NTabs, NTab } from "naive-ui";
+const defaultCover = require("../assets/classic.jpg");
 const videoDataStore = useVideoData();
+
 var { videoData } = storeToRefs(videoDataStore);
 
 const handleChangeBck = (index) => {
@@ -137,14 +150,17 @@ const handleProgress = (e) => {
 </script>
 
 <style>
+.videoTabs {
+  padding: 7px 17px 7px 17px;
+}
 div.cards {
   margin: 10px auto;
   max-width: 100%;
   text-align: center;
   height: 0 auto;
   position: absolute;
-  top: 400px;
-  background-color: #000;
+  top: 380px;
+  background-color: #fff;
 }
 div.card {
   background: #ffffff;
@@ -156,6 +172,8 @@ div.card {
   text-align: left;
   transition: all 0.3s 0s ease-in;
   z-index: 1;
+  border-radius: 10px 10px 0 0;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
 /* 封面相关 */
@@ -164,11 +182,13 @@ div.card {
   height: 214px;
   width: 380px;
   cursor: pointer;
+  border-radius: inherit;
 }
 
 .card-image img {
   height: 214px;
   width: 380px;
+  border-radius: inherit;
 }
 
 .card-image .card-duration {
@@ -193,10 +213,12 @@ div.card {
   top: 0;
   position: absolute;
   background-color: #000;
+  border-radius: inherit;
 }
 
 .video-mask video {
   margin: 0;
+  border-radius: inherit;
 }
 
 video {
