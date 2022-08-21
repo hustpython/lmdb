@@ -58,10 +58,8 @@
 export default {
   setup() {
     let imgurl = "";
-    let videourl = "";
     return {
-      imgurl: require("D://img/ys.jpg"),
-      videourl: require("D:\\迅雷下载\\黑镜.Black.Mirror.1-4季全集【关注微信公众号：美剧叔】\\黑镜 第4季\\【关注微信公众号：美剧叔】黑镜.Black.Mirror.S04E03.mp4"),
+      imgurl: require("../assets/2.jpg"),
     };
   },
 };

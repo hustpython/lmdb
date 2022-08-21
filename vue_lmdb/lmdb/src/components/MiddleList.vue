@@ -51,11 +51,14 @@
 </template>
 
 <script setup>
-import { GetVideList } from "../api/videolist";
-import { reactive, onBeforeMount, computed } from "vue";
-import { timeFilter } from "../api/timefilter";
+import { GetVideList } from "@/api/videolist";
+import { reactive, onMounted } from "vue";
+import { timeFilter } from "@/api/timefilter";
+import { useVideoData } from "@/store/videoData";
+import { storeToRefs } from "pinia";
 
-let videoData = reactive([]);
+const videoDataStore = useVideoData();
+var { videoData } = storeToRefs(videoDataStore);
 
 const handleChangeBck = (index) => {
   const myvideo = document.getElementById("video_" + index); // 获取视频对象
@@ -66,20 +69,20 @@ const handleChangeBck = (index) => {
   mycanvas.height = myvideo.clientHeight; //获取视频高度
   ctx.drawImage(myvideo, 0, 0, mycanvas.width, mycanvas.height);
   try {
-    videoData[index].Cover = mycanvas.toDataURL("image/png"); // 导出图片
+    videoData.value[index].Cover = mycanvas.toDataURL("image/png"); // 导出图片
   } catch (error) {
     console.log("设置失败，稍后再试", error);
-    videoData[index].TmpVideoUrl = "";
+    videoData.value[index].TmpVideoUrl = "";
     setTimeout(function () {
-      videoData[index].TmpVideoUrl =
-        "http://localhost:9090/" + videoData[index].VideoUrl;
+      videoData.value[index].TmpVideoUrl =
+        "http://localhost:9090/" + videoData.value[index].VideoUrl;
       hoverEffict.progress = 0;
     }, 1);
   }
 };
 
 const handleLoadVideo = (e, index) => {
-  videoData[index].Duration = timeFilter(e.target.duration);
+  videoData.value[index].Duration = timeFilter(e.target.duration);
 };
 
 var hoverEffict = reactive({
@@ -88,25 +91,28 @@ var hoverEffict = reactive({
   progress: 0,
 });
 // 加载后端数据
-onBeforeMount(() => {
+onMounted(() => {
+  if (videoData.value.length >= 1) {
+    return;
+  }
   GetVideList().then((res) => {
     if (res.code == 200) {
-      videoData.push(...res.data);
+      videoDataStore.setVideoData(res.data);
     }
   });
 });
 
 const handleMouseEnter = (e, index) => {
   e.preventDefault();
-  videoData[index].TmpVideoUrl =
-    "http://localhost:9090/" + videoData[index].VideoUrl;
+  videoData.value[index].TmpVideoUrl =
+    "http://localhost:9090/" + videoData.value[index].VideoUrl;
   // videoData[index].TmpVideoUrl = require("../file/1212.mp4");
   hoverEffict.index = index;
   hoverEffict.isShowing = true;
 };
 
 const handleMouseLeave = (e, index) => {
-  videoData[index].TmpVideoUrl = "";
+  videoData.value[index].TmpVideoUrl = "";
   e.preventDefault();
   hoverEffict.isShowing = false;
   hoverEffict.index = -1;

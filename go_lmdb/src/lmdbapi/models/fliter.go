@@ -16,6 +16,7 @@ const (
 type Filter struct {
 	MinSize  int
 	MovieExt string
+	Include  string
 }
 
 const (
@@ -76,7 +77,8 @@ func procQueryData(rule Filter) error {
 		}
 		base := filepath.Ext(p)
 		id++
-		if strings.Contains(rule.MovieExt, base) {
+		if strings.Contains(rule.MovieExt, base) &&
+			strings.Contains(p, rule.Include) {
 			p = strings.Replace(p, "\\", "/", -1)
 			p = strings.Replace(p, ":", "", -1)
 			title := strings.Trim(filepath.Base(p), base)
