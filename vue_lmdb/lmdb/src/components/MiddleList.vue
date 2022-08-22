@@ -1,14 +1,7 @@
 <template>
   <canvas id="localcanvas" style="display: none"></canvas>
   <div v-cloak v-bind:class="{ cards: true, showing: hoverEffict.isShowing }">
-    <div class="videoTabs">
-      <n-tabs type="bar" animated>
-        <n-tab name="1"> 最近 </n-tab>
-        <n-tab name="2"> 全部 </n-tab>
-        <n-tab name="3"> 刷新 </n-tab>
-      </n-tabs>
-    </div>
-
+    <MiddleFilter />
     <div
       v-bind:class="{ card: true, show: index === hoverEffict.index }"
       @mouseenter="handleMouseEnter($event, index)"
@@ -16,10 +9,7 @@
       v-for="(item, index) in videoData"
     >
       <div class="card-image">
-        <img
-          :src="item.Cover === undefined ? defaultCover : item.Cover"
-          alt=""
-        />
+        <img :src="item.Cover === undefined ? defaultCover : item.Cover" alt="" />
         <span class="card-duration">{{ item.Duration }}</span>
       </div>
 
@@ -55,7 +45,7 @@
       </div>
 
       <div class="card-flap flap1">
-        <div class="card-description">还是挺好看的哦</div>
+        <MiddleDesc />
       </div>
     </div>
   </div>
@@ -67,7 +57,10 @@ import { reactive, onMounted } from "vue";
 import { timeFilter } from "@/api/timefilter";
 import { useVideoData } from "@/store/videoData";
 import { storeToRefs } from "pinia";
-import { NTabs, NTab, useNotification } from "naive-ui";
+import { useNotification } from "naive-ui";
+import MiddleFilter from "@/components/MiddleFilter.vue";
+import MiddleDesc from "@/components/MiddleDesc.vue";
+
 const defaultCover = require("../assets/classic.jpg");
 const videoDataStore = useVideoData();
 const notification = useNotification();
@@ -168,7 +161,6 @@ div.cards {
   background-color: #fff;
 }
 div.card {
-  background: #ffffff;
   display: inline-block;
   margin: 10px;
   max-width: 380px;
@@ -343,11 +335,6 @@ div.card div.card-title small {
   color: cadetblue;
 }
 
-div.card div.card-description {
-  padding: 0 15px 10px;
-  position: relative;
-  font-size: 14px;
-}
 div.card div.card-actions {
   box-shadow: 0 2px 0px 0 rgba(0, 0, 0, 0.075);
   padding: 10px 15px 20px;

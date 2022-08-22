@@ -3,14 +3,7 @@
     <img :src="imgurl" alt="搜索背景图片" />
     <div class="content_wrap">
       <div class="title">
-        <h2
-          style="
-            color: white;
-            font-size: 2.2em;
-            font-weight: 600;
-            line-height: 2;
-          "
-        >
+        <h2 style="color: white; font-size: 2.2em; font-weight: 600; line-height: 2">
           欢迎！
         </h2>
         <h3 style="color: white; font-size: 1.8em; font-weight: 500; margin: 0">
