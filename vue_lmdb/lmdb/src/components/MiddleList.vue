@@ -1,12 +1,12 @@
 <template>
   <canvas id="localcanvas" style="display: none"></canvas>
   <div v-cloak v-bind:class="{ cards: true, showing: hoverEffict.isShowing }">
-    <MiddleFilter />
+    <MiddleFilter @videoPageChange="handlePageChange" />
     <div
       v-bind:class="{ card: true, show: index === hoverEffict.index }"
-      @mouseenter="handleMouseEnter($event, index)"
-      @mouseleave="handleMouseLeave($event, index)"
-      v-for="(item, index) in videoData"
+      @mouseenter="handleMouseEnter(index)"
+      @mouseleave="handleMouseLeave(index)"
+      v-for="(item, index) in videoData.slice(begin, end)"
     >
       <div class="card-image">
         <img :src="item.Cover === undefined ? defaultCover : item.Cover" alt="" />
@@ -45,7 +45,7 @@
       </div>
 
       <div class="card-flap flap1">
-        <MiddleDesc />
+        <MiddleDesc :moreInfo="item.MoreInfo" />
       </div>
     </div>
   </div>
@@ -53,7 +53,7 @@
 
 <script setup>
 import { GetVideList } from "@/api/videolist";
-import { reactive, onMounted } from "vue";
+import { reactive, ref, onBeforeMount, computed } from "vue";
 import { timeFilter } from "@/api/timefilter";
 import { useVideoData } from "@/store/videoData";
 import { storeToRefs } from "pinia";
@@ -64,9 +64,23 @@ import MiddleDesc from "@/components/MiddleDesc.vue";
 const defaultCover = require("../assets/classic.jpg");
 const videoDataStore = useVideoData();
 const notification = useNotification();
+var cardNum = Math.floor(document.body.clientWidth / 400);
+var begin = ref(0);
+var end = ref(0);
+
+const absoluteIndex = (index) => {
+  return begin.value + index;
+};
 
 var { videoData } = storeToRefs(videoDataStore);
 
+const handlePageChange = (page) => {
+  cardNum = Math.floor(document.body.clientWidth / 400);
+  begin.value = (page - 1) * cardNum;
+  end.value = page * cardNum;
+};
+
+handlePageChange(1);
 const handleChangeBck = (index) => {
   const myvideo = document.getElementById("video_" + index); // 获取视频对象
   myvideo.crossOrigin = "*";
@@ -75,6 +89,7 @@ const handleChangeBck = (index) => {
   mycanvas.width = myvideo.clientWidth; // 获取视频宽度
   mycanvas.height = myvideo.clientHeight; //获取视频高度
   ctx.drawImage(myvideo, 0, 0, mycanvas.width, mycanvas.height);
+  index = absoluteIndex(index);
   try {
     videoData.value[index].Cover = mycanvas.toDataURL("image/png"); // 导出图片
     notification.success({
@@ -84,6 +99,10 @@ const handleChangeBck = (index) => {
   } catch (error) {
     console.log("设置失败，稍后再试", error);
     videoData.value[index].TmpVideoUrl = "";
+    notification.error({
+      content: videoData.value[index].Title + " : 设置背景失败",
+      duration: 2000,
+    });
     setTimeout(function () {
       videoData.value[index].TmpVideoUrl =
         "http://localhost:9090/" + videoData.value[index].VideoUrl;
@@ -93,6 +112,7 @@ const handleChangeBck = (index) => {
 };
 
 const handleLoadVideo = (e, index) => {
+  index = absoluteIndex(index);
   videoData.value[index].Duration = timeFilter(e.target.duration);
 };
 
@@ -102,32 +122,32 @@ var hoverEffict = reactive({
   progress: 0,
 });
 // 加载后端数据
-onMounted(() => {
-  if (videoData.value.length >= 1) {
-    return;
+onBeforeMount(() => {
+  if (videoData.value.length < 1) {
+    GetVideList().then((res) => {
+      if (res.code == 200) {
+        videoDataStore.setVideoData(res.data);
+      }
+    });
   }
-  GetVideList().then((res) => {
-    if (res.code == 200) {
-      videoDataStore.setVideoData(res.data);
-    }
-  });
 });
 
-const handleMouseEnter = (e, index) => {
-  e.preventDefault();
-  videoData.value[index].TmpVideoUrl =
-    "http://localhost:9090/" + videoData.value[index].VideoUrl;
-  // videoData[index].TmpVideoUrl = require("../file/1212.mp4");
+const handleMouseEnter = (index) => {
   hoverEffict.index = index;
   hoverEffict.isShowing = true;
+
+  index = absoluteIndex(index);
+  videoData.value[index].TmpVideoUrl =
+    "http://localhost:9090/" + videoData.value[index].VideoUrl;
 };
 
-const handleMouseLeave = (e, index) => {
-  videoData.value[index].TmpVideoUrl = "";
-  e.preventDefault();
+const handleMouseLeave = (index) => {
   hoverEffict.isShowing = false;
   hoverEffict.index = -1;
   hoverEffict.progress = 0;
+
+  index = absoluteIndex(index);
+  videoData.value[index].TmpVideoUrl = "";
 };
 
 const handleVideoClick = (e) => {
@@ -148,23 +168,21 @@ const handleProgress = (e) => {
 </script>
 
 <style>
-.videoTabs {
-  padding: 7px 17px 7px 17px;
-}
 div.cards {
-  margin: 10px auto;
-  max-width: 100%;
-  text-align: center;
+  margin: 10px;
   height: 0 auto;
   position: absolute;
-  top: 380px;
+  top: 360px;
+  width: 0 auto;
   background-color: #fff;
+  right: 10px;
+  left: 10px;
 }
 div.card {
   display: inline-block;
-  margin: 10px;
-  max-width: 380px;
-  perspective: 1000;
+  floor: left;
+  margin: inherit;
+  max-width: 360px;
   position: relative;
   text-align: left;
   transition: all 0.3s 0s ease-in;
@@ -176,15 +194,15 @@ div.card {
 /* 封面相关 */
 
 .card-image {
-  height: 214px;
-  width: 380px;
+  height: 200px;
+  width: 360px;
   cursor: pointer;
   border-radius: inherit;
 }
 
 .card-image img {
-  height: 214px;
-  width: 380px;
+  height: 200px;
+  width: 360px;
   border-radius: inherit;
 }
 
@@ -205,8 +223,8 @@ div.card {
 
 /* 视频相关 */
 .video-mask {
-  height: 214px;
-  width: 380px;
+  height: 200px;
+  width: 360px;
   top: 0;
   position: absolute;
   background-color: #000;
@@ -219,8 +237,8 @@ div.card {
 }
 
 video {
-  height: 214px;
-  width: 380px;
+  height: 200px;
+  width: 360px;
 }
 
 .set-cover {

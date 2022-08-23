@@ -1,31 +1,47 @@
 <template>
-  <div class="videoTabs">
+  <n-space class="videoTabs" justify="space-between">
     <n-tabs type="bar" animated v-model:value="tabVal">
       <n-tab name="1"> 最近 </n-tab>
       <n-tab name="2"> 全部 </n-tab>
       <n-tab name="3"> 刷新 </n-tab>
     </n-tabs>
-  </div>
-  <n-space vertical v-show="tabVal.value === 'asas'">
-    <n-select v-model:value="value" multiple :options="options" />
+    <n-pagination
+      v-model:page="page"
+      :page-count="pageCount"
+      simple
+      @update:page="handleUpdatePage"
+    />
   </n-space>
 </template>
 
 <script setup>
-import { NSpace, NSelect, NTabs, NTab } from "naive-ui";
-import { ref } from "vue";
-const value = ref(["song3"]);
-const options = [
-  {
-    label: "Everybody's Got Something to Hide Except Me and My Monkey",
-    value: "song0",
-  },
-  {
-    label: "Drive My Car",
-    value: "song1",
-  },
-];
+import { NSpace, NSelect, NTabs, NTab, NPagination } from "naive-ui";
+import { ref, defineEmits, computed } from "vue";
+import { useVideoData } from "@/store/videoData";
+import { storeToRefs } from "pinia";
+const videoDataStore = useVideoData();
 var tabVal = ref("1");
+var { videoData } = storeToRefs(videoDataStore);
+const emit = defineEmits(["videoPageChange"]);
+const page = ref(1);
+const pageWidth = ref(document.body.clientWidth);
+
+const handleUpdatePage = (page) => {
+  emit("videoPageChange", page);
+};
+
+const pageCount = computed(() => {
+  handleUpdatePage(page.value);
+  return Math.ceil(videoData.value.length / Math.floor(pageWidth.value / 400));
+});
+
+window.onresize = () => {
+  pageWidth.value = document.body.clientWidth;
+};
 </script>
 
-<style></style>
+<style>
+.videoTabs {
+  padding: 7px 17px 7px 17px;
+}
+</style>

@@ -81,11 +81,7 @@ func procQueryData(rule Filter) error {
 			strings.Contains(p, rule.Include) {
 			p = strings.Replace(p, "\\", "/", -1)
 			p = strings.Replace(p, ":", "", -1)
-			title := strings.Trim(filepath.Base(p), base)
-			if len(title) > 11 {
-				title = title[:10]
-			}
-			MovieMap[strconv.Itoa(id)] = &Movie{VideoUrl: p, Title: title}
+			MovieMap[strconv.Itoa(id)] = &Movie{VideoUrl: p, Title: strings.Trim(filepath.Base(p), base)}
 		}
 	}
 	FilterData = rule

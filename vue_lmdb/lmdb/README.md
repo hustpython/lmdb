@@ -24,3 +24,10 @@ npm run lint
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ![](./readmeimg/3.png)
+
+![](./readmeimg/4.png)
+
+![](./readmeimg/5.png)
+
+![](./readmeimg/6.png)
+

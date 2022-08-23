@@ -10,6 +10,14 @@ import (
 type Movie struct {
 	VideoUrl string
 	Title    string
+	MoreInfo moreInfo
+}
+
+type moreInfo struct {
+	Desc     string
+	Actors   string
+	National string
+	Labels   []string
 }
 
 var (
