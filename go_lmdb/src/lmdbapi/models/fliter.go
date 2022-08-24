@@ -15,8 +15,8 @@ const (
 
 type Filter struct {
 	MinSize  int
-	MovieExt string
 	Include  string
+	MovieExt []string
 }
 
 const (
@@ -28,8 +28,17 @@ func GetFilter() Filter {
 	return FilterData
 }
 
+// searchExt ".mp4|.mkv|.rmvb"
 func SearchMovie(rule Filter) error {
-	err := es.EverythingSetSearch(rule.MovieExt)
+	searchExt := ""
+	for i := range rule.MovieExt {
+		searchExt += "."
+		searchExt += rule.MovieExt[i]
+		if i != len(rule.MovieExt)-1 {
+			searchExt += "|"
+		}
+	}
+	err := es.EverythingSetSearch(searchExt)
 	if err != nil {
 		return err
 	}
@@ -52,10 +61,10 @@ func SearchMovie(rule Filter) error {
 	// 开始查询
 	es.EverythingQuery(true)
 	// 得到查询结果个数
-	return procQueryData(rule)
+	return procQueryData(rule, searchExt)
 }
 
-func procQueryData(rule Filter) error {
+func procQueryData(rule Filter, searchExt string) error {
 	MovieMap = make(map[string]*Movie, 0)
 	num, err := es.EverythingGetNumResults()
 	if err != nil {
@@ -77,7 +86,7 @@ func procQueryData(rule Filter) error {
 		}
 		base := filepath.Ext(p)
 		id++
-		if strings.Contains(rule.MovieExt, base) &&
+		if strings.Contains(searchExt, base) &&
 			strings.Contains(p, rule.Include) {
 			p = strings.Replace(p, "\\", "/", -1)
 			p = strings.Replace(p, ":", "", -1)

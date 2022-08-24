@@ -7,10 +7,10 @@
     @timeupdate="handleTimeUpdate"
     @loadeddata="handleLoadedata"
   ></video>
-  <canvas id="localcanvas"></canvas>
+  <!-- <canvas id="localcanvas"></canvas>
   <button id="snapbtn" @click="handleClick">
     截取总时长{{ videoDurtion.timeStr }}
-  </button>
+  </button> -->
 </template>
 
 <script setup>

@@ -38,7 +38,7 @@
       </div>
 
       <div class="card-title">
-        <a :href="'/video?id=' + item.TmpVideoUrl" class="toggle-info">
+        <a :href="'/video?id=' + item.TmpVideoUrl" target="_blank" class="toggle-info">
           <img src="../assets/openmovie.svg" />
         </a>
         <small>{{ item.Title }}</small>
@@ -64,7 +64,6 @@ import MiddleDesc from "@/components/MiddleDesc.vue";
 const defaultCover = require("../assets/classic.jpg");
 const videoDataStore = useVideoData();
 const notification = useNotification();
-var cardNum = Math.floor(document.body.clientWidth / 400);
 var begin = ref(0);
 var end = ref(0);
 
@@ -74,10 +73,9 @@ const absoluteIndex = (index) => {
 
 var { videoData } = storeToRefs(videoDataStore);
 
-const handlePageChange = (page) => {
-  cardNum = Math.floor(document.body.clientWidth / 400);
-  begin.value = (page - 1) * cardNum;
-  end.value = page * cardNum;
+const handlePageChange = (page, pageCount) => {
+  begin.value = (page - 1) * pageCount;
+  end.value = page * pageCount;
 };
 
 handlePageChange(1);
