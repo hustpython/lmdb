@@ -38,22 +38,15 @@
               background-color: white;
             "
           />
-          <input class="search-input" type="submit" value="搜索" />
+          <input class="search-input" type="submit" value="搜 索" />
         </label>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-export default {
-  setup() {
-    let imgurl = "";
-    return {
-      imgurl: require("../assets/backimg.jpg"),
-    };
-  },
-};
+<script setup>
+const imgurl = require("../assets/backimg.jpg")
 </script>
 
 <style>
@@ -81,8 +74,8 @@ export default {
 }
 .search-input {
   color: rgb(255, 255, 255);
-  font-size: 14px;
-  -webkit-appearance: button;
+  font-size: 13px;
+  font-weight:bold;
   cursor: pointer;
   width: 80px;
   margin-left: -80px;

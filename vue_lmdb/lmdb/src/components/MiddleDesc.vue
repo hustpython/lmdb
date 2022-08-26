@@ -23,13 +23,6 @@
 </template>
 
 <script setup>
-import {
-  NSpace,
-  NTag,
-  NEllipsis,
-  NDescriptions,
-  NDescriptionsItem,
-} from "naive-ui";
 const props = defineProps(["moreInfo"]);
 const labelTypes = ["success", "warning", "error", "info"];
 </script>

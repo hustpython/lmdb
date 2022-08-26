@@ -13,7 +13,7 @@
         <span class="card-duration">{{ item.Duration }}</span>
       </div>
 
-      <div class="video-mask" v-show="index === hoverEffict.index">
+      <div class="video-mask" v-show="index === hoverEffict.videoIndex">
         <video
           :id="'video_' + index"
           muted
@@ -38,7 +38,7 @@
       </div>
 
       <div class="card-title">
-        <a :href="'/video?id=' + item.TmpVideoUrl" target="_blank" class="toggle-info">
+        <a :href="'/video?id=http://localhost:9090/' + item.VideoUrl" target="_blank" class="toggle-info">
           <img src="../assets/openmovie.svg" />
         </a>
         <small>{{ item.Title }}</small>
@@ -116,6 +116,7 @@ const handleLoadVideo = (e, index) => {
 
 var hoverEffict = reactive({
   index: -1,
+  videoIndex: -1,
   isShowing: false,
   progress: 0,
 });
@@ -130,18 +131,24 @@ onBeforeMount(() => {
   }
 });
 
+let videoTimer;
+
 const handleMouseEnter = (index) => {
   hoverEffict.index = index;
   hoverEffict.isShowing = true;
-
-  index = absoluteIndex(index);
-  videoData.value[index].TmpVideoUrl =
-    "http://localhost:9090/" + videoData.value[index].VideoUrl;
+  videoTimer = setTimeout(() => {
+    hoverEffict.videoIndex = index;
+    index = absoluteIndex(index);
+    videoData.value[index].TmpVideoUrl =
+      "http://localhost:9090/" + videoData.value[index].VideoUrl;
+  }, 1500);
 };
 
 const handleMouseLeave = (index) => {
+  clearTimeout(videoTimer);
   hoverEffict.isShowing = false;
   hoverEffict.index = -1;
+  hoverEffict.videoIndex = -1;
   hoverEffict.progress = 0;
 
   index = absoluteIndex(index);
@@ -172,13 +179,12 @@ div.cards {
   position: absolute;
   top: 360px;
   width: 0 auto;
-  background-color: #fff;
+  background-color: var(--lightBule);
   right: 10px;
   left: 10px;
 }
 div.card {
   display: inline-block;
-  floor: left;
   margin: inherit;
   max-width: 360px;
   position: relative;

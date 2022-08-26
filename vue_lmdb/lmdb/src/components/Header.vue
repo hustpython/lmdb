@@ -1,103 +1,131 @@
 <template>
-  <!-- 头部开始，头部结束 -->
-  <div class="header">
-    <div class="wrap">
-      <ul class="header-left">
-        <li>
-          <a href="/" class="logo">
-            <img :src="logourl" alt="Local Movie Database (LMDB)" />
-          </a>
-        </li>
-        <li v-for="item in header_left_list">
-          <a href="#">{{ item }}</a>
-        </li>
-      </ul>
-      <div class="header-right">
-        <img :src="avatarurl" alt="mxq" />
+  <n-layout>
+    <n-layout-header class="nav">
+      <div class="ui-logo">
+        <img :src="logourl" />
+        <n-gradient-text :size="24" type="success"> LMDB </n-gradient-text>
       </div>
-    </div>
-  </div>
+      <n-menu
+        class="header-menu"
+        mode="horizontal"
+        :options="options"
+      />
+      <div class="nav-end">
+        <n-button
+          @click="handleThemeClick"
+          strong
+          secondary
+          style="margin-right: 30px"
+          size="small"
+        >
+          {{ themeBtnText.text }}
+        </n-button>
+        <img style="height: 32px; width: 32px; border-radius: 16px" :src="avatarurl" />
+      </div>
+    </n-layout-header>
+  </n-layout>
 </template>
 
+<script setup>
+import { reactive } from "vue";
+import { useDarkTheme } from "@/store/themeData";
+
+const darkThemeStore = useDarkTheme();
+
+let themeBtnText = reactive({ text: "浅色" });
+
+const header_left_list = ["影视", "影评", "剪辑"];
+const logourl = require("../assets/naivelog.svg");
+const avatarurl = require("../assets/axu.png");
+const handleThemeClick = () => {
+  if (themeBtnText.text === "浅色") {
+    themeBtnText.text = "深色";
+    darkThemeStore.unsetDarkTheme();
+  } else {
+    themeBtnText.text = "浅色";
+    darkThemeStore.setDarkTheme();
+  }
+};
+window.addEventListener(
+  "scroll",
+  () => {
+    if (scrollY > 63) {
+      document.body.style.setProperty("--headerTopScroll", "-63px");
+    } else {
+      document.body.style.setProperty("--headerTopScroll", "0px");
+    }
+  },
+  true
+);
+
+const options = [
+  {
+    label: "首页",
+    key: "首页",
+  },
+  {
+    label: "视频",
+    key: "视频",
+  },
+  {
+    label: "剪辑",
+    key: "剪辑",
+  },
+  {
+    label: "影评",
+    key: "影评",
+  },
+];
+</script>
+
 <style>
-.header {
-  justify-content: center;
-  align-items: center;
-  height: var(--headerTop);
+.nav {
+  padding: 0 var(--side-padding);
+  grid-template-columns: calc(272px - var(--side-padding)) 1fr auto;
   background-color: var(--lightBule);
-  top: var(--headerTopScroll);
-  left: 0;
-  width: 100%;
-  display: flex;
-  position: fixed;
+  height: var(--headerTop);
+  display: grid;
   z-index: 30;
+  position: fixed;
+  top: var(--headerTopScroll);
   transition: top 0.2s linear;
 }
-.header ul {
-  position: relative;
-}
-.wrap {
-  width: 1000px;
-  height: 0 auto;
-}
-.logo img {
-  height: 50px;
-  width: 120px;
-  vertical-align: middle;
+
+.ui-logo {
+  cursor: pointer;
+  display: flex;
+  font-size: 27px;
+  color: white;
 }
 
-.header-right {
-  float: right;
+.nav,
+.ui-logo {
+  align-items: center;
 }
 
-.header-right > img {
-  height: 40px;
-  width: 40px;
-  border-radius: 40px;
-  margin-top: 25px;
-}
-
-.header-left {
-  float: left;
-}
-.header li {
-  float: left;
+.ui-logo > img {
+  height: 32px;
   margin-right: 30px;
+  width: 32px;
 }
 
-.header a {
-  line-height: 60px;
-  color: rgb(210, 221, 209);
-  font-size: 21px;
-  font-weight: 556px;
+.nav-end {
+  cursor: pointer;
+  display: flex;
+  font-size: 27px;
+  color: white;
 }
 
-.header a:hover {
-  color: var(--tmdbLightGreen);
+.nav,
+.nav-end {
+  align-items: center;
+}
+
+.header-menu {
+  display: flex;
+  color: #8a2be2;
+  font-size: 15px;
+  align-items: center;
+  width: 400px;
 }
 </style>
-
-<script>
-export default {
-  mounted() {
-    window.addEventListener(
-      "scroll",
-      () => {
-        if (scrollY > 64) {
-          document.body.style.setProperty("--headerTopScroll", "-64px");
-        } else {
-          document.body.style.setProperty("--headerTopScroll", "0px");
-        }
-      },
-      true
-    );
-  },
-  setup() {
-    return {
-      header_left_list: ["影视", "影评", "剪辑"],
-      logourl: require("../assets/logo.svg"),
-      avatarurl: require("../assets/axu.png"),
-    };
-  },
-};
-</script>

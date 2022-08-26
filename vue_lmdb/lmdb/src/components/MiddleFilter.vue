@@ -5,14 +5,20 @@
       <n-tab name="2"> 同步 </n-tab>
       <n-tab name="3"> 隐藏 </n-tab>
     </n-tabs>
-    <n-pagination
-      v-model:page="page"
-      v-model:page-size="pageSize"
-      :page-count="pageCount"
-      @update:page="handleUpdatePage"
-      show-size-picker
-      :page-sizes="pageSizeArr"
-    />
+    <div class="pagenum">
+      <n-pagination
+        v-model:page="page"
+        v-model:page-size="pageSize"
+        :page-count="pageCount"
+        @update:page="handleUpdatePage"
+        show-size-picker
+        :page-sizes="pageSizeArr"
+        style="margin-right: 40px"
+      />
+      <n-badge color="var(--tmdbLightGreen)" style="margin-right: 20px" :value="videodataNum" processing>
+        记录数
+      </n-badge>
+    </div>
   </n-space>
 
   <n-form class="videoTabs" v-show="showSelect">
@@ -64,18 +70,6 @@
 </template>
 
 <script setup>
-import {
-  NSpace,
-  NSelect,
-  NTabs,
-  NTab,
-  NPagination,
-  NForm,
-  NFormItem,
-  NInput,
-  NButton,
-  NPopconfirm,
-} from "naive-ui";
 import { ref, computed } from "vue";
 import { useVideoData } from "@/store/videoData";
 import { storeToRefs } from "pinia";
@@ -146,7 +140,7 @@ const pageWidth = ref(document.body.clientWidth);
 
 const page = ref(1);
 
-var pageSize = ref(Math.floor(pageWidth.value / 400) * 2);
+var pageSize = ref(Math.floor(pageWidth.value / 370) * 2);
 
 const handleUpdatePage = (page) => {
   emit("videoPageChange", page, pageSize.value);
@@ -163,6 +157,10 @@ const pageSizeArr = computed(() => {
 const pageCount = computed(() => {
   handleUpdatePage(page.value);
   return Math.ceil(videoData.value.length / pageSize.value);
+});
+
+const videodataNum = computed(() => {
+  return videoData.value.length;
 });
 
 window.onresize = () => {
@@ -185,5 +183,9 @@ const handleSbumitClick = () => {
 <style>
 .videoTabs {
   padding: 7px 17px 7px 17px;
+}
+.pagenum {
+  display: inline-flex;
+  align-items: center;
 }
 </style>
