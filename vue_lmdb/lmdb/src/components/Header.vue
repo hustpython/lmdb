@@ -8,6 +8,7 @@
       <n-menu
         class="header-menu"
         mode="horizontal"
+        default-value="首页"
         :options="options"
       />
       <div class="nav-end">
@@ -34,7 +35,6 @@ const darkThemeStore = useDarkTheme();
 
 let themeBtnText = reactive({ text: "浅色" });
 
-const header_left_list = ["影视", "影评", "剪辑"];
 const logourl = require("../assets/naivelog.svg");
 const avatarurl = require("../assets/axu.png");
 const handleThemeClick = () => {

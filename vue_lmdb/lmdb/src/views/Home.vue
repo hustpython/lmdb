@@ -1,11 +1,11 @@
 <template>
   <Header />
-
-  <MiddleSearch />
-
-  <n-notification-provider>
-    <MiddleList />
-  </n-notification-provider>
+  <n-layout>
+    <MiddleSearch />
+    <n-notification-provider>
+      <MiddleList />
+    </n-notification-provider>
+  </n-layout>
 </template>
 
 <script setup>

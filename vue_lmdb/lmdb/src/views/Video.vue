@@ -1,4 +1,5 @@
 <template>
+  <Header />
   <video
     id="localvideo"
     autoplay="true"
@@ -17,6 +18,7 @@
 import { useRoute } from "vue-router";
 import { reactive } from "vue";
 import { timeFilter } from "../api/timefilter";
+import Header from "@/components/Header.vue";
 const route = useRoute();
 const videoDurtion = reactive({
   timeStr: "",
