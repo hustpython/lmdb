@@ -1,37 +1,45 @@
 <template>
-  <n-layout>
-    <n-layout-header class="nav">
-      <div class="ui-logo">
-        <img :src="logourl" />
-        <n-gradient-text :size="24" type="success"> LMDB </n-gradient-text>
-      </div>
-      <n-menu
-        class="header-menu"
-        mode="horizontal"
-        default-value="首页"
-        :options="options"
-      />
-      <div class="nav-end">
-        <n-button
-          @click="handleThemeClick"
-          strong
-          secondary
-          style="margin-right: 30px"
-          size="small"
-        >
-          {{ themeBtnText.text }}
-        </n-button>
-        <img style="height: 32px; width: 32px; border-radius: 16px" :src="avatarurl" />
-      </div>
-    </n-layout-header>
-  </n-layout>
+  <n-layout-header
+    class="nav"
+    v-bind:class="{
+      darkThemeBck: themeData === true,
+      lightThemeBck: themeData === false,
+    }"
+  >
+    <div class="ui-logo">
+      <img :src="logourl" />
+      <n-gradient-text :size="24" type="success"> LMDB </n-gradient-text>
+    </div>
+    <n-menu
+      class="header-menu"
+      mode="horizontal"
+      default-value="首页"
+      :options="options"
+    />
+    <div class="nav-end">
+      <n-button
+        @click="handleThemeClick"
+        strong
+        secondary
+        style="margin-right: 30px"
+        size="small"
+      >
+        {{ themeBtnText.text }}
+      </n-button>
+      <img style="height: 32px; width: 32px; border-radius: 16px" :src="avatarurl" />
+    </div>
+  </n-layout-header>
 </template>
 
 <script setup>
 import { reactive } from "vue";
 import { useDarkTheme } from "@/store/themeData";
+import { storeToRefs } from "pinia";
+import { useNotification } from "naive-ui";
+const notification = useNotification();
 
 const darkThemeStore = useDarkTheme();
+var { themeData } = storeToRefs(darkThemeStore);
 
 let themeBtnText = reactive({ text: "浅色" });
 
@@ -41,9 +49,17 @@ const handleThemeClick = () => {
   if (themeBtnText.text === "浅色") {
     themeBtnText.text = "深色";
     darkThemeStore.unsetDarkTheme();
+    notification.success({
+      content: "主题调整为浅色",
+      duration: 1000,
+    });
   } else {
     themeBtnText.text = "浅色";
     darkThemeStore.setDarkTheme();
+    notification.success({
+      content: "主题调整为深色",
+      duration: 1000,
+    });
   }
 };
 window.addEventListener(
@@ -82,7 +98,6 @@ const options = [
 .nav {
   padding: 0 var(--side-padding);
   grid-template-columns: calc(272px - var(--side-padding)) 1fr auto;
-  background-color: var(--lightBule);
   height: var(--headerTop);
   display: grid;
   z-index: 30;

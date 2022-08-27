@@ -46,7 +46,7 @@
 </template>
 
 <script setup>
-const imgurl = require("../assets/backimg.jpg")
+const imgurl = require("../assets/backimg.jpg");
 </script>
 
 <style>
@@ -75,7 +75,7 @@ const imgurl = require("../assets/backimg.jpg")
 .search-input {
   color: rgb(255, 255, 255);
   font-size: 13px;
-  font-weight:bold;
+  font-weight: bold;
   cursor: pointer;
   width: 80px;
   margin-left: -80px;

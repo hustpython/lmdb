@@ -1,0 +1,7 @@
+.lightThemeBck {
+    background-color: var(--lightPink);
+}
+
+.darkThemeBck {
+    background-color: var(--lightBlue);
+}

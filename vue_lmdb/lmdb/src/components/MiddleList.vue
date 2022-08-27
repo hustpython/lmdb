@@ -1,6 +1,14 @@
 <template>
   <canvas id="localcanvas" style="display: none"></canvas>
-  <div v-cloak v-bind:class="{ cards: true, showing: hoverEffict.isShowing }">
+  <div
+    v-cloak
+    class="cards"
+    v-bind:class="{
+      showing: hoverEffict.isShowing,
+      darkThemeBck: themeData === true,
+      lightThemeBck: themeData === false,
+    }"
+  >
     <MiddleFilter @videoPageChange="handlePageChange" />
     <div
       v-bind:class="{ card: true, show: index === hoverEffict.index }"
@@ -38,7 +46,11 @@
       </div>
 
       <div class="card-title">
-        <a :href="'/video?id=http://localhost:9090/' + item.VideoUrl" target="_blank" class="toggle-info">
+        <a
+          :href="'/video?id=http://localhost:9090/' + item.VideoUrl"
+          target="_blank"
+          class="toggle-info"
+        >
           <img src="../assets/openmovie.svg" />
         </a>
         <small>{{ item.Title }}</small>
@@ -60,6 +72,11 @@ import { storeToRefs } from "pinia";
 import { useNotification } from "naive-ui";
 import MiddleFilter from "@/components/MiddleFilter.vue";
 import MiddleDesc from "@/components/MiddleDesc.vue";
+
+import { useDarkTheme } from "@/store/themeData";
+
+const darkThemeStore = useDarkTheme();
+var { themeData } = storeToRefs(darkThemeStore);
 
 const defaultCover = require("../assets/classic.jpg");
 const videoDataStore = useVideoData();
@@ -179,7 +196,6 @@ div.cards {
   position: absolute;
   top: 360px;
   width: 0 auto;
-  background-color: var(--lightBule);
   right: 10px;
   left: 10px;
 }
