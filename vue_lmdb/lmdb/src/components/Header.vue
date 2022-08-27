@@ -105,7 +105,8 @@ const options = [
   top: var(--headerTopScroll);
   transition: top 0.2s linear;
 }
-
+/* 以后可以考虑使用这种变量来改变主题 */
+/* background-color: v-bind(color); */
 .ui-logo {
   cursor: pointer;
   display: flex;
