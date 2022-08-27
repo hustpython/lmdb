@@ -5,3 +5,8 @@
 .darkThemeBck {
     background-color: var(--lightBlue);
 }
+
+.videoCardSize {
+    height: calc(var(--videoCardWidth)*0.56);
+    width: var(--videoCardWidth);
+}

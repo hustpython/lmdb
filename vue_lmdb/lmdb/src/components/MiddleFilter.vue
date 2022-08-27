@@ -15,7 +15,12 @@
         :page-sizes="pageSizeArr"
         style="margin-right: 40px"
       />
-      <n-badge color="var(--tmdbLightGreen)" style="margin-right: 20px" :value="videodataNum" processing>
+      <n-badge
+        color="var(--tmdbLightGreen)"
+        style="margin-right: 20px"
+        :value="videodataNum"
+        processing
+      >
         记录数
       </n-badge>
     </div>
@@ -75,6 +80,7 @@ import { useVideoData } from "@/store/videoData";
 import { storeToRefs } from "pinia";
 import { SyncVideo } from "@/api/videolist";
 import { useNotification } from "naive-ui";
+
 const notification = useNotification();
 
 const syncVideoSize = [
@@ -140,7 +146,8 @@ const pageWidth = ref(document.body.clientWidth);
 
 const page = ref(1);
 
-var pageSize = ref(Math.floor(pageWidth.value / 370) * 2);
+// index.css 中修改时，需要同步修改
+var pageSize = ref(Math.floor(pageWidth.value / 270) * 2);
 
 const handleUpdatePage = (page) => {
   emit("videoPageChange", page, pageSize.value);

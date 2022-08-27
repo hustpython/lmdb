@@ -11,19 +11,27 @@
   >
     <MiddleFilter @videoPageChange="handlePageChange" />
     <div
-      v-bind:class="{ card: true, show: index === hoverEffict.index }"
+      class="card"
+      v-bind:class="{
+        show: index === hoverEffict.index,
+      }"
       @mouseenter="handleMouseEnter(index)"
       @mouseleave="handleMouseLeave(index)"
       v-for="(item, index) in videoData.slice(begin, end)"
     >
-      <div class="card-image">
-        <img :src="item.Cover === undefined ? defaultCover : item.Cover" alt="" />
+      <div class="card-image videoCardSize">
+        <img
+          class="videoCardSize"
+          :src="item.Cover === undefined ? defaultCover : item.Cover"
+          alt=""
+        />
         <span class="card-duration">{{ item.Duration }}</span>
       </div>
 
-      <div class="video-mask" v-show="index === hoverEffict.videoIndex">
+      <div class="video-mask videoCardSize" v-show="index === hoverEffict.videoIndex">
         <video
           :id="'video_' + index"
+          class="videoCardSize"
           muted
           preload
           autoplay
@@ -194,7 +202,7 @@ div.cards {
   margin: 10px;
   height: 0 auto;
   position: absolute;
-  top: 360px;
+  top: var(--videoCardTop);
   width: 0 auto;
   right: 10px;
   left: 10px;
@@ -202,10 +210,10 @@ div.cards {
 div.card {
   display: inline-block;
   margin: inherit;
-  max-width: 360px;
   position: relative;
   text-align: left;
   transition: all 0.3s 0s ease-in;
+  max-width: var(--videoCardWidth);
   z-index: 1;
   border-radius: 10px 10px 0 0;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
@@ -214,15 +222,11 @@ div.card {
 /* 封面相关 */
 
 .card-image {
-  height: 200px;
-  width: 360px;
   cursor: pointer;
   border-radius: inherit;
 }
 
 .card-image img {
-  height: 200px;
-  width: 360px;
   border-radius: inherit;
 }
 
@@ -243,8 +247,6 @@ div.card {
 
 /* 视频相关 */
 .video-mask {
-  height: 200px;
-  width: 360px;
   top: 0;
   position: absolute;
   background-color: #000;
@@ -254,11 +256,6 @@ div.card {
 .video-mask video {
   margin: 0;
   border-radius: inherit;
-}
-
-video {
-  height: 200px;
-  width: 360px;
 }
 
 .set-cover {
