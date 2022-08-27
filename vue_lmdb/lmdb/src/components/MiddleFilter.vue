@@ -147,7 +147,8 @@ const pageWidth = ref(document.body.clientWidth);
 const page = ref(1);
 
 // index.css 中修改时，需要同步修改
-var pageSize = ref(Math.floor(pageWidth.value / 270) * 2);
+const videoCardWidth = 270;
+var pageSize = ref(Math.floor(pageWidth.value / videoCardWidth) * 2);
 
 const handleUpdatePage = (page) => {
   emit("videoPageChange", page, pageSize.value);
@@ -155,9 +156,9 @@ const handleUpdatePage = (page) => {
 
 const pageSizeArr = computed(() => {
   return [
-    Math.floor(pageWidth.value / 400) * 1,
-    Math.floor(pageWidth.value / 400) * 2,
-    Math.floor(pageWidth.value / 400) * 3,
+    Math.floor(pageWidth.value / videoCardWidth) * 1,
+    Math.floor(pageWidth.value / videoCardWidth) * 2,
+    Math.floor(pageWidth.value / videoCardWidth) * 3,
   ];
 });
 
