@@ -20,12 +20,11 @@
       v-for="(item, index) in videoData.slice(begin, end)"
     >
       <div class="card-image videoCardSize">
-        <a :href="'/video?id=http://localhost:9090/' + item.VideoUrl" target="_blank">
-          <img
-            class="videoCardSize"
-            :src="item.Cover === undefined ? defaultCover : item.Cover"
-          />
-        </a>
+        <img
+          @click="setTitleHref(index)"
+          class="videoCardSize"
+          :src="item.Cover === undefined ? defaultCover : item.Cover"
+        />
 
         <span class="card-duration">{{ item.Duration }}</span>
       </div>
@@ -55,15 +54,12 @@
         </div>
       </div>
 
-      <div class="card-title">
-        <a
-          :href="'/video?id=http://localhost:9090/' + item.VideoUrl"
-          target="_blank"
-          class="toggle-info"
-        >
-          <img src="../assets/openmovie.svg" />
-        </a>
-        <small>{{ item.Title }}</small>
+      <div @click="setTitleHref(index)" class="card-title">
+        <div>
+          <n-ellipsis style="max-width: calc(var(--videoCardWidth) * 0.9)">
+            {{ item.Title }}
+          </n-ellipsis>
+        </div>
       </div>
 
       <div class="card-flap flap1">
@@ -80,11 +76,14 @@ import { timeFilter } from "@/api/timefilter";
 import { useVideoData } from "@/store/videoData";
 import { storeToRefs } from "pinia";
 import { useNotification } from "naive-ui";
+import { useRouter } from "vue-router";
+
 import MiddleFilter from "@/components/MiddleFilter.vue";
 import MiddleDesc from "@/components/MiddleDesc.vue";
 
 import { useDarkTheme } from "@/store/themeData";
 
+const router = useRouter();
 const darkThemeStore = useDarkTheme();
 var { themeData } = storeToRefs(darkThemeStore);
 
@@ -196,6 +195,11 @@ const handleProgress = (e) => {
   }
   hoverEffict.progress = (e.offsetX / e.target.clientWidth) * 100;
   e.target.currentTime = (e.target.duration * hoverEffict.progress) / 100;
+};
+
+const setTitleHref = (id) => {
+  let routeData = router.resolve({ path: "video", query: { id: id } });
+  window.open(routeData.href, "_blank");
 };
 </script>
 
@@ -341,51 +345,11 @@ div.card {
 }
 
 div.card div.card-title {
-  background: #ffffff;
   padding: 6px 15px 10px;
   position: relative;
   z-index: 0;
 }
-div.card div.card-title a.toggle-info {
-  border-radius: 32px;
-  height: 32px;
-  padding: 0;
-  position: absolute;
-  right: 15px;
-  top: 4px;
-  width: 32px;
-}
-div.card div.card-title a.toggle-info span {
-  background: #ffffff;
-  display: block;
-  height: 2px;
-  position: absolute;
-  top: 16px;
-  transition: all 0.15s 0s ease-out;
-  width: 12px;
-}
-div.card div.card-title a.toggle-info span.left {
-  right: 14px;
-  transform: rotate(45deg);
-}
-div.card div.card-title a.toggle-info span.right {
-  left: 14px;
-  transform: rotate(-45deg);
-}
 
-div.card div.card-title small {
-  display: block;
-  font-size: 15px;
-  font-weight: 400;
-  letter-spacing: -0.025em;
-  color: cadetblue;
-}
-
-div.card div.card-actions {
-  box-shadow: 0 2px 0px 0 rgba(0, 0, 0, 0.075);
-  padding: 10px 15px 20px;
-  text-align: center;
-}
 div.card div.card-flap {
   background: #d9d9d9;
   position: absolute;
@@ -397,10 +361,7 @@ div.card div.flap1 {
   transition: all 0.3s 0.3s ease-out;
   z-index: -1;
 }
-div.card div.flap2 {
-  transition: all 0.3s 0s ease-out;
-  z-index: -2;
-}
+
 div.cards.showing div.card {
   cursor: pointer;
   opacity: 0.6;
@@ -426,9 +387,6 @@ div.card.show div.card-flap {
 }
 div.card.show div.flap1 {
   transition: all 0.3s 0s ease-out;
-}
-div.card.show div.flap2 {
-  transition: all 0.3s 0.2s ease-out;
 }
 
 [v-cloak] {

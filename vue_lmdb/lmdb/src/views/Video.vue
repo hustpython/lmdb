@@ -8,7 +8,7 @@
     }"
   >
     <n-spance class="videospace">
-      <div style="font-size: 18px">还没准备起标题</div>
+      <div style="font-size: 18px">{{ title }}</div>
       <video
         id="localvideo"
         autoplay="true"
@@ -35,6 +35,11 @@ import { storeToRefs } from "pinia";
 import { darkTheme } from "naive-ui";
 import { useDarkTheme } from "@/store/themeData";
 
+import { useVideoData } from "@/store/videoData";
+
+const videoDataStore = useVideoData();
+var { videoData } = storeToRefs(videoDataStore);
+
 const darkThemeStore = useDarkTheme();
 var { themeData } = storeToRefs(darkThemeStore);
 
@@ -42,7 +47,8 @@ const route = useRoute();
 const videoDurtion = reactive({
   timeStr: "",
 });
-const videourl = route.query.id;
+const title = videoData.value[route.query.id].Title;
+const videourl = "http://localhost:9090/" + videoData.value[route.query.id].VideoUrl;
 const handleTimeUpdate = (ev) => {};
 
 const handleLoadedata = (ev) => {
