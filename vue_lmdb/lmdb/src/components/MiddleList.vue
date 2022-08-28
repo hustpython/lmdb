@@ -198,7 +198,7 @@ const handleProgress = (e) => {
 };
 
 const setTitleHref = (id) => {
-  let routeData = router.resolve({ path: "video", query: { id: id } });
+  let routeData = router.resolve({ path: "video", query: { id: absoluteIndex(id) } });
   window.open(routeData.href, "_blank");
 };
 </script>
