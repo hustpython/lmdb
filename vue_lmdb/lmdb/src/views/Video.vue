@@ -79,7 +79,9 @@ const updateCanvas = () => {
 <style>
 .videopage {
   margin-top: var(--headerTop);
+  height: 600px;
 }
+
 .videospace {
   float: left;
   margin-top: 30px;
