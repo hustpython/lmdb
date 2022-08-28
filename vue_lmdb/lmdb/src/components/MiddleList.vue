@@ -24,7 +24,6 @@
           <img
             class="videoCardSize"
             :src="item.Cover === undefined ? defaultCover : item.Cover"
-            alt=""
           />
         </a>
 
@@ -89,7 +88,7 @@ import { useDarkTheme } from "@/store/themeData";
 const darkThemeStore = useDarkTheme();
 var { themeData } = storeToRefs(darkThemeStore);
 
-const defaultCover = require("../assets/classic.jpg");
+const defaultCover = require("../assets/videocardbck.png");
 const videoDataStore = useVideoData();
 const notification = useNotification();
 var begin = ref(0);

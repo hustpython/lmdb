@@ -1,13 +1,24 @@
 <template>
   <Header />
-  <video
-    id="localvideo"
-    autoplay="true"
-    :src="videourl"
-    controls="controls"
-    @timeupdate="handleTimeUpdate"
-    @loadeddata="handleLoadedata"
-  ></video>
+  <n-layout
+    class="videopage"
+    v-bind:class="{
+      darkThemeBck: themeData === true,
+      lightThemeBck: themeData === false,
+    }"
+  >
+    <n-spance class="videospace">
+      <div style="font-size: 18px">还没准备起标题</div>
+      <video
+        id="localvideo"
+        autoplay="true"
+        :src="videourl"
+        controls="controls"
+        @timeupdate="handleTimeUpdate"
+        @loadeddata="handleLoadedata"
+      ></video>
+    </n-spance>
+  </n-layout>
   <!-- <canvas id="localcanvas"></canvas>
   <button id="snapbtn" @click="handleClick">
     截取总时长{{ videoDurtion.timeStr }}
@@ -19,6 +30,14 @@ import { useRoute } from "vue-router";
 import { reactive } from "vue";
 import { timeFilter } from "../api/timefilter";
 import Header from "@/components/Header.vue";
+
+import { storeToRefs } from "pinia";
+import { darkTheme } from "naive-ui";
+import { useDarkTheme } from "@/store/themeData";
+
+const darkThemeStore = useDarkTheme();
+var { themeData } = storeToRefs(darkThemeStore);
+
 const route = useRoute();
 const videoDurtion = reactive({
   timeStr: "",
@@ -52,15 +71,22 @@ const updateCanvas = () => {
 };
 </script>
 <style>
+.videopage {
+  margin-top: var(--headerTop);
+}
+.videospace {
+  float: left;
+  margin-top: 30px;
+  margin-left: 60px;
+}
 video {
   position: relative;
-  height: 500px;
-  max-height: 100%;
-  max-width: 100%;
-  width: 900px;
+  height: 376px;
+  width: 668x;
   display: block;
-  margin: auto;
-  margin-top: 60px;
+  margin: 0;
+  padding: 0;
+  margin-top: 15px;
   border: 0;
 }
 </style>

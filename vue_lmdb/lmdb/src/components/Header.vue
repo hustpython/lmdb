@@ -1,6 +1,7 @@
 <template>
   <n-layout-header
     class="nav"
+    bordered
     v-bind:class="{
       darkThemeBck: themeData === true,
       lightThemeBck: themeData === false,
@@ -14,6 +15,7 @@
       class="header-menu"
       mode="horizontal"
       default-value="首页"
+      :render-label="renderMenuLabel"
       :options="options"
     />
     <div class="nav-end">
@@ -32,7 +34,7 @@
 </template>
 
 <script setup>
-import { reactive } from "vue";
+import { h, reactive } from "vue";
 import { useDarkTheme } from "@/store/themeData";
 import { storeToRefs } from "pinia";
 import { useNotification } from "naive-ui";
@@ -78,6 +80,7 @@ const options = [
   {
     label: "首页",
     key: "首页",
+    href: "/",
   },
   {
     label: "视频",
@@ -92,6 +95,13 @@ const options = [
     key: "影评",
   },
 ];
+
+const renderMenuLabel = (option) => {
+  if ("href" in option) {
+    return h("a", { href: option.href }, option.label);
+  }
+  return option.label;
+};
 </script>
 
 <style>
