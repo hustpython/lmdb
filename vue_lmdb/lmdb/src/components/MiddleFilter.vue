@@ -129,6 +129,10 @@ const options = [
     label: "avi",
     value: "avi",
   },
+  {
+    label: "webm",
+    value: "webm",
+  },
 ];
 
 const showSelect = computed(() => {

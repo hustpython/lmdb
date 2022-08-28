@@ -238,10 +238,7 @@ div.card {
   border-radius: inherit;
 }
 
-.card-image a {
-  border-radius: inherit;
-}
-.card-image a img {
+.card-image img {
   border-radius: inherit;
 }
 

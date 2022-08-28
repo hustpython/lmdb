@@ -11,41 +11,62 @@
       </div>
 
       <div class="search" style="width: 100%; margin-top: 30px">
-        <label>
-          <input
-            dir="auto"
-            name="query"
-            type="text"
-            tabindex="1"
-            autocorrect="off"
-            autofill="off"
-            autocomplete="off"
-            spellcheck="false"
-            placeholder="搜索电影、剧集、影评..."
-            value=""
-            style="
-              color: transparent;
-              width: 80%;
-              height: 30px;
-              line-height: 30px;
-              font-size: 1em;
-              color: rgba(0, 0, 0, 0.5);
-              border: 0;
-              outline: none;
-              border-radius: 30px;
-              padding: 10px 20px;
-              background-color: white;
-            "
-          />
-          <input class="search-input" type="submit" value="搜 索" />
-        </label>
+        <n-select
+          v-bind:class="{
+            darkThemeBck: themeData === true,
+            lightThemeBck: themeData === false,
+          }"
+          style="
+            width: 80%;
+            height: 32px;
+            line-height: 30px;
+            font-size: 1em;
+            border: 0;
+            outline: none;
+            border-radius: 30px;
+            padding: 10px 20px;
+          "
+          filterable
+          :options="options"
+          :on-update:value="handleSeleteed"
+          placeholder="搜索电影、剧集、影评..."
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { storeToRefs } from "pinia";
+import { useVideoData } from "@/store/videoData";
+import { useRouter } from "vue-router";
+import { computed } from "vue";
+import { useDarkTheme } from "@/store/themeData";
+
 const imgurl = require("../assets/backimg.jpg");
+
+const videoDataStore = useVideoData();
+var { videoData } = storeToRefs(videoDataStore);
+
+const darkThemeStore = useDarkTheme();
+var { themeData } = storeToRefs(darkThemeStore);
+
+const options = computed(() => {
+  let tmpOptions = [];
+  for (var i = 0; i < videoData.value.length; i++) {
+    tmpOptions.push({
+      label: videoData.value[i].Title,
+      value: i,
+    });
+  }
+  return tmpOptions;
+});
+
+const router = useRouter();
+const handleSeleteed = (value) => {
+  let routeData = router.resolve({ path: "video", query: { id: value } });
+  window.open(routeData.href, "_blank");
+};
 </script>
 
 <style>
@@ -65,22 +86,5 @@ const imgurl = require("../assets/backimg.jpg");
   margin-left: 100px;
   margin-top: 20px;
   position: absolute;
-}
-
-.search-input {
-  color: rgb(255, 255, 255);
-  font-size: 13px;
-  font-weight: bold;
-  cursor: pointer;
-  width: 80px;
-  margin-left: -80px;
-  height: 50px;
-  border: none;
-  border-radius: 0 30px 30px 0;
-  background-color: var(--tmdbLightGreen);
-}
-
-.search-input:hover {
-  color: rgb(0, 0, 0);
 }
 </style>
