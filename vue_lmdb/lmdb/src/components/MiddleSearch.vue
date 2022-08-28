@@ -1,6 +1,5 @@
 <template>
   <div class="imgbkg">
-    <img :src="imgurl" alt="搜索背景图片" />
     <div class="content_wrap">
       <div class="title">
         <h2 style="color: white; font-size: 2.2em; font-weight: 600; line-height: 2">
@@ -52,26 +51,22 @@ const imgurl = require("../assets/backimg.jpg");
 <style>
 .imgbkg {
   width: 100%;
-  display: flex;
-  max-height: 300px auto;
-  position: relative;
   margin-top: var(--headerTop);
-}
-.imgbkg img {
-  text-align: center;
-  align-items: center;
-  width: 100%;
+  overflow: hidden;
+  height: var(--homeBckHeight);
+  background-image: v-bind("'url(' + imgurl + ')'");
+  background-size: 100%;
 }
 
 .content_wrap {
   width: 680px;
   text-align: left;
-  position: absolute;
   align-items: center;
-  height: 0 auto;
   margin-left: 100px;
   margin-top: 20px;
+  position: absolute;
 }
+
 .search-input {
   color: rgb(255, 255, 255);
   font-size: 13px;

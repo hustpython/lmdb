@@ -200,9 +200,7 @@ const handleProgress = (e) => {
 <style>
 div.cards {
   margin: 10px;
-  height: 0 auto;
-  position: absolute;
-  top: var(--videoCardTop);
+  height: 100%;
   width: 0 auto;
   right: 10px;
   left: 10px;
