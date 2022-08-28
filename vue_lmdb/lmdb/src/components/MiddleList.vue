@@ -20,11 +20,14 @@
       v-for="(item, index) in videoData.slice(begin, end)"
     >
       <div class="card-image videoCardSize">
-        <img
-          class="videoCardSize"
-          :src="item.Cover === undefined ? defaultCover : item.Cover"
-          alt=""
-        />
+        <a :href="'/video?id=http://localhost:9090/' + item.VideoUrl" target="_blank">
+          <img
+            class="videoCardSize"
+            :src="item.Cover === undefined ? defaultCover : item.Cover"
+            alt=""
+          />
+        </a>
+
         <span class="card-duration">{{ item.Duration }}</span>
       </div>
 
@@ -73,7 +76,7 @@
 
 <script setup>
 import { GetVideList } from "@/api/videolist";
-import { reactive, ref, onBeforeMount, computed } from "vue";
+import { reactive, ref, onBeforeMount } from "vue";
 import { timeFilter } from "@/api/timefilter";
 import { useVideoData } from "@/store/videoData";
 import { storeToRefs } from "pinia";
@@ -199,15 +202,23 @@ const handleProgress = (e) => {
 
 <style>
 div.cards {
-  margin: 10px;
+  margin: 15px;
   height: 100%;
   width: 0 auto;
   right: 10px;
   left: 10px;
 }
+
+div.cards::after {
+  content: "";
+  width: 100%;
+  height: 150px;
+  display: block;
+}
+
 div.card {
   display: inline-block;
-  margin: inherit;
+  margin: 10px;
   position: relative;
   text-align: left;
   transition: all 0.3s 0s ease-in;
@@ -224,7 +235,10 @@ div.card {
   border-radius: inherit;
 }
 
-.card-image img {
+.card-image a {
+  border-radius: inherit;
+}
+.card-image a img {
   border-radius: inherit;
 }
 
