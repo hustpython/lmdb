@@ -45,6 +45,10 @@ var { themeData } = storeToRefs(darkThemeStore);
 
 let themeBtnText = reactive({ text: "深色" });
 
+if (themeData.value == true) {
+  themeBtnText.text = "浅色";
+}
+
 const logourl = require("../assets/naivelog.svg");
 const avatarurl = require("../assets/axu.png");
 const handleThemeClick = () => {
