@@ -43,7 +43,7 @@ const notification = useNotification();
 const darkThemeStore = useDarkTheme();
 var { themeData } = storeToRefs(darkThemeStore);
 
-let themeBtnText = reactive({ text: "浅色" });
+let themeBtnText = reactive({ text: "深色" });
 
 const logourl = require("../assets/naivelog.svg");
 const avatarurl = require("../assets/axu.png");
