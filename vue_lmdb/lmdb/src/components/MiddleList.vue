@@ -129,7 +129,7 @@ const handleChangeBck = (index) => {
     });
     setTimeout(function () {
       videoData.value[index].TmpVideoUrl =
-        "http://localhost:9090/" + videoData.value[index].VideoUrl;
+        config.SERVER_API + videoData.value[index].VideoUrl;
       hoverEffict.progress = 0;
     }, 1);
   }
@@ -166,7 +166,7 @@ const handleMouseEnter = (index) => {
     hoverEffict.videoIndex = index;
     index = absoluteIndex(index);
     videoData.value[index].TmpVideoUrl =
-      "http://localhost:9090/" + videoData.value[index].VideoUrl;
+      config.SERVER_API + videoData.value[index].VideoUrl;
   }, 1500);
 };
 

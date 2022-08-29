@@ -48,7 +48,7 @@ const videoDurtion = reactive({
   timeStr: "",
 });
 const title = videoData.value[route.query.id].Title;
-const videourl = "http://localhost:9090/" + videoData.value[route.query.id].VideoUrl;
+const videourl = config.SERVER_API + videoData.value[route.query.id].VideoUrl;
 const handleTimeUpdate = (ev) => {};
 
 const handleLoadedata = (ev) => {
