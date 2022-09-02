@@ -8,8 +8,8 @@
 package routers
 
 import (
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/plugins/cors"
+	beego "github.com/beego/beego/v2/server/web"
+	"github.com/beego/beego/v2/server/web/filter/cors"
 	"lmdbapi/controllers"
 	"net/http"
 )
@@ -22,7 +22,7 @@ func init() {
 		AllowAllOrigins: true,
 		//可选参数"GET", "POST", "PUT", "DELETE", "OPTIONS" (*为所有)
 		//其中Options跨域复杂请求预检
-		AllowMethods: []string{"*"},
+		AllowMethods: []string{"POST", "PUT", "GET"},
 		//指的是允许的Header的种类
 		AllowHeaders: []string{"*"},
 		//公开的HTTP标头列表
@@ -32,14 +32,9 @@ func init() {
 	}))
 	ns := beego.NewNamespace("/v1",
 		beego.NSNamespace("/movie",
-			beego.NSRouter("", &controllers.MovieController{}, "GET:ShowMovies"),
-			beego.NSRouter("", &controllers.MovieController{}, "POST:AddMovie"),
-			beego.NSRouter("", &controllers.MovieController{}, "DELETE:DelMovie"),
+			beego.NSRouter("", &controllers.MovieController{}, "POST:RefreshMovies"),
 			beego.NSRouter("", &controllers.MovieController{}, "PUT:UpdateMovie"),
-		),
-		beego.NSNamespace("/filter",
-			beego.NSRouter("", &controllers.FilterController{}, "GET:GetFilter"),
-			beego.NSRouter("", &controllers.FilterController{}, "POST:PostFilter"),
+			beego.NSRouter("", &controllers.MovieController{}, "GET:ShowMovies"),
 		),
 	)
 	beego.AddNamespace(ns)

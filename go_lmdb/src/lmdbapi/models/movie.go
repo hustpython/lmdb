@@ -1,74 +1,57 @@
 package models
 
 import (
-	"errors"
-	"fmt"
-	"lmdbapi/util"
-	"strconv"
+	"github.com/beego/beego/v2/client/orm"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type Movie struct {
-	VideoUrl string
-	Title    string
-	MoreInfo moreInfo
+	MId       string `orm:"pk"`
+	LastWatch int64
+	Duration  int64
+	VideoUrl  string
+	Title     string
+	Desc      string
+	Actors    string
+	Nation    string
+	Cover     string
 }
 
-type moreInfo struct {
-	Desc     string
-	Actors   string
-	National string
-	Labels   []string
+type Filter struct {
+	MinSize  int
+	Include  string
+	MovieExt []string
 }
 
-var (
-	MovieMap   map[string]*Movie
-	FilterData Filter
-)
+var ormOpr orm.Ormer
 
 func init() {
-	MovieMap = make(map[string]*Movie)
-	util.InitViper()
-	util.MovieFilterViper.UnmarshalKey(movieFilterJsonPrefix, &FilterData)
-	util.MovieDataViper.UnmarshalKey(movieConfigJsonPrefix, &MovieMap)
+	orm.RegisterModel(new(Movie))
+	orm.RegisterDataBase("default", "sqlite3", "./lmdb.db")
+	orm.RunSyncdb("default", false, true)
+	ormOpr = orm.NewOrm()
 }
 
-func GetMovieByID(uid string) (*Movie, error) {
-	uu, ok := MovieMap[uid]
-	if ok {
-		return uu, nil
-	} else {
-		return &Movie{}, fmt.Errorf("not found movie %s", uid)
-	}
+func QueryAllMovieData() ([]*Movie, error) {
+	var movies []*Movie
+	_, err := ormOpr.QueryTable("movie").All(&movies)
+	return movies, err
 }
 
-func GetAllMovies() []*Movie {
-	// TODO 根据条件返回
-	var res []*Movie
-	for i := range MovieMap {
-		res = append(res, MovieMap[i])
-	}
-	return res
-}
-
-func AddMovie(m Movie) string {
-	id := strconv.Itoa(len(MovieMap))
-	MovieMap[id] = &m
-	updateMovieConfig()
-	return id
-}
-
-func DelMovie(uid string) {
-	delete(MovieMap, uid)
-	updateMovieConfig()
-}
-
-func UpdateMovie(uid string, uu *Movie) (*Movie, error) {
-	if u, ok := MovieMap[uid]; ok {
-		if uu.VideoUrl != "" {
-			u.VideoUrl = uu.VideoUrl
+func InsertMovieData(movieArray []*Movie) ([]*Movie, error) {
+	qs := ormOpr.QueryTable(new(Movie))
+	for _, m := range movieArray {
+		if !qs.Filter("MId", m.MId).Exist() {
+			if _, e := ormOpr.Insert(m); e != nil {
+				return nil, e
+			}
 		}
-		updateMovieConfig()
-		return u, nil
 	}
-	return nil, errors.New("movie Not exist")
+	return movieArray, nil
+}
+
+func UpdateMovieCover(uid, cover string) error {
+	temMovieDb := &Movie{MId: uid, Cover: cover}
+	_, err := ormOpr.Update(temMovieDb, "cover")
+	return err
 }

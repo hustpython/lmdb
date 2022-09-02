@@ -2,66 +2,139 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
-	"net/http"
+	"github.com/jan-bar/es"
+	"path/filepath"
+	"strconv"
+	"strings"
 
 	"lmdbapi/models"
+)
+
+const (
+	maxMovieNum      = 1000
+	minMovieSizeBase = 1000000 // M
 )
 
 type MovieController struct {
 	ErrorController
 }
 
-// GET /v1/movie?id=movie_12121
-func (m *MovieController) ShowMovies() {
-	uid := m.GetString("id")
-	if len(uid) == 0 {
-		m.Data["json"] = models.GetAllMovies()
-	} else {
-		uu, err := models.GetMovieByID(uid)
-		if err == nil {
-			m.Data["json"] = uu
-		} else {
-			m.setNotFound(err.Error())
+// searchExt ".mp4|.mkv|.rmvb"
+func searchMovie(rule models.Filter) ([]*models.Movie, error) {
+	searchExt := ""
+	for i := range rule.MovieExt {
+		searchExt += "."
+		searchExt += rule.MovieExt[i]
+		if i != len(rule.MovieExt)-1 {
+			searchExt += "|"
 		}
 	}
+	err := es.EverythingSetSearch(searchExt)
+	if err != nil {
+		return nil, err
+	}
+	err = es.EverythingSetMax(maxMovieNum)
+	if err != nil {
+		return nil, err
+	}
+	// 设置好需要查询的内容,不然后续遍历时可能报错
+	err = es.EverythingSetRequestFlags(es.EverythingRequestFileName | es.EverythingRequestPath |
+		es.EverythingRequestDateCreated | es.EverythingRequestDateModified | es.EverythingRequestDateAccessed |
+		es.EverythingRequestSize)
+	if err != nil {
+		return nil, err
+	}
+	// 定好排序规则
+	err = es.EverythingSetSort(es.EverythingSortDateModifiedAscending)
+	if err != nil {
+		return nil, err
+	}
+	// 开始查询
+	es.EverythingQuery(true)
+	// 得到查询结果个数
+	return procQueryData(rule, searchExt)
+}
+
+func procQueryData(rule models.Filter, searchExt string) ([]*models.Movie, error) {
+	var movieArray []*models.Movie
+	num, err := es.EverythingGetNumResults()
+	if err != nil {
+		return nil, err
+	}
+	minMovieSize := rule.MinSize * minMovieSizeBase
+	for i := uint32(0); i < num; i++ {
+		s, err := es.EverythingGetResultSize(i)
+		if err != nil {
+			continue
+		}
+		if s < int64(minMovieSize) {
+			continue
+		}
+		p, err := es.EverythingGetResultFullPathName(i)
+		if err != nil {
+			continue
+		}
+		k, err := es.EverythingGetResultDateCreated(i)
+		if err != nil {
+			continue
+		}
+		base := filepath.Ext(p)
+		if strings.Contains(searchExt, base) &&
+			strings.Contains(p, rule.Include) {
+			p = strings.Replace(p, "\\", "/", -1)
+			p = strings.Replace(p, ":", "", -1)
+			tmpMovie := &models.Movie{
+				MId:      strconv.Itoa(k.Second()) + strconv.Itoa(int(s)),
+				Title:    strings.Trim(filepath.Base(p), base),
+				VideoUrl: p,
+			}
+			movieArray = append(movieArray, tmpMovie)
+		}
+	}
+	return models.InsertMovieData(movieArray)
+}
+
+// GET /v1/movie?id=movie_12121
+func (m *MovieController) ShowMovies() {
+	d, e := models.QueryAllMovieData()
+	if e != nil {
+		m.setInternalError(e.Error())
+	} else {
+		m.Data["json"] = d
+	}
 	m.ServeJSON()
 }
 
-// POST /v1/movie {
-//        "VideoUrl": "D://2.mp4",
-//    }
-func (m *MovieController) AddMovie() {
-	var movie models.Movie
-	json.Unmarshal(m.Ctx.Input.RequestBody, &movie)
-	uid := models.AddMovie(movie)
-	m.Data["json"] = map[string]string{"uid": uid}
-	m.ServeJSON()
-}
-
-// DELETE /v1/movie?id=movie_12121
-func (m *MovieController) DelMovie() {
-	models.DelMovie(m.GetString("id"))
-	m.Ctx.Output.SetStatus(http.StatusNoContent)
-}
-
-// PUT /v1/movie?id=movie_12121 {
-//        "VideoUrl": "D://4.mp4",
-//        "Cover": "D:/3.png"
-//    }
-func (m *MovieController) UpdateMovie() {
-	uid := m.GetString("id")
-	if len(uid) == 0 {
-		m.setParamInvalid("uid is invalid")
+// /v1/filter { POST
+//    "MinSize" :400,
+//	"MovieExt" :["mp4","rmvb","avi,"mkv"]
+//}
+func (m *MovieController) RefreshMovies() {
+	var searchRule models.Filter
+	json.Unmarshal(m.Ctx.Input.RequestBody, &searchRule)
+	if searchRule.MinSize < 0 || len(searchRule.MovieExt) == 0 {
+		m.setParamInvalid("minsize or movieext invalid")
 		return
 	}
-	var movie models.Movie
-	json.Unmarshal(m.Ctx.Input.RequestBody, &movie)
-	uu, err := models.UpdateMovie(uid, &movie)
+	d, err := searchMovie(searchRule)
 	if err != nil {
-		m.setNotFound(fmt.Sprintf("not found updateID %s", uid))
+		m.setInternalError(err.Error())
 	} else {
-		m.Data["json"] = uu
+		m.Data["json"] = d
 	}
 	m.ServeJSON()
+}
+
+type PutCover struct {
+	MId   string
+	Cover string
+}
+
+func (m *MovieController) UpdateMovie() {
+	var c = &PutCover{}
+	m.BindJSON(c)
+	err := models.UpdateMovieCover(c.MId, c.Cover)
+	if err != nil {
+		m.setInternalError(err.Error())
+	}
 }

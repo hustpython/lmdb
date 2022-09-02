@@ -5,8 +5,6 @@ import '@/config/config.js'
 const service = axios.create({
 	baseURL: config.SERVER_API + 'v1', // 所有的请求地址前缀部分
 	timeout: 600000, // 请求超时时间毫秒
-	headers: {
-	},
 })
 
 // 添加请求拦截器

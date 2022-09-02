@@ -13,7 +13,7 @@ export const useVideoData = defineStore({
         }
     },
     persist: {
-        enabled: true,
+        enabled: false,
         strategies: [{
             key: 'videoData',
             storage: localStorage,

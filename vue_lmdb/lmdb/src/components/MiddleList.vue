@@ -23,7 +23,7 @@
         <img
           @click="setTitleHref(index)"
           class="videoCardSize"
-          :src="item.Cover === undefined ? defaultCover : item.Cover"
+          :src="item.Cover.length === 0 ? defaultCover : setCoverData(item.Cover)"
         />
 
         <span class="card-duration">{{ item.Duration }}</span>
@@ -62,15 +62,15 @@
         </div>
       </div>
 
-      <div class="card-flap flap1">
+      <!-- <div class="card-flap flap1">
         <MiddleDesc :moreInfo="item.MoreInfo" />
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
 
 <script setup>
-import { GetVideList } from "@/api/videolist";
+import { GetVideList, UpdateCover } from "@/api/videolist";
 import { reactive, ref, onBeforeMount } from "vue";
 import { timeFilter } from "@/api/timefilter";
 import { useVideoData } from "@/store/videoData";
@@ -97,6 +97,13 @@ const absoluteIndex = (index) => {
   return begin.value + index;
 };
 
+const setCoverData = (cover) => {
+  if (cover.indexOf(";") != -1) {
+    return cover;
+  }
+  return "data:image/png;base64," + cover;
+};
+
 var { videoData } = storeToRefs(videoDataStore);
 
 const handlePageChange = (page, pageCount) => {
@@ -116,6 +123,11 @@ const handleChangeBck = (index) => {
   index = absoluteIndex(index);
   try {
     videoData.value[index].Cover = mycanvas.toDataURL("image/png"); // 导出图片
+    let tmpCover = {
+      MId: videoData.value[index].MId,
+      Cover: videoData.value[index].Cover.slice(22),
+    };
+    UpdateCover(tmpCover);
     notification.success({
       content: videoData.value[index].Title + " : 设置背景成功",
       duration: 3000,

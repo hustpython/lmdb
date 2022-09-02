@@ -11,8 +11,16 @@ export function GetVideList() {
 
 export function SyncVideo(param) {
 	return httpRequest({
-		url: '/filter',
+		url: '/movie',
 		method: "post",
+		data: JSON.stringify(param),
+	})
+}
+
+export function UpdateCover(param) {
+	return httpRequest({
+		url: '/movie',
+		method: "PUT",
 		data: JSON.stringify(param),
 	})
 }
