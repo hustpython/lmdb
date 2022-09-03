@@ -17,7 +17,7 @@ export function SyncVideo(param) {
 	})
 }
 
-export function UpdateCover(param) {
+export function UpdateVideo(param) {
 	return httpRequest({
 		url: '/movie',
 		method: "PUT",

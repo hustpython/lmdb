@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"github.com/jan-bar/es"
 	"path/filepath"
 	"strconv"
@@ -111,7 +110,10 @@ func (m *MovieController) ShowMovies() {
 //}
 func (m *MovieController) RefreshMovies() {
 	var searchRule models.Filter
-	json.Unmarshal(m.Ctx.Input.RequestBody, &searchRule)
+	err := m.BindJSON(&searchRule)
+	if err != nil {
+		m.setInternalError(err.Error())
+	}
 	if searchRule.MinSize < 0 || len(searchRule.MovieExt) == 0 {
 		m.setParamInvalid("minsize or movieext invalid")
 		return
@@ -131,10 +133,44 @@ type PutCover struct {
 }
 
 func (m *MovieController) UpdateMovie() {
-	var c = &PutCover{}
-	m.BindJSON(c)
-	err := models.UpdateMovieCover(c.MId, c.Cover)
+	var c = &models.Movie{}
+	err := m.BindJSON(c)
+	if err != nil {
+		m.setInternalError(err.Error())
+		return
+	}
+	err = c.UpdateMovieData()
 	if err != nil {
 		m.setInternalError(err.Error())
 	}
+}
+
+func (m *MovieController) GetMovieByTag() {
+	tag := m.GetString("Tag")
+	if len(tag) == 0 {
+		m.setParamInvalid("Tag is null")
+		return
+	}
+	var mTag = models.Tag{TagName: tag}
+	d, err := mTag.GetMoviesByTag()
+	if err != nil {
+		m.setInternalError(err.Error())
+	}
+	m.Data["json"] = d
+	m.ServeJSON()
+}
+
+func (m *MovieController) GetMoviesByColl() {
+	coll := m.GetString("Coll")
+	if len(coll) == 0 {
+		m.setParamInvalid("Coll is null")
+		return
+	}
+	var collModel = models.Coll{CollName: coll}
+	d, err := collModel.GetMoviesByColl()
+	if err != nil {
+		m.setInternalError(err.Error())
+	}
+	m.Data["json"] = d
+	m.ServeJSON()
 }

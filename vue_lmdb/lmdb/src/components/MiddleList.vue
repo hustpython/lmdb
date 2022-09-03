@@ -62,15 +62,31 @@
         </div>
       </div>
 
-      <!-- <div class="card-flap flap1">
-        <MiddleDesc :moreInfo="item.MoreInfo" />
-      </div> -->
+      <div
+        class="card-flap flap1"
+        v-bind:class="{
+          showing: hoverEffict.isShowing,
+          darkThemeBck: themeData === true,
+          lightThemeBck: themeData === false,
+        }"
+      >
+        <n-space class="description">
+          <div v-for="(item, index) in item.TagArray">
+            <n-tag size="small" :type="labelTypes[index]" round>
+              {{ item }}
+            </n-tag>
+          </div>
+        </n-space>
+        <n-ellipsis class="description" :line-clamp="3" style="text-align: center">
+          {{ item.Desc }}
+        </n-ellipsis>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { GetVideList, UpdateCover } from "@/api/videolist";
+import { GetVideList, UpdateVideo } from "@/api/videolist";
 import { reactive, ref, onBeforeMount } from "vue";
 import { timeFilter } from "@/api/timefilter";
 import { useVideoData } from "@/store/videoData";
@@ -79,8 +95,6 @@ import { useNotification } from "naive-ui";
 import { useRouter } from "vue-router";
 
 import MiddleFilter from "@/components/MiddleFilter.vue";
-import MiddleDesc from "@/components/MiddleDesc.vue";
-
 import { useDarkTheme } from "@/store/themeData";
 
 const router = useRouter();
@@ -90,6 +104,9 @@ var { themeData } = storeToRefs(darkThemeStore);
 const defaultCover = require("../assets/videocardbck.png");
 const videoDataStore = useVideoData();
 const notification = useNotification();
+
+const labelTypes = ["success", "warning", "error", "info"];
+
 var begin = ref(0);
 var end = ref(0);
 
@@ -127,7 +144,7 @@ const handleChangeBck = (index) => {
       MId: videoData.value[index].MId,
       Cover: videoData.value[index].Cover.slice(22),
     };
-    UpdateCover(tmpCover);
+    UpdateVideo(tmpCover);
     notification.success({
       content: videoData.value[index].Title + " : 设置背景成功",
       duration: 3000,
@@ -149,7 +166,15 @@ const handleChangeBck = (index) => {
 
 const handleLoadVideo = (e, index) => {
   index = absoluteIndex(index);
+  if (videoData.value[index].Duration.length !== 0) {
+    return;
+  }
   videoData.value[index].Duration = timeFilter(e.target.duration);
+  let temDuration = {
+    MId: videoData.value[index].MId,
+    Duration: videoData.value[index].Duration,
+  };
+  UpdateVideo(temDuration);
 };
 
 var hoverEffict = reactive({
@@ -160,13 +185,11 @@ var hoverEffict = reactive({
 });
 // 加载后端数据
 onBeforeMount(() => {
-  if (videoData.value.length < 1) {
-    GetVideList().then((res) => {
-      if (res.code == 200) {
-        videoDataStore.setVideoData(res.data);
-      }
-    });
-  }
+  GetVideList().then((res) => {
+    if (res.code == 200) {
+      videoDataStore.setVideoData(res.data);
+    }
+  });
 });
 
 let videoTimer;
@@ -210,8 +233,7 @@ const handleProgress = (e) => {
 };
 
 const setTitleHref = (id) => {
-  let routeData = router.resolve({ path: "video", query: { id: absoluteIndex(id) } });
-  window.open(routeData.href, "_blank");
+  router.push({ name: "video", query: { id: absoluteIndex(id) } });
 };
 </script>
 
@@ -360,7 +382,6 @@ div.card div.card-title {
 }
 
 div.card div.card-flap {
-  background: #d9d9d9;
   position: absolute;
   width: 100%;
   transform-origin: top;
@@ -391,11 +412,16 @@ div.card.show div.card-title a.toggle-info span {
 }
 
 div.card.show div.card-flap {
-  background: #ffffff;
   transform: rotateX(0deg);
 }
 div.card.show div.flap1 {
   transition: all 0.3s 0s ease-out;
+}
+
+.description {
+  padding: 6px 15px 10px;
+  position: relative;
+  font-size: 14px;
 }
 
 [v-cloak] {

@@ -64,8 +64,7 @@ const options = computed(() => {
 
 const router = useRouter();
 const handleSeleteed = (value) => {
-  let routeData = router.resolve({ path: "video", query: { id: value } });
-  window.open(routeData.href, "_blank");
+  router.push({ name: "video", query: { id: value } });
 };
 </script>
 
