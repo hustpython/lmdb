@@ -45,3 +45,10 @@ export function GetAllColl() {
 		method: "GET",
 	})
 }
+
+export function GetMoviesByColl(param) {
+	return httpRequest({
+		url: '/coll/?Coll=' + param,
+		method: "GET",
+	})
+}

@@ -68,7 +68,13 @@
     </n-form-item>
   </n-form>
 
-  <!-- <pre>{{ JSON.stringify(syncVideoForm, null, 2) }}</pre> -->
+  <div class="videoTabs" v-show="tabVal === '3'">
+    <n-list v-for="(item, index) in allColl" hoverable clickable>
+      <n-list-item @click="handleCollClick(index)">
+        <n-thing :title="item" content-style="margin-top: 10px;"> </n-thing>
+      </n-list-item>
+    </n-list>
+  </div>
 </template>
 
 <script setup>
@@ -77,7 +83,13 @@ import { useVideoData } from "@/store/videoData";
 import { storeToRefs } from "pinia";
 import { SyncVideo } from "@/api/videolist";
 import { useNotification } from "naive-ui";
-import { GetAllTags, GetVideList, GetMoviesByTag } from "@/api/videolist";
+import {
+  GetAllTags,
+  GetVideList,
+  GetMoviesByTag,
+  GetAllColl,
+  GetMoviesByColl,
+} from "@/api/videolist";
 
 const notification = useNotification();
 
@@ -136,12 +148,17 @@ const options = [
 ];
 
 let allTags = ref(["全部"]);
-
+let allColl = ref([]);
 // 加载后端数据
 onBeforeMount(() => {
   GetAllTags().then((res) => {
     if (res.code == 200) {
       allTags.value.push(...res.data);
+    }
+  });
+  GetAllColl().then((res) => {
+    if (res.code == 200) {
+      allColl.value = res.data;
     }
   });
 });
@@ -169,6 +186,18 @@ const handleTagClick = (index) => {
       }
     });
   }
+};
+
+const handleCollClick = (index) => {
+  GetMoviesByColl(allColl.value[index]).then((res) => {
+    if (res.code == 200) {
+      videoDataStore.setVideoData(res.data);
+      notification.success({
+        content: "合集:" + allColl.value[index] + "共有" + res.data.length + "个视频",
+        duration: 1000,
+      });
+    }
+  });
 };
 
 var { videoData } = storeToRefs(videoDataStore);

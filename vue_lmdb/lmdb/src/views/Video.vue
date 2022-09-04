@@ -302,28 +302,8 @@ const handleValidateClick = () => {
   setTimeout(procForm, 100);
 };
 
-const handleTimeUpdate = (ev) => {};
 
-const handleClick = () => {
-  updateCanvas();
-};
 
-const updateCanvas = () => {
-  //console.log(ev,"timeupdate")
-  const myvideo = document.getElementById("localvideo"); // 获取视频对象
-  const mycanvas = document.getElementById("localcanvas"); // 获取 canvas 对象
-  //console.log(ev.target.duration) // 总时长
-
-  const ctx = mycanvas.getContext("2d"); // 绘制2d
-  myvideo.crossOrigin = "anonymous"; // 解决跨域问题，也就是提示污染资源无法转换视频
-  // myvideo.currentTime = 100; // 第一帧
-
-  mycanvas.width = myvideo.clientWidth; // 获取视频宽度
-  mycanvas.height = myvideo.clientHeight; //获取视频高度
-  // 利用canvas对象方法绘图
-  ctx.drawImage(myvideo, 0, 0, myvideo.clientWidth, myvideo.clientHeight);
-  // mycanvas.toDataURL("image/png");
-};
 </script>
 <style>
 .videopage {
