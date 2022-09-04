@@ -37,10 +37,12 @@ func init() {
 			beego.NSRouter("", &controllers.MovieController{}, "GET:ShowMovies"),
 		),
 		beego.NSNamespace("/tag",
-			beego.NSRouter("", &controllers.MovieController{}, "GET:GetMovieByTag"),
+			beego.NSRouter("/?:Tag", &controllers.MovieController{}, "GET:GetMovieByTag"),
+			beego.NSRouter("/:AllTag", &controllers.MovieController{}, "GET:GetAllTags"),
 		),
 		beego.NSNamespace("/coll",
-			beego.NSRouter("", &controllers.MovieController{}, "GET:GetMoviesByColl"),
+			beego.NSRouter("/?:Coll", &controllers.MovieController{}, "GET:GetMoviesByColl"),
+			beego.NSRouter("/:AllColl", &controllers.MovieController{}, "GET:GetAllColl"),
 		),
 	)
 	beego.AddNamespace(ns)

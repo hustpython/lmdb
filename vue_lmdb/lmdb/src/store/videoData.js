@@ -9,7 +9,7 @@ export const useVideoData = defineStore({
     },
     actions: {
         setVideoData(val) {
-            this.videoData = val;
+            this.videoData.push(...val);
         }
     },
     persist: {

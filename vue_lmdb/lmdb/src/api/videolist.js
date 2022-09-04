@@ -24,3 +24,24 @@ export function UpdateVideo(param) {
 		data: JSON.stringify(param),
 	})
 }
+
+export function GetAllTags() {
+	return httpRequest({
+		url: '/tag/AllTag',
+		method: "GET",
+	})
+}
+
+export function GetMoviesByTag(param) {
+	return httpRequest({
+		url: '/tag/?Tag=' + param,
+		method: "GET",
+	})
+}
+
+export function GetAllColl() {
+	return httpRequest({
+		url: '/coll/AllColl',
+		method: "GET",
+	})
+}

@@ -38,6 +38,7 @@ type RecentWatch struct {
 type Filter struct {
 	MinSize  int
 	Include  string
+	Force    bool
 	MovieExt []string
 }
 
@@ -63,16 +64,19 @@ func QueryAllMovieData() ([]*Movie, error) {
 	return movies, err
 }
 
-func InsertMovieData(movieArray []*Movie) ([]*Movie, error) {
+func InsertMovieData(force bool, movieArray []*Movie) ([]*Movie, error) {
+	// TODO  if force, delete all tables
 	qs := ormOpr.QueryTable(new(Movie))
+	var res []*Movie
 	for _, m := range movieArray {
 		if !qs.Filter("MId", m.MId).Exist() {
 			if _, e := ormOpr.Insert(m); e != nil {
 				return nil, e
 			}
+			res = append(res, m)
 		}
 	}
-	return movieArray, nil
+	return res, nil
 }
 
 func (m Movie) UpdateMovieData() error {
@@ -151,8 +155,13 @@ func (m Movie) UpdateTags() error {
 			}
 		}
 		if !find {
-			fmt.Println("delete not used tag", tag1.TagName)
+			fmt.Println("delete not used tag in rel table", tag1.TagName)
 			mTag.Remove(tag1)
+			ormOpr.LoadRelated(tag1, "Movies")
+			if len(tag1.Movies) == 0 {
+				fmt.Println("delete tag table", tag1.TagName)
+				ormOpr.Delete(tag1)
+			}
 		}
 	}
 	return nil
@@ -160,10 +169,43 @@ func (m Movie) UpdateTags() error {
 
 func (t Tag) GetMoviesByTag() ([]*Movie, error) {
 	_, err := ormOpr.LoadRelated(&t, "Movies")
+	for _, m := range t.Movies {
+		ormOpr.LoadRelated(m, "Tags")
+		for _, tag := range m.Tags {
+			m.TagArray = append(m.TagArray, tag.TagName)
+		}
+		m.Tags = nil
+	}
 	return t.Movies, err
+}
+
+func GetAllTags() ([]string, error) {
+	var tags []*Tag
+	_, err := ormOpr.QueryTable("tag").All(&tags)
+	if err != nil {
+		return nil, err
+	}
+	var res []string
+	for _, t := range tags {
+		res = append(res, t.TagName)
+	}
+	return res, nil
 }
 
 func (c Coll) GetMoviesByColl() ([]*Movie, error) {
 	_, err := ormOpr.LoadRelated(&c, "Movies")
 	return c.Movies, err
+}
+
+func GetAllColl() ([]string, error) {
+	var colls []*Coll
+	_, err := ormOpr.QueryTable("coll").All(&colls)
+	if err != nil {
+		return nil, err
+	}
+	var res []string
+	for _, t := range colls {
+		res = append(res, t.CollName)
+	}
+	return res, nil
 }

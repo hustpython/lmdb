@@ -90,7 +90,7 @@ func procQueryData(rule models.Filter, searchExt string) ([]*models.Movie, error
 			movieArray = append(movieArray, tmpMovie)
 		}
 	}
-	return models.InsertMovieData(movieArray)
+	return models.InsertMovieData(rule.Force, movieArray)
 }
 
 // GET /v1/movie?id=movie_12121
@@ -168,6 +168,24 @@ func (m *MovieController) GetMoviesByColl() {
 	}
 	var collModel = models.Coll{CollName: coll}
 	d, err := collModel.GetMoviesByColl()
+	if err != nil {
+		m.setInternalError(err.Error())
+	}
+	m.Data["json"] = d
+	m.ServeJSON()
+}
+
+func (m *MovieController) GetAllTags() {
+	d, err := models.GetAllTags()
+	if err != nil {
+		m.setInternalError(err.Error())
+	}
+	m.Data["json"] = d
+	m.ServeJSON()
+}
+
+func (m *MovieController) GetAllColl() {
+	d, err := models.GetAllColl()
 	if err != nil {
 		m.setInternalError(err.Error())
 	}

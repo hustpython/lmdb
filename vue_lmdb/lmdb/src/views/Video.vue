@@ -7,14 +7,29 @@
       lightThemeBck: themeData === false,
     }"
   >
+    <canvas id="loacalVideoCanvas" style="display: none"></canvas>
     <n-spance class="videospace">
-      <video
-        id="localvideo"
-        :src="videoUrl"
-        controls="controls"
-        @timeupdate="handleTimeUpdate"
-        @loadeddata="handleLoadedata"
-      ></video>
+      <div>
+        <video
+          id="localvideo"
+          :src="videoUrl"
+          controls="controls"
+          @timeupdate="handleTimeUpdate"
+        ></video>
+        <n-button
+          @click="handleClickClap"
+          strong
+          secondary
+          type="tertiary"
+          round
+          style="margin-left: 10px"
+        >
+          <template #icon>
+            <n-icon><Camera /></n-icon>
+          </template>
+          截图
+        </n-button>
+      </div>
       <n-divider />
       <n-space style="height: 360px">
         <!-- 左侧图片 -->
@@ -25,7 +40,7 @@
             <span style="font-size: 18px; float: left"
               >{{ videoData[route.query.id].Title }}
               <n-button
-                v-show="videoData[route.query.id].CollStr !== undefined"
+                v-show="videoData[route.query.id].CollStr !== ''"
                 strong
                 secondary
                 type="tertiary"
@@ -130,17 +145,13 @@
       </n-space>
     </n-spance>
   </n-layout>
-  <!-- <canvas id="localcanvas"></canvas>
-  <button id="snapbtn" @click="handleClick">
-    截取总时长{{ videoDurtion.timeStr }}
-  </button> -->
 </template>
 
 <script setup>
 import { useRoute } from "vue-router";
-import { ref, computed } from "vue";
+import { ref, computed, onBeforeMount } from "vue";
 import Header from "@/components/Header.vue";
-import { UpdateVideo } from "@/api/videolist";
+import { UpdateVideo, GetAllColl } from "@/api/videolist";
 
 import { storeToRefs } from "pinia";
 import { darkTheme } from "naive-ui";
@@ -148,7 +159,7 @@ import { useDarkTheme } from "@/store/themeData";
 
 import { useVideoData } from "@/store/videoData";
 
-import { Edit, FolderDetails, Favorite } from "@vicons/carbon";
+import { Edit, FolderDetails, Favorite, Camera } from "@vicons/carbon";
 
 var showEditForm = ref(false);
 
@@ -183,12 +194,20 @@ const videoTagOption = computed(() => {
   return tmpOptions;
 });
 
-const collOptions = [
-  {
-    label: "",
-    value: "",
-  },
-];
+let collOptions = ref([{ label: "", value: "" }]);
+
+onBeforeMount(() => {
+  GetAllColl().then((res) => {
+    if (res.code == 200) {
+      for (var i = 0; i < res.data.length; i++) {
+        collOptions.value.push({
+          label: res.data[i],
+          value: res.data[i],
+        });
+      }
+    }
+  });
+});
 
 const rules = {
   Title: {
@@ -215,6 +234,37 @@ const rules = {
   },
 };
 
+const handleClickClap = () => {
+  const myvideo = document.getElementById("localvideo"); // 获取视频对象
+  myvideo.crossOrigin = "*";
+  myvideo.setAttribute("crossorigin", "Anonymous");
+  const mycanvas = document.getElementById("loacalVideoCanvas"); // 获取 canvas 对象
+  const ctx = mycanvas.getContext("2d"); // 绘制2d
+  mycanvas.width = myvideo.clientWidth; // 获取视频宽度
+  mycanvas.height = myvideo.clientHeight; //获取视频高度
+  ctx.drawImage(myvideo, 0, 0, mycanvas.width, mycanvas.height);
+  try {
+    videoData.value[route.query.id].Cover = mycanvas.toDataURL("image/png"); // 导出图片
+    let tmpCover = {
+      MId: videoData.value[route.query.id].MId,
+      Cover: videoData.value[route.query.id].Cover.slice(22),
+    };
+    console.log(tmpCover, "1");
+    UpdateVideo(tmpCover);
+
+    // notification.success({
+    //   content: videoData.value[index].Title + " : 设置背景成功",
+    //   duration: 3000,
+    // });
+  } catch (error) {
+    console.log("设置失败，稍后再试", error);
+    // notification.error({
+    //   content: videoData.value[index].Title + " : 设置背景失败",
+    //   duration: 2000,
+    // });
+  }
+};
+
 const handleRecover = () => {
   videoFormModel.value.Title = videoData.value[route.query.id].Title;
   videoFormModel.value.TagArray = [];
@@ -239,7 +289,7 @@ const handleValidateClick = () => {
   function procForm() {
     if (getError === true) {
       return;
-    } 
+    }
     videoFormModel.value.MId = videoData.value[route.query.id].MId;
     UpdateVideo(videoFormModel.value);
     videoData.value[route.query.id].Title = videoFormModel.value.Title;
