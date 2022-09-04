@@ -194,6 +194,13 @@ func GetAllTags() ([]string, error) {
 
 func (c Coll) GetMoviesByColl() ([]*Movie, error) {
 	_, err := ormOpr.LoadRelated(&c, "Movies")
+	for _, m := range c.Movies {
+		ormOpr.LoadRelated(m, "Tags")
+		for _, tag := range m.Tags {
+			m.TagArray = append(m.TagArray, tag.TagName)
+		}
+		m.Tags = nil
+	}
 	return c.Movies, err
 }
 

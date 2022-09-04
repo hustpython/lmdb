@@ -80,7 +80,7 @@
       bordered
     >
       <n-list-item @click="handleCollClick(index)">
-        <n-thing :title="item" content-style="margin-top: 10px;font-size: 12;"> </n-thing>
+        <n-thing :title="item" content-style="margin-top: 10px;"> </n-thing>
       </n-list-item>
     </n-list>
   </div>
