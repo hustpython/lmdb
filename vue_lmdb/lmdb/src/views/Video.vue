@@ -12,6 +12,7 @@
       <div>
         <video
           id="localvideo"
+          autoplay
           :src="videoUrl"
           controls="controls"
           @timeupdate="handleTimeUpdate"

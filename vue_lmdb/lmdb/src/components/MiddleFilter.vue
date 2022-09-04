@@ -30,7 +30,14 @@
   <div class="videoTabs" v-show="tabVal === '1'">
     <n-space>
       <div v-for="(item, index) in allTags">
-        <n-button type="tertiary" @click="handleTagClick(index)" strong>
+        <n-button
+          size="small"
+          bordered="false"
+          color="#42A5F5"
+          :ghost="tagIndex !== index"
+          @click="handleTagClick(index)"
+          round
+        >
           {{ item }}
         </n-button>
       </div>
@@ -99,6 +106,8 @@ const syncVideoSize = [
 
 const videoDataStore = useVideoData();
 var tabVal = ref();
+var tagIndex = ref(0);
+
 var syncVideoForm = ref({
   MinSize: 400,
   MovieExt: ["mp4"],
@@ -138,6 +147,7 @@ onBeforeMount(() => {
 });
 
 const handleTagClick = (index) => {
+  tagIndex.value = index;
   if (index === 0) {
     GetVideList().then((res) => {
       if (res.code == 200) {
@@ -207,7 +217,7 @@ const handleSbumitClick = () => {
         });
         return;
       }
-      videoDataStore.setVideoData(res.data);
+      videoDataStore.addVideoData(res.data);
       notification.success({
         content: "成功从本地磁盘同步" + res.data.length + "个视频",
         duration: 3000,
