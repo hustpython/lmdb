@@ -69,9 +69,18 @@
   </n-form>
 
   <div class="videoTabs" v-show="tabVal === '3'">
-    <n-list v-for="(item, index) in allColl" hoverable clickable>
+    <n-list
+      v-bind:class="{
+        darkThemeBck: themeData === true,
+        lightThemeBck: themeData === false,
+      }"
+      v-for="(item, index) in allColl"
+      hoverable
+      clickable
+      bordered
+    >
       <n-list-item @click="handleCollClick(index)">
-        <n-thing :title="item" content-style="margin-top: 10px;"> </n-thing>
+        <n-thing :title="item" content-style="margin-top: 10px;font-size: 12;"> </n-thing>
       </n-list-item>
     </n-list>
   </div>
@@ -83,6 +92,9 @@ import { useVideoData } from "@/store/videoData";
 import { storeToRefs } from "pinia";
 import { SyncVideo } from "@/api/videolist";
 import { useNotification } from "naive-ui";
+
+import { useDarkTheme } from "@/store/themeData";
+
 import {
   GetAllTags,
   GetVideList,
@@ -90,6 +102,9 @@ import {
   GetAllColl,
   GetMoviesByColl,
 } from "@/api/videolist";
+
+const darkThemeStore = useDarkTheme();
+var { themeData } = storeToRefs(darkThemeStore);
 
 const notification = useNotification();
 
