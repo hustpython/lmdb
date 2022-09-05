@@ -12,6 +12,7 @@
       <div>
         <video
           id="localvideo"
+          crossorigin="anonymous"
           autoplay
           :src="videoUrl"
           controls="controls"
@@ -34,7 +35,7 @@
       <n-divider />
       <n-space style="height: 360px">
         <!-- 左侧图片 -->
-        <img :src="`data:image/png;base64,` + videoData[route.query.id].Cover" />
+        <img class="videoCardSize" :src="setCoverData(videoData[route.query.id].Cover)" />
         <!-- 右侧信息 -->
         <n-space vertical class="middleInfo" v-show="showEditForm === false">
           <div>
@@ -177,6 +178,13 @@ const videoUrl = config.SERVER_API + videoData.value[route.query.id].VideoUrl;
 const formInstRef = ref(null);
 const labelTypes = ["success", "warning", "error", "info"];
 
+const setCoverData = (cover) => {
+  if (cover.indexOf(";") != -1) {
+    return cover;
+  }
+  return "data:image/png;base64," + cover;
+};
+
 var videoFormModel = ref({
   Title: videoData.value[route.query.id].Title,
   TagArray: videoData.value[route.query.id].TagArray,
@@ -237,8 +245,6 @@ const rules = {
 
 const handleClickClap = () => {
   const myvideo = document.getElementById("localvideo"); // 获取视频对象
-  myvideo.crossOrigin = "*";
-  myvideo.setAttribute("crossorigin", "Anonymous");
   const mycanvas = document.getElementById("loacalVideoCanvas"); // 获取 canvas 对象
   const ctx = mycanvas.getContext("2d"); // 绘制2d
   mycanvas.width = myvideo.clientWidth; // 获取视频宽度
@@ -250,19 +256,18 @@ const handleClickClap = () => {
       MId: videoData.value[route.query.id].MId,
       Cover: videoData.value[route.query.id].Cover.slice(22),
     };
-    console.log(tmpCover, "1");
     UpdateVideo(tmpCover);
 
-    // notification.success({
-    //   content: videoData.value[index].Title + " : 设置背景成功",
-    //   duration: 3000,
-    // });
+    notification.success({
+      content: videoData.value[index].Title + " : 设置背景成功",
+      duration: 3000,
+    });
   } catch (error) {
     console.log("设置失败，稍后再试", error);
-    // notification.error({
-    //   content: videoData.value[index].Title + " : 设置背景失败",
-    //   duration: 2000,
-    // });
+    notification.error({
+      content: videoData.value[index].Title + " : 设置背景失败",
+      duration: 2000,
+    });
   }
 };
 
@@ -301,9 +306,6 @@ const handleValidateClick = () => {
   }
   setTimeout(procForm, 100);
 };
-
-
-
 </script>
 <style>
 .videopage {

@@ -32,6 +32,7 @@
       <div class="video-mask videoCardSize" v-show="index === hoverEffict.videoIndex">
         <video
           :id="'video_' + index"
+          crossorigin="anonymous"
           class="videoCardSize"
           muted
           preload
@@ -131,7 +132,6 @@ const handlePageChange = (page, pageCount) => {
 handlePageChange(1);
 const handleChangeBck = (index) => {
   const myvideo = document.getElementById("video_" + index); // 获取视频对象
-  myvideo.crossOrigin = "*";
   const mycanvas = document.getElementById("localcanvas"); // 获取 canvas 对象
   const ctx = mycanvas.getContext("2d"); // 绘制2d
   mycanvas.width = myvideo.clientWidth; // 获取视频宽度
