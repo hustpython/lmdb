@@ -7,31 +7,17 @@
       lightThemeBck: themeData === false,
     }"
   >
-    <canvas id="loacalVideoCanvas" style="display: none"></canvas>
+    <canvas id="localVideoCanvas" style="display: none"></canvas>
     <n-spance class="videospace">
-      <div>
-        <video
-          id="localvideo"
-          crossorigin="anonymous"
-          autoplay
-          :src="videoUrl"
-          controls="controls"
-          @timeupdate="handleTimeUpdate"
-        ></video>
-        <n-button
-          @click="handleClickClap"
-          strong
-          secondary
-          type="tertiary"
-          round
-          style="margin-left: 10px"
-        >
-          <template #icon>
-            <n-icon><Camera /></n-icon>
-          </template>
-          截图
-        </n-button>
-      </div>
+      <video
+        id="localvideo"
+        crossorigin="anonymous"
+        autoplay
+        :src="videoUrl"
+        controls="controls"
+        @timeupdate="handleTimeUpdate"
+      ></video>
+
       <n-divider />
       <n-space style="height: 360px">
         <!-- 左侧图片 -->
@@ -143,6 +129,20 @@
             </template>
             收藏
           </n-button>
+
+          <n-button
+            @click="handleClickClap"
+            size="tiny"
+            strong
+            secondary
+            type="tertiary"
+            round
+          >
+            <template #icon>
+              <n-icon><Camera /></n-icon>
+            </template>
+            截图
+          </n-button>
         </n-space>
       </n-space>
     </n-spance>
@@ -233,8 +233,8 @@ const rules = {
   },
   Desc: {
     required: false,
-    max: 100,
-    message: "介绍内容不能超过100",
+    max: 300,
+    message: "介绍内容不能超过300",
   },
   CollStr: {
     required: false,
@@ -245,7 +245,7 @@ const rules = {
 
 const handleClickClap = () => {
   const myvideo = document.getElementById("localvideo"); // 获取视频对象
-  const mycanvas = document.getElementById("loacalVideoCanvas"); // 获取 canvas 对象
+  const mycanvas = document.getElementById("localVideoCanvas"); // 获取 canvas 对象
   const ctx = mycanvas.getContext("2d"); // 绘制2d
   mycanvas.width = myvideo.clientWidth; // 获取视频宽度
   mycanvas.height = myvideo.clientHeight; //获取视频高度
@@ -257,17 +257,9 @@ const handleClickClap = () => {
       Cover: videoData.value[route.query.id].Cover.slice(22),
     };
     UpdateVideo(tmpCover);
-
-    notification.success({
-      content: videoData.value[index].Title + " : 设置背景成功",
-      duration: 3000,
-    });
+    console.log(showEditForm.value);
   } catch (error) {
     console.log("设置失败，稍后再试", error);
-    notification.error({
-      content: videoData.value[index].Title + " : 设置背景失败",
-      duration: 2000,
-    });
   }
 };
 
