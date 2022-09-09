@@ -237,13 +237,16 @@ const setTitleHref = (id) => {
 };
 </script>
 
-<style>
+<style lang="scss">
 div.cards {
   margin: 15px;
   height: 100%;
   width: 0 auto;
   right: 10px;
   left: 10px;
+  @include phone() {
+    width: 50%;
+  }
 }
 
 div.cards::after {

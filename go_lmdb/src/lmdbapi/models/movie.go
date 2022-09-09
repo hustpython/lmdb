@@ -3,7 +3,10 @@ package models
 import (
 	"fmt"
 	"github.com/beego/beego/v2/client/orm"
+	"github.com/beego/beego/v2/core/logs"
 	_ "github.com/mattn/go-sqlite3"
+	"os"
+	"sort"
 )
 
 type Movie struct {
@@ -45,10 +48,12 @@ type Filter struct {
 var ormOpr orm.Ormer
 
 func init() {
+	logs.SetLogger(logs.AdapterConsole)
 	orm.RegisterModel(new(Movie), new(Coll), new(Tag))
 	orm.RegisterDataBase("default", "sqlite3", "./lmdb.db")
 	orm.RunSyncdb("default", false, true)
 	ormOpr = orm.NewOrm()
+	ClearInvalidData()
 }
 
 func QueryAllMovieData() ([]*Movie, error) {
@@ -64,7 +69,7 @@ func QueryAllMovieData() ([]*Movie, error) {
 	return movies, err
 }
 
-func InsertMovieData(force bool, movieArray []*Movie) ([]*Movie, error) {
+func InsertOrUpdateMovieData(force bool, movieArray []*Movie) ([]*Movie, error) {
 	// TODO  if force, delete all tables
 	qs := ormOpr.QueryTable(new(Movie))
 	var res []*Movie
@@ -74,6 +79,14 @@ func InsertMovieData(force bool, movieArray []*Movie) ([]*Movie, error) {
 				return nil, e
 			}
 			res = append(res, m)
+		} else {
+			var movie Movie
+			if qs.Filter("MId", m.MId).One(&movie) == nil {
+				if movie.VideoUrl != m.VideoUrl {
+					_, err := ormOpr.Update(m, "video_url")
+					fmt.Printf("update videurl: %s,err:%s", m.VideoUrl, err)
+				}
+			}
 		}
 	}
 	return res, nil
@@ -151,7 +164,7 @@ func (m Movie) UpdateTags() error {
 		for _, tag2 := range m.TagArray {
 			if tag1.TagName == tag2 {
 				find = true
-				continue
+				return nil
 			}
 		}
 		if !find {
@@ -201,7 +214,17 @@ func (c Coll) GetMoviesByColl() ([]*Movie, error) {
 		}
 		m.Tags = nil
 	}
+	sort.Slice(c.Movies, func(i, j int) bool {
+		return c.Movies[i].Title < c.Movies[j].Title
+	})
 	return c.Movies, err
+}
+
+func (m Movie) DeleteColl() error {
+	tmpColl := []string{"coll_id", "coll_str"}
+	_, err := ormOpr.Update(&m, tmpColl...)
+	clearInvalidColl()
+	return err
 }
 
 func GetAllColl() ([]string, error) {
@@ -215,4 +238,69 @@ func GetAllColl() ([]string, error) {
 		res = append(res, t.CollName)
 	}
 	return res, nil
+}
+
+func ClearInvalidData() {
+	clearInvalidMovie()
+	clearInvalidTag()
+	clearInvalidColl()
+	logs.Info("ClearInvalidData")
+}
+
+func clearInvalidMovie() {
+	var movies []*Movie
+	_, err := ormOpr.QueryTable("movie").All(&movies)
+	if err != nil {
+		fmt.Print(err)
+		return
+	}
+	for _, m := range movies {
+		path := m.VideoUrl[0:1] + ":/" + m.VideoUrl[2:]
+		_, err := os.Stat(path)
+		if err == nil {
+			continue
+		}
+		if os.IsNotExist(err) {
+			_, err = ormOpr.Delete(m, "m_id")
+			logs.Info("delete moviedata %v,err:%v", m.VideoUrl, err)
+		}
+	}
+}
+
+func clearInvalidTag() {
+	var tags []*Tag
+	_, err := ormOpr.QueryTable("tag").All(&tags)
+	if err != nil {
+		fmt.Print(err)
+		return
+	}
+	for _, tag := range tags {
+		_, err := ormOpr.LoadRelated(tag, "Movies")
+		if err != nil {
+			continue
+		}
+		if len(tag.Movies) == 0 {
+			logs.Info("delete tag %s", tag.TagName)
+			ormOpr.Delete(tag)
+		}
+	}
+}
+
+func clearInvalidColl() {
+	var colls []*Coll
+	_, err := ormOpr.QueryTable("coll").All(&colls)
+	if err != nil {
+		fmt.Print(err)
+		return
+	}
+	for _, coll := range colls {
+		_, err := ormOpr.LoadRelated(coll, "Movies")
+		if err != nil {
+			continue
+		}
+		if len(coll.Movies) == 0 {
+			logs.Info("delete coll %s", coll.CollName)
+			ormOpr.Delete(coll)
+		}
+	}
 }

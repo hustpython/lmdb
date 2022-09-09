@@ -108,7 +108,7 @@ const renderMenuLabel = (option) => {
 };
 </script>
 
-<style>
+<style lang="scss">
 .nav {
   padding: 0 var(--side-padding);
   grid-template-columns: calc(272px - var(--side-padding)) 1fr auto;
@@ -131,6 +131,9 @@ const renderMenuLabel = (option) => {
 .nav,
 .ui-logo {
   align-items: center;
+  @include phone() {
+    display: none;
+  }
 }
 
 .ui-logo > img {
@@ -157,5 +160,8 @@ const renderMenuLabel = (option) => {
   font-size: 15px;
   align-items: center;
   width: 400px;
+  @include phone() {
+    display: none;
+  }
 }
 </style>

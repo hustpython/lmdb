@@ -22,7 +22,7 @@ func init() {
 		AllowAllOrigins: true,
 		//可选参数"GET", "POST", "PUT", "DELETE", "OPTIONS" (*为所有)
 		//其中Options跨域复杂请求预检
-		AllowMethods: []string{"POST", "PUT", "GET"},
+		AllowMethods: []string{"POST", "PUT", "GET", "DELETE"},
 		//指的是允许的Header的种类
 		AllowHeaders: []string{"*"},
 		//公开的HTTP标头列表
@@ -43,6 +43,7 @@ func init() {
 		beego.NSNamespace("/coll",
 			beego.NSRouter("/?:Coll", &controllers.MovieController{}, "GET:GetMoviesByColl"),
 			beego.NSRouter("/:AllColl", &controllers.MovieController{}, "GET:GetAllColl"),
+			beego.NSRouter("/?:MId", &controllers.MovieController{}, "DELETE:DelMovieColl"),
 		),
 	)
 	beego.AddNamespace(ns)

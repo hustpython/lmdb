@@ -153,7 +153,7 @@
 import { useRoute } from "vue-router";
 import { ref, computed, onBeforeMount } from "vue";
 import Header from "@/components/Header.vue";
-import { UpdateVideo, GetAllColl } from "@/api/videolist";
+import { UpdateVideo, GetAllColl, DeleteMovieColl } from "@/api/videolist";
 
 import { storeToRefs } from "pinia";
 import { darkTheme } from "naive-ui";
@@ -226,10 +226,11 @@ const rules = {
     message: "标题最短长度为 1,最大长度为15",
   },
   TagArray: {
-    required: false,
+    required: true,
     type: "array",
+    min: 1,
     max: 4,
-    message: "最多可以填写4个标签",
+    message: "最新需要1个标签,最多可以填写4个标签",
   },
   Desc: {
     required: false,
@@ -294,6 +295,9 @@ const handleValidateClick = () => {
     videoData.value[route.query.id].Desc = videoFormModel.value.Desc;
     videoData.value[route.query.id].TagArray = videoFormModel.value.TagArray;
     videoData.value[route.query.id].CollStr = videoFormModel.value.CollStr;
+    if (videoFormModel.value.CollStr === '') {
+      DeleteMovieColl(videoFormModel.value.MId);
+    }
     showEditForm.value = false;
   }
   setTimeout(procForm, 100);

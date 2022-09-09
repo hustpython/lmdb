@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"lmdbapi/models"
 )
@@ -16,6 +17,10 @@ const (
 
 type MovieController struct {
 	ErrorController
+}
+
+func init() {
+	go loopClearInvalidData()
 }
 
 // searchExt ".mp4|.mkv|.rmvb"
@@ -90,7 +95,7 @@ func procQueryData(rule models.Filter, searchExt string) ([]*models.Movie, error
 			movieArray = append(movieArray, tmpMovie)
 		}
 	}
-	return models.InsertMovieData(rule.Force, movieArray)
+	return models.InsertOrUpdateMovieData(rule.Force, movieArray)
 }
 
 // GET /v1/movie?id=movie_12121
@@ -191,4 +196,20 @@ func (m *MovieController) GetAllColl() {
 	}
 	m.Data["json"] = d
 	m.ServeJSON()
+}
+
+func (m *MovieController) DelMovieColl() {
+	var tmpM = models.Movie{MId: m.GetString("MId")}
+	err := tmpM.DeleteColl()
+	if err != nil {
+		m.setInternalError(err.Error())
+	}
+	m.ServeJSON()
+}
+
+func loopClearInvalidData() {
+	for {
+		time.Sleep(time.Hour)
+		models.ClearInvalidData()
+	}
 }

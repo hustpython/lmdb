@@ -52,3 +52,10 @@ export function GetMoviesByColl(param) {
 		method: "GET",
 	})
 }
+
+export function DeleteMovieColl(param) {
+	return httpRequest({
+		url: '/coll/?MId=' + param,
+		method: "DELETE",
+	})
+}
