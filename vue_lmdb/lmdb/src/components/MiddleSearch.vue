@@ -10,22 +10,9 @@
         </h3>
       </div>
 
-      <div class="search" style="width: 100%; margin-top: 30px">
+      <div class="select">
         <n-select
-          v-bind:class="{
-            darkThemeBck: themeData === true,
-            lightThemeBck: themeData === false,
-          }"
-          style="
-            width: 80%;
-            height: 32px;
-            line-height: 30px;
-            font-size: 1em;
-            border: 0;
-            outline: none;
-            border-radius: 30px;
-            padding: 10px 20px;
-          "
+          class="search"
           filterable
           :options="options"
           :on-update:value="handleSeleteed"
@@ -41,15 +28,11 @@ import { storeToRefs } from "pinia";
 import { useVideoData } from "@/store/videoData";
 import { useRouter } from "vue-router";
 import { computed } from "vue";
-import { useDarkTheme } from "@/store/themeData";
 
 const imgurl = require("../assets/backimg.jpg");
 
 const videoDataStore = useVideoData();
 var { videoData } = storeToRefs(videoDataStore);
-
-const darkThemeStore = useDarkTheme();
-var { themeData } = storeToRefs(darkThemeStore);
 
 const options = computed(() => {
   let tmpOptions = [];
@@ -68,16 +51,41 @@ const handleSeleteed = (value) => {
 };
 </script>
 
-<style>
+<style lang="scss">
 .imgbkg {
   width: 100%;
   margin-top: var(--headerTop);
   overflow: hidden;
-  height: var(--homeBckHeight);
+  height: $homeBckHeight;
   background-image: v-bind("'url(' + imgurl + ')'");
   background-size: 100%;
+  @include phone {
+    height: 32px;
+    background-image: none;
+  }
 }
 
+.select {
+  width: 100%;
+  margin-top: 30px;
+  @include phone {
+    margin-top: 0;
+  }
+  .search {
+    @include theme();
+    width: 80%;
+    height: 32px;
+    line-height: 30px;
+    font-size: 1em;
+    border: 0;
+    outline: none;
+    border-radius: 30px;
+    padding: 10px 20px;
+    @include phone() {
+      display: none;
+    }
+  }
+}
 .content_wrap {
   width: 680px;
   text-align: left;
@@ -85,5 +93,13 @@ const handleSeleteed = (value) => {
   margin-left: 100px;
   margin-top: 20px;
   position: absolute;
+  @include phone {
+    margin: 0;
+  }
+  .title {
+    @include phone {
+      display: none;
+    }
+  }
 }
 </style>

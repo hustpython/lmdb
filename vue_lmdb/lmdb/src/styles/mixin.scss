@@ -1,5 +1,33 @@
+$lightBlue: rgb(3, 37, 65);
+$lightPink: #E1F5FE;
+$videoCardWidth: 270px;
+$homeBckHeight: 330px;
+$videoCardWidthPhone: 320px;
+
 @mixin phone() {
   @media (max-width: 620px) {
     @content;
+  }
+}
+
+@mixin theme() {
+  [data-theme="deep"] & {
+    background-color: $lightBlue;
+    color: $lightPink  !important;
+  }
+
+  [data-theme="light"] & {
+    background-color: $lightPink;
+    color: $lightBlue  !important;
+  }
+}
+
+.videoCardSize {
+  height: calc($videoCardWidth*0.56);
+  width: $videoCardWidth;
+
+  @include phone {
+    height: calc($videoCardWidthPhone*0.56);
+    width: $videoCardWidthPhone;
   }
 }

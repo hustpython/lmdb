@@ -1,11 +1,6 @@
 <template>
   <n-config-provider :theme="theme">
-    <n-layout
-      v-bind:class="{
-        darkThemeBck: themeData === true,
-        lightThemeBck: themeData === false,
-      }"
-    >
+    <n-layout class="main">
       <n-notification-provider>
         <router-view />
       </n-notification-provider>
@@ -30,3 +25,9 @@ const theme = computed(() => {
   }
 });
 </script>
+
+<style lang="scss">
+.main {
+  @include theme();
+}
+</style>

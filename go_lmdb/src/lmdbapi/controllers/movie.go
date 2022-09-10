@@ -160,8 +160,9 @@ func (m *MovieController) GetMovieByTag() {
 	d, err := mTag.GetMoviesByTag()
 	if err != nil {
 		m.setInternalError(err.Error())
+	} else {
+		m.Data["json"] = d
 	}
-	m.Data["json"] = d
 	m.ServeJSON()
 }
 
@@ -175,8 +176,9 @@ func (m *MovieController) GetMoviesByColl() {
 	d, err := collModel.GetMoviesByColl()
 	if err != nil {
 		m.setInternalError(err.Error())
+	} else {
+		m.Data["json"] = d
 	}
-	m.Data["json"] = d
 	m.ServeJSON()
 }
 
@@ -184,8 +186,9 @@ func (m *MovieController) GetAllTags() {
 	d, err := models.GetAllTags()
 	if err != nil {
 		m.setInternalError(err.Error())
+	} else {
+		m.Data["json"] = d
 	}
-	m.Data["json"] = d
 	m.ServeJSON()
 }
 
@@ -193,8 +196,9 @@ func (m *MovieController) GetAllColl() {
 	d, err := models.GetAllColl()
 	if err != nil {
 		m.setInternalError(err.Error())
+	} else {
+		m.Data["json"] = d
 	}
-	m.Data["json"] = d
 	m.ServeJSON()
 }
 
@@ -203,6 +207,16 @@ func (m *MovieController) DelMovieColl() {
 	err := tmpM.DeleteColl()
 	if err != nil {
 		m.setInternalError(err.Error())
+	}
+	m.ServeJSON()
+}
+
+func (m *MovieController) GetMoviesByRecent() {
+	d, err := models.GetMovieByRecent()
+	if err != nil {
+		m.setInternalError(err.Error())
+	} else {
+		m.Data["json"] = d
 	}
 	m.ServeJSON()
 }

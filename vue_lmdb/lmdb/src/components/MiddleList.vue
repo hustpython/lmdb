@@ -1,12 +1,9 @@
 <template>
   <canvas id="localcanvas" style="display: none"></canvas>
   <div
-    v-cloak
     class="cards"
     v-bind:class="{
       showing: hoverEffict.isShowing,
-      darkThemeBck: themeData === true,
-      lightThemeBck: themeData === false,
     }"
   >
     <MiddleFilter @videoPageChange="handlePageChange" />
@@ -57,7 +54,7 @@
 
       <div @click="setTitleHref(index)" class="card-title">
         <div>
-          <n-ellipsis style="max-width: calc(var(--videoCardWidth) * 0.9)">
+          <n-ellipsis class="ellipsistitle">
             {{ item.Title }}
           </n-ellipsis>
         </div>
@@ -67,8 +64,6 @@
         class="card-flap flap1"
         v-bind:class="{
           showing: hoverEffict.isShowing,
-          darkThemeBck: themeData === true,
-          lightThemeBck: themeData === false,
         }"
       >
         <n-space class="description">
@@ -96,11 +91,8 @@ import { useNotification } from "naive-ui";
 import { useRouter } from "vue-router";
 
 import MiddleFilter from "@/components/MiddleFilter.vue";
-import { useDarkTheme } from "@/store/themeData";
 
 const router = useRouter();
-const darkThemeStore = useDarkTheme();
-var { themeData } = storeToRefs(darkThemeStore);
 
 const defaultCover = require("../assets/videocardbck.png");
 const videoDataStore = useVideoData();
@@ -245,7 +237,7 @@ div.cards {
   right: 10px;
   left: 10px;
   @include phone() {
-    width: 50%;
+    display: none;
   }
 }
 
@@ -256,7 +248,7 @@ div.cards::after {
   display: block;
 }
 
-div.card {
+.card {
   display: inline-block;
   margin: 10px;
   position: relative;
@@ -266,6 +258,14 @@ div.card {
   z-index: 1;
   border-radius: 10px 10px 0 0;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  .card-title {
+    padding: 6px 15px 10px;
+    position: relative;
+    z-index: 0;
+    .ellipsistitle {
+      max-width: calc($videoCardWidth * 0.9);
+    }
+  }
 }
 
 /* 封面相关 */
@@ -273,25 +273,23 @@ div.card {
 .card-image {
   cursor: pointer;
   border-radius: inherit;
-}
-
-.card-image img {
-  border-radius: inherit;
-}
-
-.card-image .card-duration {
-  position: absolute;
-  bottom: 42px;
-  right: 10px;
-  height: 20px;
-  line-height: 20px;
-  transition: opacity 0.3s;
-  z-index: 5;
-  font-size: 13px;
-  background-color: rgba(43, 104, 165, 0.4);
-  color: #fff;
-  border-radius: 2px;
-  z-index: inherit;
+  img {
+    border-radius: inherit;
+  }
+  .card-duration {
+    position: absolute;
+    bottom: 42px;
+    right: 10px;
+    height: 20px;
+    line-height: 20px;
+    transition: opacity 0.3s;
+    z-index: 5;
+    font-size: 13px;
+    background-color: rgba(43, 104, 165, 0.4);
+    color: #fff;
+    border-radius: 2px;
+    z-index: inherit;
+  }
 }
 
 /* 视频相关 */
@@ -300,13 +298,11 @@ div.card {
   position: absolute;
   background-color: #000;
   border-radius: inherit;
+  video {
+    margin: 0;
+    border-radius: inherit;
+  }
 }
-
-.video-mask video {
-  margin: 0;
-  border-radius: inherit;
-}
-
 .set-cover {
   display: -webkit-flex;
   display: flex;
@@ -378,12 +374,6 @@ div.card {
   transition: width 0.12s;
 }
 
-div.card div.card-title {
-  padding: 6px 15px 10px;
-  position: relative;
-  z-index: 0;
-}
-
 div.card div.card-flap {
   position: absolute;
   width: 100%;
@@ -393,6 +383,7 @@ div.card div.card-flap {
 div.card div.flap1 {
   transition: all 0.3s 0.3s ease-out;
   z-index: -1;
+  @include theme();
 }
 
 div.cards.showing div.card {
@@ -425,9 +416,5 @@ div.card.show div.flap1 {
   padding: 6px 15px 10px;
   position: relative;
   font-size: 14px;
-}
-
-[v-cloak] {
-  display: none;
 }
 </style>

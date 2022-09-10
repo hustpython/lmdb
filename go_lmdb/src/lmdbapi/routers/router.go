@@ -45,6 +45,10 @@ func init() {
 			beego.NSRouter("/:AllColl", &controllers.MovieController{}, "GET:GetAllColl"),
 			beego.NSRouter("/?:MId", &controllers.MovieController{}, "DELETE:DelMovieColl"),
 		),
+		beego.NSNamespace("/recent",
+			beego.NSRouter("", &controllers.MovieController{}, "GET:GetMoviesByRecent"),
+		),
+
 	)
 	beego.AddNamespace(ns)
 

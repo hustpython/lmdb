@@ -1,88 +1,92 @@
 <template>
-  <n-space class="videoTabs" justify="space-between">
-    <n-tabs type="bar" default-value="4" animated v-model:value="tabVal">
-      <n-tab name="1"> 筛选 </n-tab>
-      <n-tab name="2"> 同步 </n-tab>
-      <n-tab name="3"> 合集 </n-tab>
-      <n-tab name="4"> 隐藏 </n-tab>
-    </n-tabs>
-    <div class="pagenum">
-      <n-pagination
-        v-model:page="page"
-        v-model:page-size="pageSize"
-        :page-count="pageCount"
-        @update:page="handleUpdatePage"
-        show-size-picker
-        :page-sizes="pageSizeArr"
-        style="margin-right: 40px"
-      />
-      <n-badge
-        color="var(--tmdbLightGreen)"
-        style="margin-right: 20px"
-        :value="videodataNum"
-        processing
+  <div class="filter">
+    <n-space class="videoTabs" justify="space-between">
+      <n-tabs
+        type="bar"
+        default-value="4"
+        animated
+        v-model:value="tabVal"
+        :on-update:value="handleUpdateValue"
       >
-        记录数
-      </n-badge>
-    </div>
-  </n-space>
-
-  <div class="videoTabs" v-show="tabVal === '1'">
-    <n-space>
-      <div v-for="(item, index) in allTags">
-        <n-button
-          size="small"
-          bordered="false"
-          color="#42A5F5"
-          :ghost="tagIndex !== index"
-          @click="handleTagClick(index)"
-          round
+        <n-tab name="1"> 筛选 </n-tab>
+        <n-tab name="2"> 同步 </n-tab>
+        <n-tab name="3"> 合集 </n-tab>
+        <n-tab name="5"> 最近 </n-tab>
+        <n-tab name="4"> 隐藏 </n-tab>
+      </n-tabs>
+      <div class="pagenum">
+        <n-pagination
+          v-model:page="page"
+          v-model:page-size="pageSize"
+          :page-count="pageCount"
+          @update:page="handleUpdatePage"
+          show-size-picker
+          :page-sizes="pageSizeArr"
+          style="margin-right: 40px"
+        />
+        <n-badge
+          color="var(--tmdbLightGreen)"
+          style="margin-right: 20px"
+          :value="videodataNum"
+          processing
         >
-          {{ item }}
-        </n-button>
+          记录数
+        </n-badge>
       </div>
     </n-space>
-  </div>
 
-  <n-form :model="syncVideoForm" class="videoTabs" v-show="tabVal === '2'">
-    <n-form-item label="最小值(M)">
-      <n-select v-model:value="syncVideoForm.MinSize" :options="syncVideoSize" />
-    </n-form-item>
+    <div class="videoTabs" v-show="tabVal === '1'">
+      <n-space>
+        <div v-for="(item, index) in allTags">
+          <n-button
+            size="small"
+            bordered="false"
+            color="#42A5F5"
+            :ghost="tagIndex !== index"
+            @click="handleTagClick(index)"
+            round
+          >
+            {{ item }}
+          </n-button>
+        </div>
+      </n-space>
+    </div>
 
-    <n-form-item path="category" label="类型">
-      <n-select v-model:value="syncVideoForm.MovieExt" multiple :options="options" />
-    </n-form-item>
+    <n-form :model="syncVideoForm" class="videoTabs" v-show="tabVal === '2'">
+      <n-form-item label="最小值(M)">
+        <n-select v-model:value="syncVideoForm.MinSize" :options="syncVideoSize" />
+      </n-form-item>
 
-    <n-form-item>
-      <n-popconfirm
-        @positive-click="handleSbumitClick"
-        positive-text="确认!"
-        negative-text="取消!"
-      >
-        <template #trigger>
-          <n-button>提交</n-button>
-        </template>
-        确认从本地同步最小为 {{ syncVideoForm.MinSize }} M 的
-        {{ syncVideoForm.MovieExt }}格式的视频吗? 有可能会导致网页上的数据被覆盖哦!
-      </n-popconfirm>
-    </n-form-item>
-  </n-form>
+      <n-form-item path="category" label="类型">
+        <n-select v-model:value="syncVideoForm.MovieExt" multiple :options="options" />
+      </n-form-item>
 
-  <div class="videoTabs" v-show="tabVal === '3'">
-    <n-list
-      v-bind:class="{
-        darkThemeBck: themeData === true,
-        lightThemeBck: themeData === false,
-      }"
-      v-for="(item, index) in allColl"
-      hoverable
-      clickable
-      bordered
-    >
-      <n-list-item @click="handleCollClick(index)">
-        <n-thing :title="item" content-style="margin-top: 10px;"> </n-thing>
-      </n-list-item>
-    </n-list>
+      <n-form-item>
+        <n-popconfirm
+          @positive-click="handleSbumitClick"
+          positive-text="确认!"
+          negative-text="取消!"
+        >
+          <template #trigger>
+            <n-button>提交</n-button>
+          </template>
+          确认从本地同步最小为 {{ syncVideoForm.MinSize }} M 的
+          {{ syncVideoForm.MovieExt }}格式的视频吗? 有可能会导致网页上的数据被覆盖哦!
+        </n-popconfirm>
+      </n-form-item>
+    </n-form>
+
+    <div class="videoTabs" v-show="tabVal === '3'">
+      <n-list class="coll" v-for="(item, index) in allColl" hoverable clickable bordered>
+        <n-list-item @click="handleCollClick(index)">
+          <n-thing
+            :title="item"
+            content-style="margin-top: 10px; font-size:12px!important"
+          >
+          </n-thing>
+        </n-list-item>
+      </n-list>
+    </div>
   </div>
 </template>
 
@@ -90,10 +94,8 @@
 import { ref, computed, onBeforeMount } from "vue";
 import { useVideoData } from "@/store/videoData";
 import { storeToRefs } from "pinia";
-import { SyncVideo } from "@/api/videolist";
+import { SyncVideo, GetMoviesByRecent } from "@/api/videolist";
 import { useNotification } from "naive-ui";
-
-import { useDarkTheme } from "@/store/themeData";
 
 import {
   GetAllTags,
@@ -102,9 +104,6 @@ import {
   GetAllColl,
   GetMoviesByColl,
 } from "@/api/videolist";
-
-const darkThemeStore = useDarkTheme();
-var { themeData } = storeToRefs(darkThemeStore);
 
 const notification = useNotification();
 
@@ -177,6 +176,21 @@ onBeforeMount(() => {
     }
   });
 });
+
+const handleUpdateValue = (value) => {
+  tabVal.value = value;
+  if (value === "5") {
+    GetMoviesByRecent().then((res) => {
+      if (res.code == 200) {
+        videoDataStore.setVideoData(res.data);
+        notification.success({
+          content: "成功查询到" + res.data.length + "个视频",
+          duration: 1000,
+        });
+      }
+    });
+  }
+};
 
 const handleTagClick = (index) => {
   tagIndex.value = index;
@@ -271,12 +285,23 @@ const handleSbumitClick = () => {
 };
 </script>
 
-<style>
-.videoTabs {
-  padding: 7px 17px 7px 17px;
-}
-.pagenum {
-  display: inline-flex;
-  align-items: center;
+<style lang="scss">
+.filter {
+  @include phone {
+    display: none;
+  }
+  .videoTabs {
+    padding: 7px 17px 7px 17px;
+    @include phone {
+      display: none;
+    }
+  }
+  .pagenum {
+    display: inline-flex;
+    align-items: center;
+  }
+  .coll {
+    @include theme();
+  }
 }
 </style>

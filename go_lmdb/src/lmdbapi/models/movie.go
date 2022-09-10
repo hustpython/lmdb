@@ -10,17 +10,18 @@ import (
 )
 
 type Movie struct {
-	MId       string `orm:"pk"`
-	LastWatch int64
-	Duration  string
-	VideoUrl  string
-	Title     string
-	Desc      string
-	Cover     string
-	Coll      *Coll `orm:"null;rel(fk)"`
-	CollStr   string
-	Tags      []*Tag   `orm:"rel(m2m)"`
-	TagArray  []string `orm:"-"`
+	MId         string `orm:"pk"`
+	LastWatch   int64
+	RecentWatch int64
+	Duration    string
+	VideoUrl    string
+	Title       string
+	Desc        string
+	Cover       string
+	Coll        *Coll `orm:"null;rel(fk)"`
+	CollStr     string
+	Tags        []*Tag   `orm:"rel(m2m)"`
+	TagArray    []string `orm:"-"`
 }
 
 type Tag struct {
@@ -105,6 +106,12 @@ func (m Movie) UpdateMovieData() error {
 	}
 	if len(m.Desc) != 0 {
 		updateCol = append(updateCol, "desc")
+	}
+	if m.RecentWatch != 0 {
+		updateCol = append(updateCol, "recent_watch")
+	}
+	if m.LastWatch != 0 {
+		updateCol = append(updateCol, "last_watch")
 	}
 	if len(m.CollStr) != 0 {
 		updateCol = append(updateCol, "coll_str")
@@ -303,4 +310,15 @@ func clearInvalidColl() {
 			ormOpr.Delete(coll)
 		}
 	}
+}
+
+func GetMovieByRecent() ([]*Movie, error) {
+	m, err := QueryAllMovieData()
+	if err != nil {
+		return m, err
+	}
+	sort.Slice(m, func(i, j int) bool {
+		return m[i].RecentWatch > m[j].RecentWatch
+	})
+	return m, nil
 }

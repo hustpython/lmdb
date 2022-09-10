@@ -1,12 +1,5 @@
 <template>
-  <n-layout-header
-    class="nav"
-    bordered
-    v-bind:class="{
-      darkThemeBck: themeData === true,
-      lightThemeBck: themeData === false,
-    }"
-  >
+  <n-layout-header class="nav" bordered>
     <div class="ui-logo">
       <img :src="logourl" />
       <n-gradient-text :size="24" type="success"> LMDB </n-gradient-text>
@@ -30,42 +23,45 @@
       </n-button>
       <img style="height: 32px; width: 32px; border-radius: 16px" :src="avatarurl" />
     </div>
+    <div class="rightbar">
+      <n-icon size="30"><Search /></n-icon>
+    </div>
   </n-layout-header>
 </template>
 
 <script setup>
-import { h, reactive } from "vue";
+import { h, reactive, onBeforeMount } from "vue";
 import { useDarkTheme } from "@/store/themeData";
-import { storeToRefs } from "pinia";
-import { useNotification } from "naive-ui";
-const notification = useNotification();
+import { Search } from "@vicons/carbon";
 
 const darkThemeStore = useDarkTheme();
-var { themeData } = storeToRefs(darkThemeStore);
 
+// 默认深色主题
 let themeBtnText = reactive({ text: "深色" });
+onBeforeMount(() => {
+  if (darkThemeStore.themeData === true) {
+    themeBtnText.text = "浅色";
+    setAttribute("deep");
+  } else {
+    setAttribute("light");
+  }
+});
 
-if (themeData.value == true) {
-  themeBtnText.text = "浅色";
-}
+const setAttribute = (theme) => {
+  window.document.documentElement.setAttribute("data-theme", theme);
+};
 
 const logourl = require("../assets/naivelog.svg");
 const avatarurl = require("../assets/axu.png");
 const handleThemeClick = () => {
   if (themeBtnText.text === "浅色") {
     themeBtnText.text = "深色";
+    setAttribute("light");
     darkThemeStore.unsetDarkTheme();
-    notification.success({
-      content: "主题调整为浅色",
-      duration: 1000,
-    });
   } else {
     themeBtnText.text = "浅色";
+    setAttribute("deep");
     darkThemeStore.setDarkTheme();
-    notification.success({
-      content: "主题调整为深色",
-      duration: 1000,
-    });
   }
 };
 window.addEventListener(
@@ -118,50 +114,55 @@ const renderMenuLabel = (option) => {
   position: fixed;
   top: var(--headerTopScroll);
   transition: top 0.2s linear;
-}
-/* 以后可以考虑使用这种变量来改变主题 */
-/* background-color: v-bind(color); */
-.ui-logo {
-  cursor: pointer;
-  display: flex;
-  font-size: 27px;
-  color: white;
-}
-
-.nav,
-.ui-logo {
-  align-items: center;
+  @include theme();
   @include phone() {
-    display: none;
+    padding: 0 20px;
   }
-}
-
-.ui-logo > img {
-  height: 32px;
-  margin-right: 30px;
-  width: 32px;
-}
-
-.nav-end {
-  cursor: pointer;
-  display: flex;
-  font-size: 27px;
-  color: white;
-}
-
-.nav,
-.nav-end {
-  align-items: center;
-}
-
-.header-menu {
-  display: flex;
-  color: #8a2be2;
-  font-size: 15px;
-  align-items: center;
-  width: 400px;
-  @include phone() {
+  .ui-logo {
+    cursor: pointer;
+    display: flex;
+    font-size: 27px;
+    color: white;
+    img {
+      height: 32px;
+      margin-right: 30px;
+      width: 32px;
+    }
+  }
+  .ui-logo {
+    align-items: center;
+  }
+  .header-menu {
+    display: flex;
+    color: #8a2be2;
+    font-size: 15px;
+    align-items: center;
+    width: 400px;
+    @include phone() {
+      display: none;
+    }
+  }
+  .nav-end {
+    cursor: pointer;
+    display: flex;
+    font-size: 27px;
+    color: white;
+    align-items: center;
+    img {
+      @include phone() {
+        display: none;
+      }
+    }
+  }
+  .rightbar {
     display: none;
+    @include phone() {
+      cursor: pointer;
+      display: flex;
+      color: $lightBlue;
+      align-items: center;
+      @include theme();
+    }
   }
 }
 </style>

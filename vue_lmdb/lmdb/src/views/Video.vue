@@ -1,12 +1,6 @@
 <template>
   <Header />
-  <n-layout
-    class="videopage"
-    v-bind:class="{
-      darkThemeBck: themeData === true,
-      lightThemeBck: themeData === false,
-    }"
-  >
+  <n-layout class="videopage">
     <canvas id="localVideoCanvas" style="display: none"></canvas>
     <n-spance class="videospace">
       <video
@@ -15,20 +9,21 @@
         autoplay
         :src="videoUrl"
         controls="controls"
-        @timeupdate="handleTimeUpdate"
+        @loadeddata="handleLoaded($event)"
+        @pause="handlePause"
       ></video>
 
       <n-divider />
       <n-space style="height: 360px">
         <!-- 左侧图片 -->
-        <img class="videoCardSize" :src="setCoverData(videoData[route.query.id].Cover)" />
+        <img class="videoCardSize" :src="setCoverData(videoData[routeID].Cover)" />
         <!-- 右侧信息 -->
         <n-space vertical class="middleInfo" v-show="showEditForm === false">
           <div>
             <span style="font-size: 18px; float: left"
-              >{{ videoData[route.query.id].Title }}
+              >{{ videoData[routeID].Title }}
               <n-button
-                v-show="videoData[route.query.id].CollStr !== ''"
+                v-show="videoData[routeID].CollStr !== ''"
                 strong
                 secondary
                 type="tertiary"
@@ -44,14 +39,19 @@
             </span>
           </div>
           <n-space>
-            <div v-for="(item, index) in videoData[route.query.id].TagArray">
+            <div v-for="(item, index) in videoData[routeID].TagArray">
               <n-tag :type="labelTypes[index]" round>
                 {{ item }}
               </n-tag>
             </div>
           </n-space>
-          <n-ellipsis expand-trigger="click" line-clamp="3" :tooltip="false">
-            {{ videoData[route.query.id].Desc }}
+          <n-ellipsis
+            style="max-width: 320px"
+            expand-trigger="click"
+            line-clamp="3"
+            :tooltip="false"
+          >
+            {{ videoData[routeID].Desc }}
           </n-ellipsis>
         </n-space>
 
@@ -151,29 +151,26 @@
 
 <script setup>
 import { useRoute } from "vue-router";
-import { ref, computed, onBeforeMount } from "vue";
+import { ref, computed, onBeforeMount, onBeforeUnmount } from "vue";
 import Header from "@/components/Header.vue";
 import { UpdateVideo, GetAllColl, DeleteMovieColl } from "@/api/videolist";
-
 import { storeToRefs } from "pinia";
-import { darkTheme } from "naive-ui";
-import { useDarkTheme } from "@/store/themeData";
-
 import { useVideoData } from "@/store/videoData";
-
 import { Edit, FolderDetails, Favorite, Camera } from "@vicons/carbon";
+import { getUTCTime, timeFilter } from "@/api/timefilter";
+import { useNotification } from "naive-ui";
 
 var showEditForm = ref(false);
 
+const notification = useNotification();
 const videoDataStore = useVideoData();
 var { videoData } = storeToRefs(videoDataStore);
 
-const darkThemeStore = useDarkTheme();
-var { themeData } = storeToRefs(darkThemeStore);
-
 const route = useRoute();
 
-const videoUrl = config.SERVER_API + videoData.value[route.query.id].VideoUrl;
+const routeID = route.query.id;
+
+const videoUrl = config.SERVER_API + videoData.value[routeID].VideoUrl;
 
 const formInstRef = ref(null);
 const labelTypes = ["success", "warning", "error", "info"];
@@ -186,10 +183,10 @@ const setCoverData = (cover) => {
 };
 
 var videoFormModel = ref({
-  Title: videoData.value[route.query.id].Title,
-  TagArray: videoData.value[route.query.id].TagArray,
-  Desc: videoData.value[route.query.id].Desc,
-  CollStr: videoData.value[route.query.id].CollStr,
+  Title: videoData.value[routeID].Title,
+  TagArray: videoData.value[routeID].TagArray,
+  Desc: videoData.value[routeID].Desc,
+  CollStr: videoData.value[routeID].CollStr,
 });
 
 const videoTagOption = computed(() => {
@@ -252,24 +249,55 @@ const handleClickClap = () => {
   mycanvas.height = myvideo.clientHeight; //获取视频高度
   ctx.drawImage(myvideo, 0, 0, mycanvas.width, mycanvas.height);
   try {
-    videoData.value[route.query.id].Cover = mycanvas.toDataURL("image/png"); // 导出图片
+    videoData.value[routeID].Cover = mycanvas.toDataURL("image/png"); // 导出图片
     let tmpCover = {
-      MId: videoData.value[route.query.id].MId,
-      Cover: videoData.value[route.query.id].Cover.slice(22),
+      MId: videoData.value[routeID].MId,
+      Cover: videoData.value[routeID].Cover.slice(22),
     };
     UpdateVideo(tmpCover);
-    console.log(showEditForm.value);
   } catch (error) {
     console.log("设置失败，稍后再试", error);
   }
 };
 
+const handleLoaded = (e) => {
+  if (videoData.value[routeID].LastWatch > 0) {
+    e.target.currentTime = videoData.value[routeID].LastWatch;
+    notification.success({
+      content: "定位到上次视频播放至" + timeFilter(videoData.value[routeID].LastWatch),
+      duration: 3000,
+    });
+  }
+  if (videoData.value[routeID].Duration.length !== 0) {
+    return;
+  }
+  let updateTime = {
+    MId: videoData.value[routeID].MId,
+    Duration: timeFilter(e.target.duration),
+  };
+  UpdateVideo(updateTime);
+};
+
+const handlePause = () => {
+  const myvideo = document.getElementById("localvideo");
+  let updateTime = {
+    MId: videoData.value[routeID].MId,
+    RecentWatch: getUTCTime(),
+    LastWatch: Math.floor(myvideo.currentTime),
+  };
+  UpdateVideo(updateTime);
+};
+
+onBeforeUnmount(() => {
+  handlePause();
+});
+
 const handleRecover = () => {
-  videoFormModel.value.Title = videoData.value[route.query.id].Title;
+  videoFormModel.value.Title = videoData.value[routeID].Title;
   videoFormModel.value.TagArray = [];
-  videoFormModel.value.TagArray.push(...videoData.value[route.query.id].TagArray);
-  videoFormModel.value.Desc = videoData.value[route.query.id].Desc;
-  videoFormModel.value.CollStr = videoData.value[route.query.id].CollStr;
+  videoFormModel.value.TagArray.push(...videoData.value[routeID].TagArray);
+  videoFormModel.value.Desc = videoData.value[routeID].Desc;
+  videoFormModel.value.CollStr = videoData.value[routeID].CollStr;
   formInstRef.value?.restoreValidation();
 };
 
@@ -289,13 +317,13 @@ const handleValidateClick = () => {
     if (getError === true) {
       return;
     }
-    videoFormModel.value.MId = videoData.value[route.query.id].MId;
+    videoFormModel.value.MId = videoData.value[routeID].MId;
     UpdateVideo(videoFormModel.value);
-    videoData.value[route.query.id].Title = videoFormModel.value.Title;
-    videoData.value[route.query.id].Desc = videoFormModel.value.Desc;
-    videoData.value[route.query.id].TagArray = videoFormModel.value.TagArray;
-    videoData.value[route.query.id].CollStr = videoFormModel.value.CollStr;
-    if (videoFormModel.value.CollStr === '') {
+    videoData.value[routeID].Title = videoFormModel.value.Title;
+    videoData.value[routeID].Desc = videoFormModel.value.Desc;
+    videoData.value[routeID].TagArray = videoFormModel.value.TagArray;
+    videoData.value[routeID].CollStr = videoFormModel.value.CollStr;
+    if (videoFormModel.value.CollStr === "") {
       DeleteMovieColl(videoFormModel.value.MId);
     }
     showEditForm.value = false;
@@ -303,10 +331,11 @@ const handleValidateClick = () => {
   setTimeout(procForm, 100);
 };
 </script>
-<style>
+<style lang="scss">
 .videopage {
   margin-top: var(--headerTop);
   height: 100%;
+  @include theme();
 }
 
 .videospace {
