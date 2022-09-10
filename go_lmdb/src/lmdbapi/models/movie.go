@@ -13,6 +13,7 @@ type Movie struct {
 	MId         string `orm:"pk"`
 	LastWatch   int64
 	RecentWatch int64
+	PathValid   bool
 	Duration    string
 	VideoUrl    string
 	Title       string
@@ -59,7 +60,7 @@ func init() {
 
 func QueryAllMovieData() ([]*Movie, error) {
 	var movies []*Movie
-	_, err := ormOpr.QueryTable("movie").All(&movies)
+	_, err := ormOpr.QueryTable("movie").Filter("path_valid", 0).All(&movies)
 	for _, m := range movies {
 		ormOpr.LoadRelated(m, "Tags")
 		for _, tag := range m.Tags {
@@ -85,6 +86,10 @@ func InsertOrUpdateMovieData(force bool, movieArray []*Movie) ([]*Movie, error) 
 			if qs.Filter("MId", m.MId).One(&movie) == nil {
 				if movie.VideoUrl != m.VideoUrl {
 					_, err := ormOpr.Update(m, "video_url")
+					fmt.Printf("update videurl: %s,err:%s", m.VideoUrl, err)
+				}
+				if movie.PathValid != m.PathValid {
+					_, err := ormOpr.Update(m, "path_valid")
 					fmt.Printf("update videurl: %s,err:%s", m.VideoUrl, err)
 				}
 			}
@@ -248,13 +253,13 @@ func GetAllColl() ([]string, error) {
 }
 
 func ClearInvalidData() {
-	clearInvalidMovie()
+	clearInvalidMovie(false)
 	clearInvalidTag()
 	clearInvalidColl()
 	logs.Info("ClearInvalidData")
 }
 
-func clearInvalidMovie() {
+func clearInvalidMovie(force bool) {
 	var movies []*Movie
 	_, err := ormOpr.QueryTable("movie").All(&movies)
 	if err != nil {
@@ -268,8 +273,14 @@ func clearInvalidMovie() {
 			continue
 		}
 		if os.IsNotExist(err) {
-			_, err = ormOpr.Delete(m, "m_id")
-			logs.Info("delete moviedata %v,err:%v", m.VideoUrl, err)
+			if force {
+				_, err = ormOpr.Delete(m, "m_id")
+				logs.Info("delete moviedata %v,err:%v", m.VideoUrl, err)
+			} else {
+				m.PathValid = true
+				_, err = ormOpr.Update(m, "path_valid")
+				logs.Info("update movie path invalid %v,err:%v", m.VideoUrl, err)
+			}
 		}
 	}
 }
