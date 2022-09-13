@@ -4,14 +4,18 @@
         <video
                 id="lvideo"
                 src="../assets/陈逗逗自弹自唱你的眼神.mp4"
-                @loadstart="handleLoadStart"
+                @loadeddata="handleLoadStart"
                 @click="handlePlay"
                 @timeupdate="handleTimeProgress"
+                @ended="handleEnd"
+                @mouseenter="hanldeMouseMove"
         ></video>
 
 
         <!--            下方控制台-->
-        <div class="progressMask" @click="handleProgress" @mousemove="handleProgressHover">
+        <div class="progressMask"
+             @click="handleProgress"
+             v-show="showControl">
             <span class="progress"> </span>
             <span class="bkg"> </span>
             <div class="progressBtn">
@@ -19,13 +23,11 @@
                     <VehicleSubway16Regular/>
                 </n-icon>
             </div>
-            <div class="trangleIcon">
-                <div class="trangleDown"></div>
-                <div class="trangleUp"></div>
-            </div>
-
         </div>
-        <div class="videoPlayCtrl">
+        <div class="videoPlayCtrl"
+             @mouseenter="handlePlayCtrlEnter"
+             @click="inputTimeSubmit"
+             v-show="showControl">
             <!--                播放/暂停按钮-->
             <n-icon v-show="playStatus" class="playControl" size="30" @click="handlePlay">
                 <PausePresentationOutlined/>
@@ -33,17 +35,33 @@
             <n-icon v-show="!playStatus" class="playControl" size="30" @click="handlePlay">
                 <LiveTvRound/>
             </n-icon>
-            <!--                声音调整按钮-->
-
-            <n-icon class="volumeControl" size="30" @click="handlePlay">
-                <VolumeUpFilled/>
-            </n-icon>
-            <n-icon class="volumeControl" size="30">
-                <VolumeOffRound/>
-            </n-icon>
 
             <!--                显示时间-->
-            <div class="timeView">1/1</div>
+            <div class="timeView"
+                 @click="handleTimeTextClick"
+                 v-show=!showTimeEditInput
+            >{{controlTimeView.playTime}}/{{controlTimeView.duration}}
+            </div>
+
+
+            <input class="timeEdit"
+                   type="text"
+                   v-model=inputTime
+                   v-show=true>
+            <n-icon class="coverSet" size="30" :depth="2">
+                <Camera/>
+            </n-icon>
+
+            <!--                声音调整按钮-->
+
+            <n-icon class="volumeControl" size="30">
+                <VolumeUpFilled/>
+            </n-icon>
+            <!--            <n-icon class="volumeControl" size="30">-->
+            <!--                <VolumeOffRound/>-->
+            <!--            </n-icon>-->
+
+
             <!--                全屏按钮-->
 
             <n-icon class="fullScreen" size="30" @click="handleFull">
@@ -51,27 +69,13 @@
             </n-icon>
         </div>
 
-        <!--视频上面的显示-->
-        <div class="maskSetting">
-            <!--            视频暂停时显示-->
-            <n-icon v-show=!playStatus class="tvOff" size="120">
-                <LiveTvRound/>
-            </n-icon>
-            <div class="videoRightBtn">
-                <div class="jietu">
-                    <!--                设置封面按钮-->
-                    <n-icon size="30" :depth="3">
-                        <Camera/>
-                    </n-icon>
-                </div>
-                <div class="edit">
-                    <!--                设置封面按钮-->
-                    <n-icon size="30" :depth="3">
-                        <Camera/>
-                    </n-icon>
-                </div>
-            </div>
-        </div>
+
+        <!--            视频暂停时显示-->
+        <n-icon v-show=!playStatus class="tvOff" size="120">
+            <LiveTvRound/>
+        </n-icon>
+
+
     </div>
 </template>
 
@@ -84,46 +88,92 @@
         LiveTvRound,
     } from "@vicons/material";
     import {Camera} from "@vicons/carbon";
-    import {ref} from "vue";
+    import {timeFilter, timeStrToSec} from "@/api/timefilter";
+    import {ref, reactive} from "vue";
 
     let lvideo = {};
     const progressBtnLeft = ref("0%");
     const mouseLeft = ref("0px");
     const videoWidth = ref("668px");
     const videoHeight = ref("376px");
+    const showControl = ref(true);
+    const showTimeEditInput = ref(false);
+    let videoControlTimer;
+
+    let controlTimeView = reactive(
+        {
+            playTime: timeFilter(0),
+            duration: timeFilter(0),
+        })
 
     const handleProgress = (e) => {
         progressBtnLeft.value = e.offsetX.toString() + "px";
+        lvideo.currentTime = e.offsetX / e.target.clientWidth * lvideo.duration;
+    };
 
-        console.log()
-    };
-    const handleProgressHover = (e) => {
-        mouseLeft.value = e.offsetX.toString() + "px";
-    };
     const handleLoadStart = () => {
         lvideo = document.getElementById("lvideo");
+        controlTimeView.duration = timeFilter(lvideo.duration);
     };
+
     const playStatus = ref(false);
     const handlePlay = () => {
         playStatus.value = !playStatus.value;
         if (lvideo.paused) {
             lvideo.play();
+            showControl.value = false;
         } else {
+            showControl.value = true;
             lvideo.pause();
         }
     };
+    const handleEnd = () => {
+        playStatus.value = false;
+    }
     const handleTimeProgress = (e) => {
         progressBtnLeft.value = e.target.currentTime / e.target.duration * 100 + '%';
+        controlTimeView.playTime = timeFilter(e.target.currentTime)
     }
     const handleFull = () => {
-        let videoContent = document.querySelector('.VideoContent');
         if (!document.fullscreenElement) {
-            videoContent.requestFullscreen();
+            document.querySelector('.VideoContent').requestFullscreen();
             videoWidth.value = "100%";
         } else {
             document.exitFullscreen();
         }
     };
+
+    const hanldeMouseMove = () => {
+        clearTimeout(videoControlTimer);
+        showControl.value = true;
+        if (lvideo.paused) {
+            return;
+        }
+        videoControlTimer = setTimeout(function () {
+            showControl.value = false;
+        }, 3000);
+    }
+    const handlePlayCtrlEnter = () => {
+        clearTimeout(videoControlTimer);
+        showControl.value = true;
+    }
+    const inputTime = ref();
+    const handleTimeTextClick = () => {
+        showTimeEditInput.value = true;
+        inputTime.value = timeFilter(lvideo.currentTime);
+        console.log(showTimeEditInput.value)
+    }
+    const inputTimeSubmit = () => {
+        showTimeEditInput.value = true;
+        let inputTimeSec = timeStrToSec(inputTime.value);
+        if (inputTimeSec > lvideo.duration) {
+            lvideo.currentTime = lvideo.duration;
+            inputTime.value = timeFilter(lvideo.currentTime);
+        } else {
+            lvideo.currentTime = inputTimeSec;
+        }
+    }
+
 </script>
 
 <style scoped lang="scss">
@@ -179,40 +229,6 @@
                 background: #f48fb1;
             }
 
-            .trangleIcon {
-                display: none;
-            }
-
-            &:hover {
-                .trangleIcon {
-                    display: none;
-                    position: absolute;
-
-                    .trangleDown {
-                        width: 0;
-                        height: 0;
-                        position: absolute;
-                        top: 4px;
-                        border: 6px solid transparent;
-                        border-top: none;
-                        border-bottom-color: #f48fb1;
-                        left: v-bind(mouseLeft);
-                    }
-
-                    .trangleUp {
-                        width: 0;
-                        height: 0;
-                        position: absolute;
-                        top: -8px;
-                        border: 6px solid transparent;
-                        border-bottom: none;
-                        border-top-color: #f48fb1;
-                        left: v-bind(mouseLeft);
-                    }
-                }
-            }
-
-
         }
 
         .videoPlayCtrl {
@@ -220,76 +236,64 @@
             height: 36px;
             position: absolute;
             display: flex;
-            cursor: pointer;
-            background-color: rgb(224, 242, 241, 0.1);
-
             bottom: 0px;
 
             .playControl {
                 position: absolute;
                 left: 10px;
-            }
-
-            .volumeControl {
-                position: absolute;
-                right: 120px;
+                cursor: pointer;
             }
 
             .timeView {
                 position: absolute;
                 left: 100px;
+                font-size: 15px;
+                top: 5px;
+                color: hsla(0, 0%, 100%, .8);
+                cursor: text;
             }
+
+            .timeEdit {
+                position: absolute;
+                left: 180px;
+                font-size: 15px;
+                top: 5px;
+                border: none;
+                background-color: hsla(0, 0%, 100%, .1);
+                width: 70px;
+                outline: medium;
+                cursor: text;
+            }
+
+            .coverSet {
+                position: absolute;
+                left: 250px;
+                font-size: 15px;
+                top: 5px;
+                cursor: pointer;
+            }
+
+            .volumeControl {
+                position: absolute;
+                right: 120px;
+                cursor: pointer;
+            }
+
 
             .fullScreen {
                 position: absolute;
                 right: 60px;
+                cursor: pointer;
             }
         }
 
-        .maskSetting {
-            width: v-bind(videoWidth);
-            position: absolute;
+
+        .tvOff {
             display: flex;
-            bottom: 30px;
-
-            .tvOff {
-                position: absolute;
-                right: 100px;
-                bottom: 120px;
-            }
-
-            .videoRightBtn {
-                height: 80px;
-                border-radius: 10px;
-                width: 40px;
-                background-color: rgba(165, 42, 42, 0.3);
-                opacity: 1;
-                position: absolute;
-                right: 30px;
-                top: -300px;
-
-                &:hover {
-                    background-color: rgba(165, 42, 42, 0.8);
-                }
-
-                .jietu {
-                    margin-top: 10px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-
-                .edit {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-            }
-
-
+            position: absolute;
+            right: 100px;
+            bottom: 120px;
         }
 
     }
-
-
 </style>
