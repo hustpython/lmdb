@@ -8,7 +8,7 @@
                 @click="handlePlay"
                 @timeupdate="handleTimeProgress"
                 @ended="handleEnd"
-                @mouseenter="hanldeMouseMove"
+                @mousemove="hanldeMouseMove"
         ></video>
 
 
@@ -26,10 +26,10 @@
         </div>
         <div class="videoPlayCtrl"
              @mouseenter="handlePlayCtrlEnter"
-             @click="inputTimeSubmit"
              v-show="showControl">
             <!--                播放/暂停按钮-->
-            <n-icon v-show="playStatus" class="playControl" size="30" @click="handlePlay">
+            <n-icon
+                    v-show="playStatus" class="playControl" size="30" @click="handlePlay">
                 <PausePresentationOutlined/>
             </n-icon>
             <n-icon v-show="!playStatus" class="playControl" size="30" @click="handlePlay">
@@ -47,7 +47,10 @@
             <input class="timeEdit"
                    type="text"
                    v-model=inputTime
-                   v-show=true>
+                   v-show=showTimeEditInput
+                   @keyup.enter="handleInputBlur"
+                   @blur="handleInputBlur"
+                   ref="refInput">
             <n-icon class="coverSet" size="30" :depth="2">
                 <Camera/>
             </n-icon>
@@ -89,7 +92,7 @@
     } from "@vicons/material";
     import {Camera} from "@vicons/carbon";
     import {timeFilter, timeStrToSec} from "@/api/timefilter";
-    import {ref, reactive} from "vue";
+    import {ref, reactive, nextTick} from "vue";
 
     let lvideo = {};
     const progressBtnLeft = ref("0%");
@@ -99,6 +102,14 @@
     const showControl = ref(true);
     const showTimeEditInput = ref(false);
     let videoControlTimer;
+
+
+    document.body.onkeypress = function (e) {
+        if (e.keyCode == 32) {
+            e.preventDefault();
+            handlePlay();
+        }
+    }
 
     let controlTimeView = reactive(
         {
@@ -158,13 +169,15 @@
         showControl.value = true;
     }
     const inputTime = ref();
+    const refInput = ref();
     const handleTimeTextClick = () => {
         showTimeEditInput.value = true;
         inputTime.value = timeFilter(lvideo.currentTime);
-        console.log(showTimeEditInput.value)
+        nextTick(() => {
+            refInput.value.focus()
+        })
     }
-    const inputTimeSubmit = () => {
-        showTimeEditInput.value = true;
+    const handleInputBlur = () => {
         let inputTimeSec = timeStrToSec(inputTime.value);
         if (inputTimeSec > lvideo.duration) {
             lvideo.currentTime = lvideo.duration;
@@ -172,6 +185,7 @@
         } else {
             lvideo.currentTime = inputTimeSec;
         }
+        showTimeEditInput.value = false;
     }
 
 </script>
@@ -249,20 +263,20 @@
                 left: 100px;
                 font-size: 15px;
                 top: 5px;
-                color: hsla(0, 0%, 100%, .8);
                 cursor: text;
+                @include theme()
             }
 
             .timeEdit {
                 position: absolute;
-                left: 180px;
+                left: 100px;
                 font-size: 15px;
                 top: 5px;
                 border: none;
-                background-color: hsla(0, 0%, 100%, .1);
                 width: 70px;
                 outline: medium;
                 cursor: text;
+                background: rgb(189, 189, 189, 0.3);
             }
 
             .coverSet {
