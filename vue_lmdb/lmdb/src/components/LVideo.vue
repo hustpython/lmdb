@@ -8,7 +8,7 @@
                 @click="handlePlay"
                 @timeupdate="handleTimeProgress"
                 @ended="handleEnd"
-                @mousemove="hanldeMouseMove"
+                @mousemove="handleMouseMove"
         ></video>
 
 
@@ -57,16 +57,38 @@
 
             <!--                声音调整按钮-->
 
-            <n-icon class="volumeControl" size="30">
+            <n-icon
+                    v-show=volumeBtnShow
+                    @mouseenter="volumeControlMouseEnter"
+                    @mouseleave="volumeControlMouseLeave"
+                    @click="volumeControlClick"
+                    class="volumeControl" size="30">
                 <VolumeUpFilled/>
             </n-icon>
-            <!--            <n-icon class="volumeControl" size="30">-->
-            <!--                <VolumeOffRound/>-->
-            <!--            </n-icon>-->
+            <n-icon
+                    v-show=!volumeBtnShow
+                    @mouseenter="volumeControlMouseEnter"
+                    @mouseleave="volumeControlMouseLeave"
+                    @click="volumeControlClick"
+                    class="volumeControl" size="30">
+                <VolumeOffRound/>
+            </n-icon>
+
+            <!--            音量进度条显示-->
+            <div v-show=volumeShow>
+                <span class="volumeBox">
+            100
+            </span>
+                <div class="volumeProgress">
+                    <div class="currentProgress">
+                        <div class="volumeMoveBtn" @mousedown="handleVolumeMove">
+                        </div>
+                    </div>
+                </div>
 
 
+            </div>
             <!--                全屏按钮-->
-
             <n-icon class="fullScreen" size="30" @click="handleFull">
                 <FullScreenMaximize24Filled/>
             </n-icon>
@@ -154,7 +176,7 @@
         }
     };
 
-    const hanldeMouseMove = () => {
+    const handleMouseMove = () => {
         clearTimeout(videoControlTimer);
         showControl.value = true;
         if (lvideo.paused) {
@@ -186,6 +208,21 @@
             lvideo.currentTime = inputTimeSec;
         }
         showTimeEditInput.value = false;
+    }
+    const handleVolumeMove = (e) => {
+        console.log("1212")
+        e.positionY = e.positionY + 100;
+    }
+    const volumeShow = ref(false);
+    const volumeControlMouseEnter = () => {
+        volumeShow.value = true;
+    }
+    const volumeControlMouseLeave = () => {
+        volumeShow.value = false;
+    }
+    const volumeBtnShow = ref(true);
+    const volumeControlClick = () => {
+        volumeBtnShow.value = !volumeBtnShow.value;
     }
 
 </script>
@@ -242,7 +279,6 @@
                 width: v-bind(progressBtnLeft);
                 background: #f48fb1;
             }
-
         }
 
         .videoPlayCtrl {
@@ -287,10 +323,58 @@
                 cursor: pointer;
             }
 
+
             .volumeControl {
                 position: absolute;
                 right: 120px;
                 cursor: pointer;
+            }
+
+
+            $volumeViewBottom: 55px;
+            $volumeViewHeight: 100px;
+
+
+            .volumeBox {
+                position: absolute;
+                height: $volumeViewHeight;
+                width: 30px;
+                right: 120px;
+                font-size: 12px;
+                text-align: center;
+                bottom: $volumeViewBottom;
+                background: rgb(19, 19, 19, 0.6);
+            }
+
+            .volumeProgress {
+                position: absolute;
+                height: $volumeViewHeight - 35;
+                width: 3px;
+                right: 133px;
+                bottom: $volumeViewBottom+3;
+                background: white;
+
+                .currentProgress {
+                    position: absolute;
+                    max-height: $volumeViewHeight - 35;
+                    height: 100%;
+                    width: 3px;
+                    background: lightblue;
+
+                    .volumeMoveBtn {
+                        position: absolute;
+                        height: 14px;
+                        width: 14px;
+                        right: -5px;
+                        border-radius: 7px;
+                        background: lightblue;
+                        bottom: 100%;
+
+                        &:hover {
+                            box-shadow: 0 0 3px 3px lightblue;
+                        }
+                    }
+                }
             }
 
 
@@ -305,8 +389,8 @@
         .tvOff {
             display: flex;
             position: absolute;
-            right: 100px;
-            bottom: 120px;
+            right: 75px;
+            bottom: 180px;
         }
 
     }
