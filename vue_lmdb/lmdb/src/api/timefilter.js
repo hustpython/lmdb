@@ -6,23 +6,14 @@ export const timeFilter = (val) => {
     var h = Math.floor(val / 60 / 60);
     var m = Math.floor(val / 60 % 60);
     var s = Math.floor(val % 60);
-    if (h === 0) {
-        return p(m) + ':' + p(s)
-    } else {
-        return p(h) + ':' + p(m) + ':' + p(s);
-    }
-    return str
+    return p(h) + ':' + p(m) + ':' + p(s);
 }
 
 export const timeStrToSec = (timeStr) => {
     var hour = timeStr.split(':')[0];
     var min = timeStr.split(':')[1];
     var sec = timeStr.split(':')[2];
-    if (hour === '00') {
-        return Number(hour * 60) + Number(min);
-    } else {
-        return Number(hour * 3600) + Number(min * 60) + Number(sec);
-    }
+    return Number(hour * 3600) + Number(min * 60) + Number(sec);
 }
 
 export function getUTCTime() {

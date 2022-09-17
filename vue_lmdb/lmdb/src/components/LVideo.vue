@@ -1,14 +1,22 @@
 <template>
     <div class="VideoContent">
-
+        <canvas id="localVideoCanvas" style="display: none"></canvas>
         <video
+                autoplay
                 id="lvideo"
-                src="../assets/陈逗逗自弹自唱你的眼神.mp4"
+                :src=videoUrl
                 @loadeddata="handleLoadStart"
                 @click="handlePlay"
                 @timeupdate="handleTimeProgress"
                 @ended="handleEnd"
                 @mousemove="handleMouseMove"
+                @pause="handlePause"
+                style="display: block"
+                x5-video-player-type="h5"
+                webkit-playsinline=""
+                playsinline=""
+                preload="metadata"
+                crossorigin="anonymous"
         ></video>
 
 
@@ -19,7 +27,7 @@
             <span class="progress"> </span>
             <span class="bkg"> </span>
             <div class="progressBtn">
-                <n-icon size="18">
+                <n-icon size="16">
                     <VehicleSubway16Regular/>
                 </n-icon>
             </div>
@@ -27,14 +35,25 @@
         <div class="videoPlayCtrl"
              @mouseenter="handlePlayCtrlEnter"
              v-show="showControl">
+            <n-icon
+                    class="preControl" :size=controlBtnSize @click="handlePlay">
+                <Previous20Regular/>
+            </n-icon>
             <!--                播放/暂停按钮-->
             <n-icon
-                    v-show="playStatus" class="playControl" size="30" @click="handlePlay">
+                    v-show="playStatus" class="playControl" :size=controlBtnSize @click="handlePlay">
                 <PausePresentationOutlined/>
             </n-icon>
-            <n-icon v-show="!playStatus" class="playControl" size="30" @click="handlePlay">
+            <n-icon v-show="!playStatus" class="playControl" :size=controlBtnSize @click="handlePlay">
                 <LiveTvRound/>
             </n-icon>
+
+            <!--            下一个视频-->
+            <n-icon
+                    class="nextControl" :size=controlBtnSize @click="handlePlay">
+                <Next20Regular/>
+            </n-icon>
+
 
             <!--                显示时间-->
             <div class="timeView"
@@ -51,7 +70,8 @@
                    @keyup.enter="handleInputBlur"
                    @blur="handleInputBlur"
                    ref="refInput">
-            <n-icon class="coverSet" size="30" :depth="2">
+            <n-icon class="coverSet" :size=controlBtnSize
+                    @click="handleClickClap">
                 <Camera/>
             </n-icon>
 
@@ -62,7 +82,7 @@
                     @mouseenter="volumeControlMouseEnter"
                     @mouseleave="volumeControlMouseLeave"
                     @click="volumeControlClick"
-                    class="volumeControl" size="30">
+                    class="volumeControl" :size=controlBtnSize>
                 <VolumeUpFilled/>
             </n-icon>
             <n-icon
@@ -70,7 +90,7 @@
                     @mouseenter="volumeControlMouseEnter"
                     @mouseleave="volumeControlMouseLeave"
                     @click="volumeControlClick"
-                    class="volumeControl" size="30">
+                    class="volumeControl" :size=controlBtnSize>
                 <VolumeOffRound/>
             </n-icon>
 
@@ -98,14 +118,20 @@
 
             </div>
             <!--                全屏按钮-->
-            <n-icon class="fullScreen" size="30" @click="handleFull">
+            <n-icon class="fullScreen" :size=controlBtnSize @click="handleFull">
                 <FullScreenMaximize24Filled/>
             </n-icon>
+
+            <div v-show="controlNotifyShow"
+                 class="controlNotify">
+                {{notifyMsg}}
+            </div>
+
         </div>
 
 
         <!--            视频暂停时显示-->
-        <n-icon v-show=!playStatus class="tvOff" size="120">
+        <n-icon v-show=!playStatus class="tvOff" size="90">
             <LiveTvRound/>
         </n-icon>
 
@@ -114,7 +140,10 @@
 </template>
 
 <script setup>
-    import {VehicleSubway16Regular, FullScreenMaximize24Filled} from "@vicons/fluent";
+    import {
+        VehicleSubway16Regular, FullScreenMaximize24Filled, Next20Regular,
+        Previous20Regular
+    } from "@vicons/fluent";
     import {
         VolumeUpFilled,
         PausePresentationOutlined,
@@ -122,26 +151,55 @@
         LiveTvRound,
     } from "@vicons/material";
     import {Camera} from "@vicons/carbon";
-    import {timeFilter, timeStrToSec} from "@/api/timefilter";
-    import {ref, reactive, nextTick} from "vue";
+    import {getUTCTime, timeFilter, timeStrToSec} from "@/api/timefilter";
+    import {ref, reactive, nextTick, defineProps, onBeforeUnmount} from "vue";
+    import {UpdateVideo} from "@/api/videolist";
+
+    import {storeToRefs} from "pinia";
+    import {useVideoData} from "@/store/videoData";
+
+    const videoDataStore = useVideoData();
+    var {videoData} = storeToRefs(videoDataStore);
+
+    const routeID = defineProps(["Id"]);
+    const videoUrl = config.SERVER_API + videoData.value[routeID.Id].VideoUrl;
 
     let lvideo = {};
-    const progressBtnLeft = ref("0%");
+
+    const controlBtnSize = "24px";
+
+    const progressBtnLeft = ref("0");
     const mouseLeft = ref("0px");
     const videoWidth = ref("668px");
     const videoHeight = ref("376px");
     const showControl = ref(true);
     const showTimeEditInput = ref(false);
+    const controlNotifyShow = ref(false);
     let videoControlTimer;
 
+    let controlNotifyShowTimer;
 
-    document.body.onkeypress = function (e) {
+    document.body.onkeydown = function (e) {
+        var e = event || window.event || arguments.callee.caller.arguments[0];
+        // 空格
         if (e.keyCode == 32) {
             e.preventDefault();
             handlePlay();
         }
+        // 左键
+        if (e.keyCode == 39) {
+            lvideo.currentTime += 6;
+        }
+        // 右键
+        if (e.keyCode == 37) {
+            lvideo.currentTime -= 6;
+        }
+        // 插入键,截图
+        if (e.keyCode == 45) {
+            handleClickClap()
+        }
     }
-
+    const notifyMsg = ref();
     let controlTimeView = reactive(
         {
             playTime: timeFilter(0),
@@ -152,13 +210,33 @@
         progressBtnLeft.value = e.offsetX.toString() + "px";
         lvideo.currentTime = e.offsetX / e.target.clientWidth * lvideo.duration;
     };
-
-    const handleLoadStart = () => {
+    const delayClearNotifyMsg = (z) => {
+        notifyMsg.value = z;
+        clearTimeout(controlNotifyShowTimer);
+        controlNotifyShow.value = true;
+        setTimeout(function () {
+            controlNotifyShow.value = false;
+        }, 3000)
+    }
+    const handleLoadStart = (e) => {
         lvideo = document.getElementById("lvideo");
         controlTimeView.duration = timeFilter(lvideo.duration);
+        if (videoData.value[routeID.Id].LastWatch > 0) {
+            e.target.currentTime = videoData.value[routeID.Id].LastWatch;
+            delayClearNotifyMsg("为您定位至:" + timeFilter(videoData.value[routeID.Id].LastWatch));
+
+        }
+        if (videoData.value[routeID.Id].Duration.length !== 0) {
+            return;
+        }
+        let updateTime = {
+            MId: videoData.value[routeID.Id].MId,
+            Duration: timeFilter(e.target.duration),
+        };
+        UpdateVideo(updateTime);
     };
 
-    const playStatus = ref(false);
+    const playStatus = ref(true);
     const handlePlay = () => {
         playStatus.value = !playStatus.value;
         if (lvideo.paused) {
@@ -182,8 +260,15 @@
             videoWidth.value = "100%";
         } else {
             document.exitFullscreen();
+            videoWidth.value = "668px";
         }
     };
+
+    document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement) {
+            videoWidth.value = "668px";
+        }
+    })
 
     const handleMouseMove = () => {
         clearTimeout(videoControlTimer);
@@ -289,6 +374,39 @@
         }
     }
 
+    const handleClickClap = () => {
+        const mycanvas = document.getElementById("localVideoCanvas"); // 获取 canvas 对象
+        const ctx = mycanvas.getContext("2d"); // 绘制2d
+        mycanvas.width = lvideo.clientWidth; // 获取视频宽度
+        mycanvas.height = lvideo.clientHeight; //获取视频高度
+        ctx.drawImage(lvideo, 0, 0, mycanvas.width, mycanvas.height);
+        try {
+            videoData.value[routeID.Id].Cover = mycanvas.toDataURL("image/png"); // 导出图片
+            let tmpCover = {
+                MId: videoData.value[routeID.Id].MId,
+                Cover: videoData.value[routeID.Id].Cover.slice(22),
+            };
+            UpdateVideo(tmpCover);
+            delayClearNotifyMsg("为您截取一张图片");
+        } catch (error) {
+            console.log("设置失败，稍后再试", error);
+        }
+    };
+
+    onBeforeUnmount(() => {
+        handlePause();
+    });
+
+    const handlePause = () => {
+        let updateTime = {
+            MId: videoData.value[routeID.Id].MId,
+            RecentWatch: getUTCTime(),
+            LastWatch: Math.floor(lvideo.currentTime),
+        };
+        UpdateVideo(updateTime);
+    };
+
+
 </script>
 
 <style scoped lang="scss">
@@ -300,7 +418,7 @@
 
         video {
             position: absolute;
-            width: 100%;
+            width: v-bind(videoWidth);
             height: 100%;
             align-items: center;
             bottom: 0;
@@ -313,7 +431,7 @@
             display: flex;
             height: 15px;
             border-radius: 3px;
-            bottom: 36px;
+            bottom: 30px;
 
             &:hover {
                 .progressBtn {
@@ -331,17 +449,17 @@
             .bkg {
                 width: v-bind(videoWidth);
                 position: absolute;
-                height: 3px;
+                height: 2px;
                 background: $lightPink;
-                opacity: 0.1;
+                opacity: 0.5;
             }
 
             .progress {
                 width: v-bind(videoWidth);
                 position: relative;
-                height: 3px;
+                height: 2px;
                 width: v-bind(progressBtnLeft);
-                background: #f48fb1;
+                background: #D81B60;
             }
         }
 
@@ -351,8 +469,21 @@
             position: absolute;
             display: flex;
             bottom: 0px;
+            background-color: rgb(21, 21, 21, 0.1);
 
             .playControl {
+                position: absolute;
+                left: 50px;
+                cursor: pointer;
+            }
+
+            .nextControl {
+                position: absolute;
+                left: 90px;
+                cursor: pointer;
+            }
+
+            .preControl {
                 position: absolute;
                 left: 10px;
                 cursor: pointer;
@@ -360,17 +491,16 @@
 
             .timeView {
                 position: absolute;
-                left: 100px;
+                left: 150px;
                 font-size: 15px;
                 top: 5px;
                 cursor: text;
                 user-select: none;
-                @include theme()
             }
 
             .timeEdit {
                 position: absolute;
-                left: 100px;
+                left: 150px;
                 font-size: 15px;
                 top: 5px;
                 border: none;
@@ -383,7 +513,7 @@
 
             .coverSet {
                 position: absolute;
-                left: 250px;
+                left: 300px;
                 font-size: 15px;
                 top: 5px;
                 cursor: pointer;
@@ -449,8 +579,21 @@
 
             .fullScreen {
                 position: absolute;
-                right: 60px;
+                right: 40px;
                 cursor: pointer;
+            }
+
+            .controlNotify {
+                position: absolute;
+                font-size: 15px;
+                left: 20px;
+                bottom: $volumeViewBottom;
+                background-color: rgb(21, 21, 21, 0.6);
+                line-height: 40px;
+                text-align: center;
+                width: 180px;
+                border-radius: 15px;
+                user-select: none;
             }
         }
 
@@ -458,8 +601,8 @@
         .tvOff {
             display: flex;
             position: absolute;
-            right: 75px;
-            bottom: 180px;
+            right: 10px;
+            bottom: 75px;
         }
 
     }

@@ -1,26 +1,9 @@
 <template>
     <Header/>
     <n-layout class="videopage">
-        <canvas id="localVideoCanvas" style="display: none"></canvas>
         <n-spance class="videospace">
             <div>
-                <video
-                        id="localvideo"
-                        crossorigin="anonymous"
-
-                        :src="videoUrl"
-                        controls="controls"
-                        @loadeddata="handleLoaded($event)"
-                        @pause="handlePause"
-                        style="display: block"
-                        x5-video-player-type="h5"
-                        webkit-playsinline=""
-                        playsinline=""
-                        preload="metadata"
-                ></video>
-
-                <LVideo></LVideo>
-
+                <LVideo :Id=routeID></LVideo>
             </div>
             <n-divider/>
             <n-space style="height: 360px">
@@ -142,22 +125,6 @@
                         </template>
                         收藏
                     </n-button>
-
-                    <n-button
-                            @click="handleClickClap"
-                            size="tiny"
-                            strong
-                            secondary
-                            type="tertiary"
-                            round
-                    >
-                        <template #icon>
-                            <n-icon>
-                                <Camera/>
-                            </n-icon>
-                        </template>
-                        截图
-                    </n-button>
                 </n-space>
             </n-space>
         </n-spance>
@@ -166,7 +133,7 @@
 
 <script setup>
     import {useRoute} from "vue-router";
-    import {ref, computed, onBeforeMount, onBeforeUnmount} from "vue";
+    import {ref, computed, onBeforeMount} from "vue";
     import Header from "@/components/Header.vue";
     import LVideo from "@/components/LVideo.vue";
     import {UpdateVideo, GetAllColl, DeleteMovieColl} from "@/api/videolist";
@@ -174,19 +141,15 @@
     import {useVideoData} from "@/store/videoData";
     import {Edit, FolderDetails, Favorite, Camera} from "@vicons/carbon";
     import {getUTCTime, timeFilter} from "@/api/timefilter";
-    import {useNotification} from "naive-ui";
 
     var showEditForm = ref(false);
 
-    const notification = useNotification();
     const videoDataStore = useVideoData();
     var {videoData} = storeToRefs(videoDataStore);
 
     const route = useRoute();
 
     const routeID = route.query.id;
-
-    const videoUrl = config.SERVER_API + videoData.value[routeID].VideoUrl;
 
     const formInstRef = ref(null);
     const labelTypes = ["success", "warning", "error", "info"];
@@ -256,57 +219,6 @@
             message: "集合名称最大长度为15",
         },
     };
-
-    const handleClickClap = () => {
-        const myvideo = document.getElementById("localvideo"); // 获取视频对象
-        const mycanvas = document.getElementById("localVideoCanvas"); // 获取 canvas 对象
-        const ctx = mycanvas.getContext("2d"); // 绘制2d
-        mycanvas.width = myvideo.clientWidth; // 获取视频宽度
-        mycanvas.height = myvideo.clientHeight; //获取视频高度
-        ctx.drawImage(myvideo, 0, 0, mycanvas.width, mycanvas.height);
-        try {
-            videoData.value[routeID].Cover = mycanvas.toDataURL("image/png"); // 导出图片
-            let tmpCover = {
-                MId: videoData.value[routeID].MId,
-                Cover: videoData.value[routeID].Cover.slice(22),
-            };
-            UpdateVideo(tmpCover);
-        } catch (error) {
-            console.log("设置失败，稍后再试", error);
-        }
-    };
-
-    const handleLoaded = (e) => {
-        if (videoData.value[routeID].LastWatch > 0) {
-            e.target.currentTime = videoData.value[routeID].LastWatch;
-            notification.success({
-                content: "定位到上次视频播放至" + timeFilter(videoData.value[routeID].LastWatch),
-                duration: 3000,
-            });
-        }
-        if (videoData.value[routeID].Duration.length !== 0) {
-            return;
-        }
-        let updateTime = {
-            MId: videoData.value[routeID].MId,
-            Duration: timeFilter(e.target.duration),
-        };
-        UpdateVideo(updateTime);
-    };
-
-    const handlePause = () => {
-        const myvideo = document.getElementById("localvideo");
-        let updateTime = {
-            MId: videoData.value[routeID].MId,
-            RecentWatch: getUTCTime(),
-            LastWatch: Math.floor(myvideo.currentTime),
-        };
-        UpdateVideo(updateTime);
-    };
-
-    onBeforeUnmount(() => {
-        handlePause();
-    });
 
     const handleRecover = () => {
         videoFormModel.value.Title = videoData.value[routeID].Title;
