@@ -75,13 +75,22 @@
             </n-icon>
 
             <!--            音量进度条显示-->
-            <div v-show=volumeShow>
+            <div
+                    v-show=volumeShow
+                    @click="handleVolumeProgressClick"
+                    @mousedown="handleVolumeProgressDown"
+                    @mouseenter="handleVolumeBoxEnter"
+                    @mouseleave="handleVolumeBoxLeave"
+            >
                 <span class="volumeBox">
-            100
+                    {{volumePercent}}
             </span>
-                <div class="volumeProgress">
+                <div
+                        class="volumeProgress"
+                        ref="volumeBoxRef">
                     <div class="currentProgress">
-                        <div class="volumeMoveBtn" @mousedown="handleVolumeMove">
+                        <div class="volumeMoveBtn"
+                        >
                         </div>
                     </div>
                 </div>
@@ -209,20 +218,75 @@
         }
         showTimeEditInput.value = false;
     }
-    const handleVolumeMove = (e) => {
-        console.log("1212")
-        e.positionY = e.positionY + 100;
+
+
+    const volumeHeight = ref(
+        "70px"
+    )
+
+    const volumePercent = ref(
+        100
+    )
+    const volumeBtnShow = ref(true);
+    const handleVolumeProgressDown = (e) => {
+        document.onmousemove = (e) => {
+            handleVolumeProgressClick(e);
+        };
+        document.onmouseup = function () {
+            document.onmousemove = document.onmouseup = null;
+        };
+        return false;
     }
+
+    const defaultHeight = 60;
+    const volumeBoxRef = ref();
+    const handleVolumeProgressClick = (e) => {
+        let tmpHeight = volumeBoxRef.value.getBoundingClientRect().y + defaultHeight - e.y;
+
+        if (tmpHeight < 0) {
+            tmpHeight = 0;
+        }
+        if (tmpHeight > defaultHeight) {
+            tmpHeight = defaultHeight;
+        }
+        volumePercent.value = Math.floor(tmpHeight / defaultHeight * 100);
+        volumeHeight.value = tmpHeight + "px";
+        lvideo.volume = volumePercent.value / 100;
+        if (volumePercent.value === 0) {
+            volumeBtnShow.value = false;
+        } else {
+            volumeBtnShow.value = true;
+        }
+    }
+
+
     const volumeShow = ref(false);
+    let volumeShowTimer;
     const volumeControlMouseEnter = () => {
         volumeShow.value = true;
     }
+
     const volumeControlMouseLeave = () => {
+        document.onmousemove = document.onmouseup = null;
+        clearTimeout(volumeShowTimer);
+        volumeShowTimer = setTimeout(function () {
+            volumeShow.value = false;
+        }, 1000);
+    }
+    const handleVolumeBoxEnter = () => {
+        clearTimeout(volumeShowTimer);
+        volumeShow.value = true;
+    }
+    const handleVolumeBoxLeave = () => {
         volumeShow.value = false;
     }
-    const volumeBtnShow = ref(true);
     const volumeControlClick = () => {
         volumeBtnShow.value = !volumeBtnShow.value;
+        if (volumeBtnShow.value === false) {
+            volumeHeight.value = "0px";
+            volumePercent.value = 0;
+            lvideo.volume = 0;
+        }
     }
 
 </script>
@@ -300,6 +364,7 @@
                 font-size: 15px;
                 top: 5px;
                 cursor: text;
+                user-select: none;
                 @include theme()
             }
 
@@ -313,6 +378,7 @@
                 outline: medium;
                 cursor: text;
                 background: rgb(189, 189, 189, 0.3);
+                user-select: none;
             }
 
             .coverSet {
@@ -344,34 +410,37 @@
                 text-align: center;
                 bottom: $volumeViewBottom;
                 background: rgb(19, 19, 19, 0.6);
+                user-select: none;
             }
 
             .volumeProgress {
                 position: absolute;
-                height: $volumeViewHeight - 35;
+                cursor: pointer;
+                height: $volumeViewHeight - 40;
                 width: 3px;
                 right: 133px;
-                bottom: $volumeViewBottom+3;
+                bottom: $volumeViewBottom + 20;
                 background: white;
 
                 .currentProgress {
                     position: absolute;
-                    max-height: $volumeViewHeight - 35;
-                    height: 100%;
+                    max-height: $volumeViewHeight - 40;
+                    height: v-bind(volumeHeight);
                     width: 3px;
                     background: lightblue;
+                    bottom: 0;
 
                     .volumeMoveBtn {
                         position: absolute;
-                        height: 14px;
-                        width: 14px;
-                        right: -5px;
-                        border-radius: 7px;
+                        height: 12px;
+                        width: 12px;
+                        left: -5px;
+                        border-radius: 6px;
                         background: lightblue;
-                        bottom: 100%;
+                        bottom: v-bind(volumeHeight)-6px;
 
                         &:hover {
-                            box-shadow: 0 0 3px 3px lightblue;
+                            box-shadow: 0 0 2px 2px lightblue;
                         }
                     }
                 }
