@@ -5,6 +5,7 @@
 
                 id="lvideo"
                 :src=videoUrl
+                autoplay
                 @loadeddata="handleLoadStart"
                 @click="handlePlay"
                 @timeupdate="handleTimeProgress"
@@ -186,6 +187,13 @@
                      @dblclick="handleCommentTimeDblclick(index)">
                     {{item.CurrentTime}} / {{item.SubmitTime}}
                 </div>
+
+                <n-icon
+                        class="CommentDel" size="21"
+                        @click="handleCommentDel(index)">
+                    <Delete20Regular/>
+                </n-icon>
+
                 <div class="CommentRight">
                     <img v-show="item.Image!==''" :src="item.Image"/>
                     {{item.CommentStr}}
@@ -203,7 +211,7 @@
     import {
         VehicleSubway16Regular, FullScreenMaximize24Filled, Next20Regular,
         Previous20Regular, CommentEdit20Regular, Send20Regular, ChevronLeft28Regular,
-        ChevronRight28Regular
+        ChevronRight28Regular, Delete20Regular
     } from "@vicons/fluent";
     import {
         VolumeUpFilled,
@@ -516,6 +524,10 @@
     }
     const handleCommentTimeDblclick = (index) => {
         lvideo.currentTime = CommentListData.value[index].CurrentTimeSec;
+    }
+
+    const handleCommentDel = (index) => {
+        CommentListData.value.splice(index, 1);
     }
 
 </script>
@@ -887,13 +899,24 @@
                 .CommentTimeText {
                     position: relative;
                     left: 0px;
-                    width: 200px;
+                    width: 100%;
                     height: 20px;
                     display: flex;
                     user-select: none;
 
                     &:hover {
                         box-shadow: 0 0 2px 2px lightblue;
+                    }
+                }
+
+                .CommentDel {
+                    position: absolute;
+                    right: 20px;
+                    display: flex;
+                    color: floralwhite;
+
+                    &:hover {
+                        color: blueviolet;
                     }
                 }
 
