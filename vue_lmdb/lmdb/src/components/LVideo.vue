@@ -2,7 +2,7 @@
     <div class="VideoContent">
         <canvas id="localVideoCanvas" style="display: none"></canvas>
         <video
-                autoplay
+
                 id="lvideo"
                 :src=videoUrl
                 @loadeddata="handleLoadStart"
@@ -36,7 +36,7 @@
              @mouseenter="handlePlayCtrlEnter"
              v-show="showControl">
             <n-icon
-                    class="preControl" :size=controlBtnSize @click="handlePlay">
+                    class="preControl" :size=controlBtnSize>
                 <Previous20Regular/>
             </n-icon>
             <!--                播放/暂停按钮-->
@@ -50,7 +50,7 @@
 
             <!--            下一个视频-->
             <n-icon
-                    class="nextControl" :size=controlBtnSize @click="handlePlay">
+                    class="nextControl" :size=controlBtnSize>
                 <Next20Regular/>
             </n-icon>
 
@@ -62,6 +62,31 @@
             >{{controlTimeView.playTime}}/{{controlTimeView.duration}}
             </div>
 
+            <!--            评论按钮-->
+            <n-icon class="movieComment"
+                    :size=controlBtnSize
+                    @click="handleCommentBtn">
+                <CommentEdit20Regular/>
+            </n-icon>
+
+            <div v-show="CommentContentShow"
+                 class="CommentContent">
+                <textarea
+                        v-model=CommentSubmitStr
+                        class="CommentInput"/>
+                <div class="CommentSubmit"
+                >
+                    <n-checkbox
+                            v-model:checked=CommentSubmitPic
+                            size="large" label="提交图片"/>
+                    <n-icon
+                            @click="handleCommentSubmit"
+                            class="CommentSend"
+                            :size=controlBtnSize>
+                        <Send20Regular/>
+                    </n-icon>
+                </div>
+            </div>
 
             <input class="timeEdit"
                    type="text"
@@ -129,20 +154,53 @@
 
         </div>
 
-
         <!--            视频暂停时显示-->
         <n-icon v-show=!playStatus class="tvOff" size="90">
             <LiveTvRound/>
         </n-icon>
 
+        <!--        展开评论列表按钮-->
+        <div v-show=showControl>
+            <n-icon v-show=!CommentListShow
+                    class="CommentListShowBtn" size="24"
+                    @click="handelCommentListShow">
+                <ChevronLeft28Regular/>
+            </n-icon>
+            <n-icon v-show=CommentListShow
+                    class="CommentListShowBtn" size="24"
+                    @click="handelCommentListShow">
+                <ChevronRight28Regular/>
+            </n-icon>
+        </div>
 
+
+        <div v-show=CommentListShow
+             class="CommentCards">
+            <div class="CommentCard"
+                 v-for="(item,index) in CommentListData">
+                <div class="CommentDot">
+                </div>
+                <div class="CommentTimeText">
+                    1:30 / 12:000/ {{index}}
+                </div>
+                <div class="CommentRight">
+                    <img v-show="true" src="../file/seven.jpg"/>
+                    {{item.CommentStr}}
+                    <div style="clear:both;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="CommentList">
+        精彩瞬间
     </div>
 </template>
 
 <script setup>
     import {
         VehicleSubway16Regular, FullScreenMaximize24Filled, Next20Regular,
-        Previous20Regular
+        Previous20Regular, CommentEdit20Regular, Send20Regular, ChevronLeft28Regular,
+        ChevronRight28Regular
     } from "@vicons/fluent";
     import {
         VolumeUpFilled,
@@ -152,7 +210,7 @@
     } from "@vicons/material";
     import {Camera} from "@vicons/carbon";
     import {getUTCTime, timeFilter, timeStrToSec} from "@/api/timefilter";
-    import {ref, reactive, nextTick, defineProps, onBeforeUnmount} from "vue";
+    import {ref, reactive, nextTick, onBeforeUnmount} from "vue";
     import {UpdateVideo} from "@/api/videolist";
 
     import {storeToRefs} from "pinia";
@@ -406,15 +464,47 @@
         UpdateVideo(updateTime);
     };
 
+    const CommentContentShow = ref(false);
+    const handleCommentBtn = () => {
+        CommentContentShow.value = !CommentContentShow.value;
+    }
+
+    const CommentListShow = ref(false);
+
+    const handelCommentListShow = () => {
+        CommentListShow.value = !CommentListShow.value;
+    }
+
+    const CommentSubmitPic = ref(
+        true
+    );
+    const CommentSubmitStr = ref("");
+    const CommentListData = ref(
+        []
+    )
+    const CommentSubmitStrMaxLen = 300;
+    const handleCommentSubmit = () => {
+        if (CommentSubmitStr.value.length <= 0 || CommentSubmitStr.value.length > CommentSubmitStrMaxLen) {
+            return
+        }
+        CommentListData.value.push({
+            Image: "",
+            CommentStr: CommentSubmitStr.value,
+        })
+        console.log(CommentListData.value.length)
+
+    }
 
 </script>
 
 <style scoped lang="scss">
+    $BtnHoverColor: #FF80AB;
     .VideoContent {
         width: v-bind(videoWidth);
         position: relative;
         display: flex;
         height: v-bind(videoHeight);
+        float: left;
 
         video {
             position: absolute;
@@ -459,9 +549,12 @@
                 position: relative;
                 height: 2px;
                 width: v-bind(progressBtnLeft);
-                background: #D81B60;
+                background: $BtnHoverColor;
             }
         }
+
+        $videoPlayCtrlBottom: 4px;
+
 
         .videoPlayCtrl {
             width: v-bind(videoWidth);
@@ -475,34 +568,53 @@
                 position: absolute;
                 left: 50px;
                 cursor: pointer;
+                top: $videoPlayCtrlBottom;
+
+                &:hover {
+                    color: $BtnHoverColor;
+                }
             }
 
             .nextControl {
                 position: absolute;
                 left: 90px;
                 cursor: pointer;
+                top: $videoPlayCtrlBottom;
+
+                &:hover {
+                    color: $BtnHoverColor;
+                }
             }
 
             .preControl {
                 position: absolute;
                 left: 10px;
                 cursor: pointer;
+                top: $videoPlayCtrlBottom;
+
+                &:hover {
+                    color: $BtnHoverColor;
+                }
             }
 
             .timeView {
                 position: absolute;
                 left: 150px;
                 font-size: 15px;
-                top: 5px;
+                top: $videoPlayCtrlBottom;
                 cursor: text;
                 user-select: none;
+
+                &:hover {
+                    color: $BtnHoverColor;
+                }
             }
 
             .timeEdit {
                 position: absolute;
                 left: 150px;
                 font-size: 15px;
-                top: 5px;
+                top: $videoPlayCtrlBottom;
                 border: none;
                 width: 70px;
                 outline: medium;
@@ -515,15 +627,108 @@
                 position: absolute;
                 left: 300px;
                 font-size: 15px;
-                top: 5px;
+                top: $videoPlayCtrlBottom;
                 cursor: pointer;
+
+                &:hover {
+                    color: $BtnHoverColor;
+                }
             }
 
+
+            .movieComment {
+                position: absolute;
+                left: 380px;
+                top: $videoPlayCtrlBottom;
+                cursor: pointer;
+
+                &:hover {
+                    color: $BtnHoverColor;
+                }
+
+            }
+
+            $commentBkgColor: rgb(255, 128, 171, .6);
+            $commentLeft: 100px;
+            $commentBottom: -30px;
+            $commentBorder: 15px;
+            $commentWidth: 240px;
+            $commentHeight: 150px;
+
+            .CommentContent {
+                width: $commentWidth;
+                height: $commentHeight;
+                border: none;
+                border-radius: $commentBorder;
+                position: absolute;
+                left: 280px;
+                top: -180px;
+                background: $commentBkgColor;
+                /*background-image: url(../file/1.jpg);*/
+                .CommentInput {
+                    background: transparent;
+                    border: none;
+                    border-radius: $commentBorder;
+                    width: $commentWidth - 4;
+                    height: $commentHeight - 40;
+                    position: relative;
+                    top: 0;
+                    left: 0;
+                    resize: none;
+                    outline: none;
+                    font-size: 18px;
+                    color: #ffffff;
+                    font-weight: bold;
+                }
+
+                .CommentSubmit {
+                    position: absolute;
+                    bottom: 6px;
+                    left: 30px;
+
+                    .CommentSend {
+                        bottom: -6px;
+                        cursor: pointer;
+                        margin-left: 10px;
+
+                        &:hover {
+                            color: $BtnHoverColor;
+                        }
+                    }
+                }
+
+                &:before {
+                    content: '';
+                    width: 0;
+                    height: 0;
+                    border: $commentBorder solid;
+                    position: absolute;
+                    bottom: $commentBottom;
+                    left: $commentLeft;
+                    border-color: $commentBkgColor transparent transparent;
+                }
+
+                &:after {
+                    content: '';
+                    width: 0;
+                    height: 0;
+                    border: $commentBorder solid;
+                    position: absolute;
+                    bottom: $commentBottom;
+                    left: $commentLeft;
+                    border-color: $commentBkgColor transparent transparent;
+                }
+            }
 
             .volumeControl {
                 position: absolute;
                 right: 120px;
                 cursor: pointer;
+                top: $videoPlayCtrlBottom;
+
+                &:hover {
+                    color: $BtnHoverColor;
+                }
             }
 
 
@@ -579,8 +784,13 @@
 
             .fullScreen {
                 position: absolute;
-                right: 40px;
+                right: 10px;
                 cursor: pointer;
+                top: $videoPlayCtrlBottom;
+
+                &:hover {
+                    color: $BtnHoverColor;
+                }
             }
 
             .controlNotify {
@@ -605,5 +815,80 @@
             bottom: 75px;
         }
 
+        .CommentListShowBtn {
+            display: flex;
+            position: absolute;
+            right: 5px;
+            bottom: 150px;
+            align-items: center;
+            height: 80px;
+            background-color: rgb(21, 21, 21, .4);
+
+            &:hover {
+                color: $BtnHoverColor;
+            }
+        }
+
+        .CommentCards {
+            top: 5px;
+            position: absolute;
+            width: 50%;
+            height: auto;
+            right: 0;
+            flex-direction: column;
+
+            .CommentCard {
+                display: flex;
+                overflow: hidden;
+                padding-left: 30px;
+                background: repeating-linear-gradient(#0000 0 calc(1.2rem - 1px), #66afe1 0 1.2rem) right bottom /100% 100%, linear-gradient(#ff0000 0 0) 20px 0/2px 100% #fff;
+                background-repeat: no-repeat;
+                line-height: 1.2rem;
+                -webkit-mask: radial-gradient(circle 0.8rem at 2px 50%, #0000 98%, #000) 0 0/100% 2.4rem;
+                flex-direction: column;
+
+                $CommentDotWeight: 14px;
+
+                .CommentDot {
+                    position: absolute;
+                    left: $CommentDotWeight;
+                    width: $CommentDotWeight;
+                    height: $CommentDotWeight;
+                    border-radius: $CommentDotWeight/2;
+                    background-color: rgb(94, 53, 177);
+                }
+
+                .CommentTimeText {
+                    position: relative;
+                    left: 0px;
+                    width: 120px;
+                    height: 20px;
+                    display: flex;
+                    background-color: rgb(94, 53, 177);
+                }
+
+
+                .CommentRight {
+                    width: 100%;
+                    word-break: break-all;
+                    color: blue;
+                    border-radius: 10px;
+
+                    img {
+                        float: left;
+                        margin: 6px 6px 6px 0px;
+                        width: 120px;
+                    }
+                }
+            }
+        }
+
+    }
+
+    .CommentList {
+        float: right;
+        margin-left: 30px;
+        width: 400px;
+        background-color: blueviolet;
     }
 </style>
