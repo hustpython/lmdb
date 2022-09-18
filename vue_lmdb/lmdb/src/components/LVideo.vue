@@ -178,13 +178,16 @@
              class="CommentCards">
             <div class="CommentCard"
                  v-for="(item,index) in CommentListData">
-                <div class="CommentDot">
+                <div class="CommentDot"
+                     :style="getRandomColor(index)">
                 </div>
-                <div class="CommentTimeText">
-                    1:30 / 12:000/ {{index}}
+                <div class="CommentTimeText"
+                     :style="getRandomColor(index)"
+                     @dblclick="handleCommentTimeDblclick(index)">
+                    {{item.CurrentTime}} / {{item.SubmitTime}}
                 </div>
                 <div class="CommentRight">
-                    <img v-show="true" src="../file/seven.jpg"/>
+                    <img v-show="item.Image!==''" :src="item.Image"/>
                     {{item.CommentStr}}
                     <div style="clear:both;"></div>
                 </div>
@@ -209,7 +212,7 @@
         LiveTvRound,
     } from "@vicons/material";
     import {Camera} from "@vicons/carbon";
-    import {getUTCTime, timeFilter, timeStrToSec} from "@/api/timefilter";
+    import {getUTCTime, timeFilter, timeStrToSec, getCurrentTime} from "@/api/timefilter";
     import {ref, reactive, nextTick, onBeforeUnmount} from "vue";
     import {UpdateVideo} from "@/api/videolist";
 
@@ -432,23 +435,24 @@
         }
     }
 
-    const handleClickClap = () => {
+    const getVideoCoverDataURL = () => {
         const mycanvas = document.getElementById("localVideoCanvas"); // 获取 canvas 对象
         const ctx = mycanvas.getContext("2d"); // 绘制2d
         mycanvas.width = lvideo.clientWidth; // 获取视频宽度
         mycanvas.height = lvideo.clientHeight; //获取视频高度
         ctx.drawImage(lvideo, 0, 0, mycanvas.width, mycanvas.height);
-        try {
-            videoData.value[routeID.Id].Cover = mycanvas.toDataURL("image/png"); // 导出图片
-            let tmpCover = {
-                MId: videoData.value[routeID.Id].MId,
-                Cover: videoData.value[routeID.Id].Cover.slice(22),
-            };
-            UpdateVideo(tmpCover);
-            delayClearNotifyMsg("为您截取一张图片");
-        } catch (error) {
-            console.log("设置失败，稍后再试", error);
-        }
+        return mycanvas.toDataURL("image/png"); // 导出图片
+    }
+
+    const handleClickClap = () => {
+        videoData.value[routeID.Id].Cover = getVideoCoverDataURL();
+        let tmpCover = {
+            MId: videoData.value[routeID.Id].MId,
+            Cover: videoData.value[routeID.Id].Cover.slice(22),
+        };
+        UpdateVideo(tmpCover);
+        delayClearNotifyMsg("为您截取一张图片");
+
     };
 
     onBeforeUnmount(() => {
@@ -487,12 +491,31 @@
         if (CommentSubmitStr.value.length <= 0 || CommentSubmitStr.value.length > CommentSubmitStrMaxLen) {
             return
         }
+        let tempImage = "";
+        if (CommentSubmitPic.value) {
+            tempImage = getVideoCoverDataURL();
+        }
         CommentListData.value.push({
-            Image: "",
+            Image: tempImage,
             CommentStr: CommentSubmitStr.value,
+            CurrentTime: timeFilter(lvideo.currentTime),
+            CurrentTimeSec: lvideo.currentTime,
+            SubmitTime: getCurrentTime(),
         })
-        console.log(CommentListData.value.length)
 
+        CommentSubmitStr.value = "";
+        CommentSubmitPic.value = true;
+        CommentListShow.value = true;
+        CommentContentShow.value = false;
+    }
+    const randomColor = ["#EF9A9A", "#F48FB1", "#CE93D8", "#9575CD", "#3949AB",
+        "#1E88E5", "#4FC3F7", "#4DD0E1", "#26A69A", "#66BB6A", "#9CCC65", "#DCE775",
+        "#FDD835", "#FFA000", "#FB8C00", "#F4511E", "#8D6E63", "#78909C", "#BDBDBD"];
+    const getRandomColor = (index) => {
+        return "background:" + randomColor[index % randomColor.length]
+    }
+    const handleCommentTimeDblclick = (index) => {
+        lvideo.currentTime = CommentListData.value[index].CurrentTimeSec;
     }
 
 </script>
@@ -664,7 +687,8 @@
                 left: 280px;
                 top: -180px;
                 background: $commentBkgColor;
-                /*background-image: url(../file/1.jpg);*/
+                z-index: 1;
+
                 .CommentInput {
                     background: transparent;
                     border: none;
@@ -823,6 +847,7 @@
             align-items: center;
             height: 80px;
             background-color: rgb(21, 21, 21, .4);
+            z-index: 1;
 
             &:hover {
                 color: $BtnHoverColor;
@@ -832,10 +857,12 @@
         .CommentCards {
             top: 5px;
             position: absolute;
-            width: 50%;
-            height: auto;
+            width: 360px;
+            max-height: 85%;
             right: 0;
             flex-direction: column;
+            z-index: 0;
+            overflow-y: scroll;
 
             .CommentCard {
                 display: flex;
@@ -854,19 +881,21 @@
                     left: $CommentDotWeight;
                     width: $CommentDotWeight;
                     height: $CommentDotWeight;
-                    border-radius: $CommentDotWeight/2;
-                    background-color: rgb(94, 53, 177);
+                    border-radius: calc($CommentDotWeight / 2);
                 }
 
                 .CommentTimeText {
                     position: relative;
                     left: 0px;
-                    width: 120px;
+                    width: 200px;
                     height: 20px;
                     display: flex;
-                    background-color: rgb(94, 53, 177);
-                }
+                    user-select: none;
 
+                    &:hover {
+                        box-shadow: 0 0 2px 2px lightblue;
+                    }
+                }
 
                 .CommentRight {
                     width: 100%;
@@ -877,7 +906,7 @@
                     img {
                         float: left;
                         margin: 6px 6px 6px 0px;
-                        width: 120px;
+                        width: 150px;
                     }
                 }
             }
