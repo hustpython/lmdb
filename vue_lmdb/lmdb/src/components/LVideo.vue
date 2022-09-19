@@ -66,15 +66,17 @@
             <!--            评论按钮-->
             <n-icon class="movieComment"
                     :size=controlBtnSize
-                    @click="handleCommentBtn">
+                    @click="handleCommentBtn"
+            >
                 <CommentEdit20Regular/>
             </n-icon>
 
             <div v-show="CommentContentShow"
                  class="CommentContent">
-                <textarea
-                        v-model=CommentSubmitStr
-                        class="CommentInput"/>
+                <textarea ref="CommentContentRef"
+                          v-model=CommentSubmitStr
+                          @keyup.enter="handleCommentSubmit"
+                          class="CommentInput"/>
                 <div class="CommentSubmit"
                 >
                     <n-checkbox
@@ -248,26 +250,6 @@
 
     let controlNotifyShowTimer;
 
-    document.body.onkeydown = function (e) {
-        var e = event || window.event || arguments.callee.caller.arguments[0];
-        // 空格
-        if (e.keyCode == 32) {
-            e.preventDefault();
-            handlePlay();
-        }
-        // 左键
-        if (e.keyCode == 39) {
-            lvideo.currentTime += 6;
-        }
-        // 右键
-        if (e.keyCode == 37) {
-            lvideo.currentTime -= 6;
-        }
-        // 插入键,截图
-        if (e.keyCode == 45) {
-            handleClickClap()
-        }
-    }
     const notifyMsg = ref();
     let controlTimeView = reactive(
         {
@@ -477,8 +459,13 @@
     };
 
     const CommentContentShow = ref(false);
+    const CommentContentRef = ref();
     const handleCommentBtn = () => {
+        showControl.value = true;
         CommentContentShow.value = !CommentContentShow.value;
+        nextTick(() => {
+            CommentContentRef.value.focus()
+        })
     }
 
     const CommentListShow = ref(false);
@@ -528,6 +515,31 @@
 
     const handleCommentDel = (index) => {
         CommentListData.value.splice(index, 1);
+    }
+
+    document.body.onkeydown = function (e) {
+        var e = event || window.event || arguments.callee.caller.arguments[0];
+        // 空格
+        if (e.keyCode == 32) {
+            e.preventDefault();
+            handlePlay();
+        }
+        // 左键
+        if (e.keyCode == 39) {
+            lvideo.currentTime += 6;
+        }
+        // 右键
+        if (e.keyCode == 37) {
+            lvideo.currentTime -= 6;
+        }
+        // 插入键，截图
+        if (e.keyCode == 45) {
+            handleClickClap()
+        }
+        // Ctrl键，添加评论
+        if (e.keyCode == 17) {
+            handleCommentBtn()
+        }
     }
 
 </script>
@@ -855,7 +867,7 @@
             display: flex;
             position: absolute;
             right: 5px;
-            bottom: 150px;
+            bottom: 210px;
             align-items: center;
             height: 80px;
             background-color: rgb(21, 21, 21, .4);
