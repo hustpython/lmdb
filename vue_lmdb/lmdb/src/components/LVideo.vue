@@ -461,6 +461,11 @@
     const CommentContentShow = ref(false);
     const CommentContentRef = ref();
     const handleCommentBtn = () => {
+        if (!lvideo.paused) {
+            playStatus.value = false;
+            showControl.value = true;
+            lvideo.pause();
+        }
         showControl.value = true;
         CommentContentShow.value = !CommentContentShow.value;
         nextTick(() => {
@@ -539,6 +544,10 @@
         // Ctrl键，添加评论
         if (e.keyCode == 17) {
             handleCommentBtn()
+        }
+        // Alt + A键 打开/关闭评论列表
+        if (e.altKey && e.keyCode == 65) {
+            handelCommentListShow()
         }
     }
 
