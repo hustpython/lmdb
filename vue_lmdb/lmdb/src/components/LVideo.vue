@@ -187,7 +187,7 @@
                 <div class="CommentTimeText"
                      :style="getRandomColor(index)"
                      @dblclick="handleCommentTimeDblclick(index)">
-                    {{item.CurrentTime}} / {{item.SubmitTime}}
+                    {{item.CommentFrameStr}} / {{item.CommentTime}}
                 </div>
 
                 <n-icon
@@ -197,7 +197,7 @@
                 </n-icon>
 
                 <div class="CommentRight">
-                    <img v-show="item.Image!==''" :src="item.Image"/>
+                    <img v-show="item.CommentImage!==''" :src="setCoverData(item.CommentImage)"/>
                     {{item.CommentStr}}
                     <div style="clear:both;"></div>
                 </div>
@@ -224,7 +224,7 @@
     import {Camera} from "@vicons/carbon";
     import {getUTCTime, timeFilter, timeStrToSec, getCurrentTime} from "@/api/timefilter";
     import {ref, reactive, nextTick, onBeforeUnmount} from "vue";
-    import {UpdateVideo} from "@/api/videolist";
+    import {UpdateVideo, AddComment, GetComment, DeleteComment} from "@/api/videolist";
 
     import {storeToRefs} from "pinia";
     import {useVideoData} from "@/store/videoData";
@@ -250,6 +250,13 @@
 
     let controlNotifyShowTimer;
 
+    const setCoverData = (cover) => {
+        if (cover.indexOf(";") != -1) {
+            return cover;
+        }
+        return "data:image/png;base64," + cover;
+    };
+
     const notifyMsg = ref();
     let controlTimeView = reactive(
         {
@@ -269,7 +276,15 @@
             controlNotifyShow.value = false;
         }, 3000)
     }
+
+    const CommentListData = ref(
+        []
+    )
+
     const handleLoadStart = (e) => {
+        GetComment(videoData.value[routeID.Id].MId).then((res) => {
+            CommentListData.value = res.data;
+        })
         lvideo = document.getElementById("lvideo");
         controlTimeView.duration = timeFilter(lvideo.duration);
         if (videoData.value[routeID.Id].LastWatch > 0) {
@@ -442,7 +457,6 @@
         };
         UpdateVideo(tmpCover);
         delayClearNotifyMsg("为您截取一张图片");
-
     };
 
     onBeforeUnmount(() => {
@@ -483,25 +497,38 @@
         true
     );
     const CommentSubmitStr = ref("");
-    const CommentListData = ref(
-        []
-    )
+
     const CommentSubmitStrMaxLen = 300;
     const handleCommentSubmit = () => {
         if (CommentSubmitStr.value.length <= 0 || CommentSubmitStr.value.length > CommentSubmitStrMaxLen) {
             return
         }
+        if (CommentListData.value.length > 30) {
+            delayClearNotifyMsg("当前评论数量已经超过30");
+            return;
+        }
         let tempImage = "";
         if (CommentSubmitPic.value) {
             tempImage = getVideoCoverDataURL();
         }
-        CommentListData.value.push({
-            Image: tempImage,
+
+        let addData = {
+            CommentImage: tempImage.slice(22),
             CommentStr: CommentSubmitStr.value,
-            CurrentTime: timeFilter(lvideo.currentTime),
-            CurrentTimeSec: lvideo.currentTime,
-            SubmitTime: getCurrentTime(),
-        })
+            CommentFrameStr: timeFilter(lvideo.currentTime),
+            CommentFrame: lvideo.currentTime,
+            CommentTime: getCurrentTime(),
+            MId: videoData.value[routeID.Id].MId,
+        };
+        try {
+            AddComment(addData).then((res) => {
+                if (res.code === 200) {
+                    CommentListData.value.push(addData);
+                }
+            })
+        } catch (e) {
+
+        }
 
         CommentSubmitStr.value = "";
         CommentSubmitPic.value = true;
@@ -519,6 +546,10 @@
     }
 
     const handleCommentDel = (index) => {
+        DeleteComment({
+            MId: videoData.value[routeID.Id].MId,
+            CommentFrame: CommentListData.value[index].CommentFrame,
+        });
         CommentListData.value.splice(index, 1);
     }
 

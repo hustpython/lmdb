@@ -221,6 +221,53 @@ func (m *MovieController) GetMoviesByRecent() {
 	m.ServeJSON()
 }
 
+func (m *MovieController) GetCommentsByMId() {
+	mid := m.GetString("MId")
+	if len(mid) == 0 {
+		m.setParamInvalid("MId is null")
+		return
+	}
+	var movieModel = models.Movie{MId: mid}
+	d, err := movieModel.GetCommentsByMId()
+	if err != nil {
+		m.setInternalError(err.Error())
+	} else {
+		m.Data["json"] = d
+	}
+	m.ServeJSON()
+}
+
+func (m *MovieController) AddCommentByMId() {
+	var comment models.Comment
+	err := m.BindJSON(&comment)
+	if err != nil || len(comment.MId) == 0 {
+		m.setParamInvalid("MId is null")
+		return
+	}
+	comment.CommentID = comment.MId + strconv.Itoa(int(comment.CommentFrame))
+	comment.Movie = &models.Movie{
+		MId: comment.MId,
+	}
+	err = comment.AddCommentByMId()
+	if err != nil {
+		m.setInternalError(err.Error())
+	}
+}
+
+func (m *MovieController) DelCommentByCId() {
+	var comment models.Comment
+	err := m.BindJSON(&comment)
+	if err != nil || len(comment.MId) == 0 {
+		m.setParamInvalid("MId is null")
+		return
+	}
+	comment.CommentID = comment.MId + strconv.Itoa(int(comment.CommentFrame))
+	err = comment.DelCommentByMId()
+	if err != nil {
+		m.setInternalError(err.Error())
+	}
+}
+
 func loopClearInvalidData() {
 	for {
 		time.Sleep(time.Hour)

@@ -21,8 +21,9 @@ type Movie struct {
 	Cover       string
 	Coll        *Coll `orm:"null;rel(fk)"`
 	CollStr     string
-	Tags        []*Tag   `orm:"rel(m2m)"`
-	TagArray    []string `orm:"-"`
+	Tags        []*Tag     `orm:"rel(m2m)"`
+	TagArray    []string   `orm:"-"`
+	Comments    []*Comment `orm:"reverse(many)"`
 }
 
 type Tag struct {
@@ -35,9 +36,15 @@ type Coll struct {
 	Movies   []*Movie `orm:"reverse(many)"`
 }
 
-type RecentWatch struct {
-	MId  string `orm:"pk"`
-	Time string
+type Comment struct {
+	CommentID       string `orm:"pk"` //MID+CommentTime
+	CommentFrame    float64
+	CommentStr      string
+	CommentFrameStr string
+	CommentTime     string
+	CommentImage    string
+	MId             string `orm:"-"`
+	Movie           *Movie `orm:"null;rel(fk)"`
 }
 
 type Filter struct {
@@ -51,7 +58,7 @@ var ormOpr orm.Ormer
 
 func init() {
 	logs.SetLogger(logs.AdapterConsole)
-	orm.RegisterModel(new(Movie), new(Coll), new(Tag))
+	orm.RegisterModel(new(Movie), new(Coll), new(Tag), new(Comment))
 	orm.RegisterDataBase("default", "sqlite3", "./lmdb.db")
 	orm.RunSyncdb("default", false, true)
 	ormOpr = orm.NewOrm()
@@ -250,6 +257,31 @@ func GetAllColl() ([]string, error) {
 		res = append(res, t.CollName)
 	}
 	return res, nil
+}
+
+func (m Movie) GetCommentsByMId() ([]*Comment, error) {
+	_, err := ormOpr.LoadRelated(&m, "Comments")
+	if err != nil {
+		return nil, err
+	}
+	return m.Comments, nil
+}
+
+func (m Comment) AddCommentByMId() error {
+	if _, e := ormOpr.Insert(&m); e != nil {
+		return e
+	}
+	return nil
+}
+
+func (m Comment) DelCommentByMId() error {
+	qs := ormOpr.QueryTable(new(Comment))
+	if qs.Filter("CommentID", m.CommentID).Exist() {
+		if _, e := ormOpr.Delete(&m); e != nil {
+			return e
+		}
+	}
+	return nil
 }
 
 func ClearInvalidData() {

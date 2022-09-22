@@ -48,7 +48,11 @@ func init() {
 		beego.NSNamespace("/recent",
 			beego.NSRouter("", &controllers.MovieController{}, "GET:GetMoviesByRecent"),
 		),
-
+		beego.NSNamespace("/comment",
+			beego.NSRouter("/?:MId", &controllers.MovieController{}, "GET:GetCommentsByMId"),
+			beego.NSRouter("", &controllers.MovieController{}, "POST:AddCommentByMId"),
+			beego.NSRouter("", &controllers.MovieController{}, "DELETE:DelCommentByCId"),
+		),
 	)
 	beego.AddNamespace(ns)
 
