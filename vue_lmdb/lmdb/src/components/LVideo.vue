@@ -187,7 +187,7 @@
                 <div class="CommentTimeText"
                      :style="getRandomColor(index)"
                      @dblclick="handleCommentTimeDblclick(index)">
-                    {{item.CommentFrameStr}} / {{item.CommentTime}}
+                    {{item.CommentFrameStr}} | {{item.CommentTime}} | {{index+1}} / {{commentListLen}}
                 </div>
 
                 <n-icon
@@ -223,7 +223,7 @@
     } from "@vicons/material";
     import {Camera} from "@vicons/carbon";
     import {getUTCTime, timeFilter, timeStrToSec, getCurrentTime} from "@/api/timefilter";
-    import {ref, reactive, nextTick, onBeforeUnmount} from "vue";
+    import {ref, reactive, nextTick, computed, onBeforeUnmount} from "vue";
     import {UpdateVideo, AddComment, GetComment, DeleteComment} from "@/api/videolist";
 
     import {storeToRefs} from "pinia";
@@ -503,8 +503,8 @@
         if (CommentSubmitStr.value.length <= 0 || CommentSubmitStr.value.length > CommentSubmitStrMaxLen) {
             return
         }
-        if (CommentListData.value.length > 30) {
-            delayClearNotifyMsg("当前评论数量已经超过30");
+        if (CommentListData.value.length > 15) {
+            delayClearNotifyMsg("当前评论数量已经超过15");
             return;
         }
         let tempImage = "";
@@ -530,6 +530,7 @@
 
         }
 
+
         CommentSubmitStr.value = "";
         CommentSubmitPic.value = true;
         CommentListShow.value = true;
@@ -542,7 +543,7 @@
         return "background:" + randomColor[index % randomColor.length]
     }
     const handleCommentTimeDblclick = (index) => {
-        lvideo.currentTime = CommentListData.value[index].CurrentTimeSec;
+        lvideo.currentTime = CommentListData.value[index].CommentFrame;
     }
 
     const handleCommentDel = (index) => {
@@ -581,6 +582,11 @@
             handelCommentListShow()
         }
     }
+
+    const commentListLen = computed(() => {
+        return CommentListData.value.length;
+    });
+
 
 </script>
 
@@ -932,7 +938,7 @@
                 display: flex;
                 overflow: hidden;
                 padding-left: 30px;
-                background: repeating-linear-gradient(#0000 0 calc(1.2rem - 1px), #66afe1 0 1.2rem) right bottom /100% 100%, linear-gradient(#ff0000 0 0) 20px 0/2px 100% #fff;
+                background: repeating-linear-gradient(#0000 0 calc(1.2rem - 1px), #66afe1 0 1.2rem) right bottom /100% 100%, linear-gradient(#ff0000 0 0) 20px 0/2px 100% rgb(255, 255, 255, 0.6);
                 background-repeat: no-repeat;
                 line-height: 1.2rem;
                 -webkit-mask: radial-gradient(circle 0.8rem at 2px 50%, #0000 98%, #000) 0 0/100% 2.4rem;
@@ -975,7 +981,8 @@
                 .CommentRight {
                     width: 100%;
                     word-break: break-all;
-                    color: blue;
+                    color: black;
+                    font-family: 华文行楷;
                     border-radius: 10px;
 
                     img {
