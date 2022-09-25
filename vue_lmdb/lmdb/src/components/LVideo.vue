@@ -938,7 +938,7 @@
                 display: flex;
                 overflow: hidden;
                 padding-left: 30px;
-                background: repeating-linear-gradient(#0000 0 calc(1.2rem - 1px), #66afe1 0 1.2rem) right bottom /100% 100%, linear-gradient(#ff0000 0 0) 20px 0/2px 100% rgb(255, 255, 255, 0.6);
+                background: repeating-linear-gradient(#0000 0 calc(1.2rem - 1px), #66afe1 0 1.2rem) right bottom /100% 100%, linear-gradient(#ff0000 0 0) 20px 0/2px 100% rgb(255, 255, 255, 1);
                 background-repeat: no-repeat;
                 line-height: 1.2rem;
                 -webkit-mask: radial-gradient(circle 0.8rem at 2px 50%, #0000 98%, #000) 0 0/100% 2.4rem;

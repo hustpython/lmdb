@@ -401,7 +401,11 @@
         expandedCollNames.value = [];
     }
     const handleCollHeaderClick = (name) => {
-        expandedCollNames.value = [name.name];
+        if (name.expanded) {
+            expandedCollNames.value = [name.name];
+        } else {
+            expandedCollNames.value = [];
+        }
     }
 
 </script>
