@@ -46,6 +46,21 @@ export function GetAllColl() {
     })
 }
 
+export function GetMovieAndColl() {
+    return httpRequest({
+        url: '/coll/MovieAndColl',
+        method: "GET",
+    })
+}
+
+export function BatchAddColl(param) {
+    return httpRequest({
+        url: '/coll',
+        method: "POST",
+        data: JSON.stringify(param),
+    })
+}
+
 export function GetMoviesByColl(param) {
     return httpRequest({
         url: '/coll/?Coll=' + param,

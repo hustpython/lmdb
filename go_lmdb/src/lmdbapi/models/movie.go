@@ -7,6 +7,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"os"
 	"sort"
+	"strings"
 )
 
 type Movie struct {
@@ -34,6 +35,7 @@ type Tag struct {
 type Coll struct {
 	CollName string   `orm:"pk"`
 	Movies   []*Movie `orm:"reverse(many)"`
+	MIds     []string `orm:"-"`
 }
 
 type Comment struct {
@@ -45,6 +47,19 @@ type Comment struct {
 	CommentImage    string
 	MId             string `orm:"-"`
 	Movie           *Movie `orm:"null;rel(fk)"`
+}
+
+type CollWithMovie struct {
+	Title           string
+	DefaultCollName string
+	SelectedValues  []string
+	TranOptions     []*TranOptions
+}
+
+type TranOptions struct {
+	Label    string `json:"label"`
+	Value    string `json:"value"`
+	Disabled bool   `json:"disabled"`
 }
 
 type Filter struct {
@@ -76,6 +91,48 @@ func QueryAllMovieData() ([]*Movie, error) {
 		m.Tags = nil
 	}
 	return movies, err
+}
+
+func QuerySortMovie() ([]*CollWithMovie, error) {
+	var d []*Movie
+	_, err := ormOpr.QueryTable("movie").All(&d)
+
+	var resMap = make(map[string][]*TranOptions)
+	var defaultCollNameMap = make(map[string]string)
+	for _, i := range d {
+		key := i.VideoUrl[:strings.LastIndex(i.VideoUrl, "/")]
+		var label string
+		var disabled bool
+		if len(i.CollStr) != 0 {
+			label = i.Title + " ||| " + i.CollStr
+			disabled = true
+			defaultCollNameMap[key] = i.CollStr
+		} else {
+			label = i.Title
+		}
+		tmp := &TranOptions{
+			Label:    label,
+			Value:    i.MId,
+			Disabled: disabled,
+		}
+		resMap[key] = append(resMap[key], tmp)
+	}
+	var resArray []*CollWithMovie
+	for k, v := range resMap {
+		sort.Slice(v, func(i, j int) bool {
+			return v[i].Label < v[j].Label
+		})
+		tmp := &CollWithMovie{
+			Title:           k,
+			TranOptions:     v,
+			DefaultCollName: defaultCollNameMap[k],
+		}
+		resArray = append(resArray, tmp)
+	}
+	sort.Slice(resArray, func(i, j int) bool {
+		return resArray[i].Title < resArray[j].Title
+	})
+	return resArray, err
 }
 
 func InsertOrUpdateMovieData(force bool, movieArray []*Movie) ([]*Movie, error) {
@@ -248,7 +305,7 @@ func (m Movie) DeleteColl() error {
 
 func GetAllColl() ([]string, error) {
 	var colls []*Coll
-	_, err := ormOpr.QueryTable("coll").All(&colls)
+	_, err := ormOpr.QueryTable("Coll").All(&colls)
 	if err != nil {
 		return nil, err
 	}
@@ -257,6 +314,20 @@ func GetAllColl() ([]string, error) {
 		res = append(res, t.CollName)
 	}
 	return res, nil
+}
+
+func (c Coll) BatchAddColl() error {
+	for _, v := range c.MIds {
+		tem := Movie{
+			MId:     v,
+			CollStr: c.CollName,
+		}
+		if err := tem.UpdateMovieData(); err != nil {
+			fmt.Println("UpdateMovieData get err:", err)
+			return err
+		}
+	}
+	return nil
 }
 
 func (m Movie) GetCommentsByMId() ([]*Comment, error) {
@@ -338,7 +409,7 @@ func clearInvalidTag() {
 
 func clearInvalidColl() {
 	var colls []*Coll
-	_, err := ormOpr.QueryTable("coll").All(&colls)
+	_, err := ormOpr.QueryTable("Coll").All(&colls)
 	if err != nil {
 		fmt.Print(err)
 		return
@@ -349,7 +420,7 @@ func clearInvalidColl() {
 			continue
 		}
 		if len(coll.Movies) == 0 {
-			logs.Info("delete coll %s", coll.CollName)
+			logs.Info("delete Coll %s", coll.CollName)
 			ormOpr.Delete(coll)
 		}
 	}

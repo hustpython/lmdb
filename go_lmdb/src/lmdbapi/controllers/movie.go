@@ -98,7 +98,7 @@ func procQueryData(rule models.Filter, searchExt string) ([]*models.Movie, error
 	return models.InsertOrUpdateMovieData(rule.Force, movieArray)
 }
 
-// GET /v1/movie?id=movie_12121
+// GET /v1/movie
 func (m *MovieController) ShowMovies() {
 	d, e := models.QueryAllMovieData()
 	if e != nil {
@@ -265,6 +265,26 @@ func (m *MovieController) DelCommentByCId() {
 	err = comment.DelCommentByMId()
 	if err != nil {
 		m.setInternalError(err.Error())
+	}
+}
+
+func (m *MovieController) GetMoviesAndColl() {
+	d, e := models.QuerySortMovie()
+	if e != nil {
+		m.setInternalError(e.Error())
+	} else {
+		m.Data["json"] = d
+	}
+	m.ServeJSON()
+}
+
+func (m *MovieController) BatchAddColl() {
+	var c models.Coll
+	err := m.BindJSON(&c)
+	if err != nil {
+		m.setInternalError(err.Error())
+	} else {
+		c.BatchAddColl()
 	}
 }
 
