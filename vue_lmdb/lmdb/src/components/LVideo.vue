@@ -209,6 +209,16 @@
             <n-card class="CollList"
                     v-show="videoData[routeID.Id].CollStr !== ''"
                     title="合集列表">
+                <template #header-extra>
+                    <n-switch :rail-style="railStyle">
+                        <template #checked>
+                            单播
+                        </template>
+                        <template #unchecked>
+                            连播
+                        </template>
+                    </n-switch>
+                </template>
                 <n-grid
                         x-gap="15" y-gap="15" :cols="4"
                 >
@@ -1050,7 +1060,7 @@
     .RightCommentList {
         margin-left: 30px;
         width: 400px;
-        height: 40px;
+        max-height: 1000px;
         background-color: rgb(21, 21, 21, 0.3);
 
         .collapse {
@@ -1062,10 +1072,9 @@
         }
 
         .CollList {
-            height: auto;
+            max-height: 600px;
             background-color: rgb(21, 21, 21, 0.3);
-            height: 240px;
-            overflow-y: scroll;
+            overflow: auto;
             @include theme();
         }
     }
