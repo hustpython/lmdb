@@ -204,8 +204,40 @@
             </div>
         </div>
     </div>
-    <div class="CommentList">
-        精彩瞬间
+    <div class="RightCommentList">
+        <n-card class="CollList" title="合集列表">
+            <n-grid x-gap="15" y-gap="15" :cols="4"
+            >
+                <n-gi v-for="(item,index) in videoData">
+                    <n-tooltip placement="bottom" trigger="hover">
+                        <template #trigger>
+                            <n-button size="large"
+                                      :color="getCollListBtnColor(index)"
+                                      @click="handleCollListBtnClick(index)"
+                            >
+                                {{index+1}}
+                            </n-button>
+                        </template>
+                        <span> {{item.Title}} </span>
+                    </n-tooltip>
+                </n-gi>
+            </n-grid>
+        </n-card>
+
+        <n-card class="CollList" title="评论列表">
+            <template #header-extra>
+                <n-switch :rail-style="railStyle">
+                    <template #checked>
+                        展开
+                    </template>
+                    <template #unchecked>
+                        关闭
+                    </template>
+                </n-switch>
+            </template>
+
+        </n-card>
+
     </div>
 </template>
 
@@ -222,6 +254,10 @@
         LiveTvRound,
     } from "@vicons/material";
     import {Camera} from "@vicons/carbon";
+    import {useRouter} from "vue-router";
+
+    const router = useRouter();
+
     import {getUTCTime, timeFilter, timeStrToSec, getCurrentTime} from "@/api/timefilter";
     import {ref, reactive, nextTick, computed, onBeforeUnmount} from "vue";
     import {UpdateVideo, AddComment, GetComment, DeleteComment} from "@/api/videolist";
@@ -587,6 +623,16 @@
         return CommentListData.value.length;
     });
 
+    const CollListSelected = ref(routeID.Id);
+    const getCollListBtnColor = (index) => {
+        if (index == CollListSelected.value) {
+            return "#26C6DA";
+        }
+    }
+    const handleCollListBtnClick = (index) => {
+        CollListSelected.value = index;
+        router.push({name: "#", query: {id: index}});
+    }
 
 </script>
 
@@ -996,10 +1042,27 @@
 
     }
 
-    .CommentList {
+    .RightCommentList {
         float: right;
         margin-left: 30px;
         width: 400px;
-        background-color: blueviolet;
+        height: 40px;
+        background-color: rgb(21, 21, 21, 0.3);
+
+        .collapse {
+            position: relative;
+            font-size: 18px;
+            text-align-all: center;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .CollList {
+            height: auto;
+            background-color: rgb(21, 21, 21, 0.3);
+            height: 240px;
+            overflow-y: scroll;
+            @include theme();
+        }
     }
 </style>

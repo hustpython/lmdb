@@ -82,7 +82,7 @@
 </template>
 
 <script setup>
-    import {GetVideList, UpdateVideo} from "@/api/videolist";
+    import {GetMoviesByColl, GetVideList, UpdateVideo} from "@/api/videolist";
     import {reactive, ref, onBeforeMount} from "vue";
     import {timeFilter} from "@/api/timefilter";
     import {useVideoData} from "@/store/videoData";
@@ -225,8 +225,23 @@
     };
 
     const setTitleHref = (id) => {
-        router.push({name: "video", query: {id: absoluteIndex(id)}});
-    };
+        let temMId = videoData.value[absoluteIndex(id)].MId
+        if (videoData.value[absoluteIndex(id)].CollStr.length != 0) {
+            GetMoviesByColl(videoData.value[absoluteIndex(id)].CollStr).then((res) => {
+                if (res.code == 200) {
+                    videoDataStore.setVideoData(res.data);
+                    for (let i = 0; i < res.data.length; i++) {
+                        if (res.data[i].MId === temMId) {
+                            router.push({name: "video", query: {id: i}});
+                        }
+                    }
+                }
+            });
+        } else {
+            router.push({name: "video", query: {id: absoluteIndex(id)}});
+        }
+    }
+
 </script>
 
 <style lang="scss">
