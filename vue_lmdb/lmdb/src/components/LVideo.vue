@@ -206,8 +206,11 @@
             </div>
         </div>
         <div class="RightCommentList">
-            <n-card class="CollList" title="合集列表">
-                <n-grid x-gap="15" y-gap="15" :cols="4"
+            <n-card class="CollList"
+                    v-show="videoData[routeID.Id].CollStr !== ''"
+                    title="合集列表">
+                <n-grid
+                        x-gap="15" y-gap="15" :cols="4"
                 >
                     <n-gi v-for="(item,index) in videoData">
                         <n-tooltip placement="bottom" trigger="hover">
@@ -229,10 +232,10 @@
                 <template #header-extra>
                     <n-switch :rail-style="railStyle">
                         <template #checked>
-                            展开
+                            关闭
                         </template>
                         <template #unchecked>
-                            关闭
+                            展开
                         </template>
                     </n-switch>
                 </template>

@@ -6,7 +6,7 @@
                 <LVideo :Id=routeID></LVideo>
             </div>
 
-            <n-space style="height: 360px">
+            <n-space style="height: 360px;margin-top:30px">
                 <!-- 左侧图片 -->
                 <img class="videoCardSize" :src="setCoverData(videoData[routeID].Cover)"/>
                 <!-- 右侧信息 -->
