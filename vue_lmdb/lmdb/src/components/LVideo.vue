@@ -1,244 +1,247 @@
 <template>
-    <div class="VideoContent">
-        <canvas id="localVideoCanvas" style="display: none"></canvas>
-        <video
+    <n-space>
+        <div class="VideoContent">
+            <canvas id="localVideoCanvas" style="display: none"></canvas>
+            <video
 
-                id="lvideo"
-                :src=videoUrl
-                autoplay
-                @loadeddata="handleLoadStart"
-                @click="handlePlay"
-                @timeupdate="handleTimeProgress"
-                @ended="handleEnd"
-                @mousemove="handleMouseMove"
-                @pause="handlePause"
-                style="display: block"
-                x5-video-player-type="h5"
-                webkit-playsinline=""
-                playsinline=""
-                preload="metadata"
-                crossorigin="anonymous"
-        ></video>
+                    id="lvideo"
+                    :src=videoUrl
+                    autoplay
+                    @loadeddata="handleLoadStart"
+                    @click="handlePlay"
+                    @timeupdate="handleTimeProgress"
+                    @ended="handleEnd"
+                    @mousemove="handleMouseMove"
+                    @pause="handlePause"
+                    style="display: block"
+                    x5-video-player-type="h5"
+                    webkit-playsinline=""
+                    playsinline=""
+                    preload="metadata"
+                    crossorigin="anonymous"
+            ></video>
 
 
-        <!--            下方控制台-->
-        <div class="progressMask"
-             @click="handleProgress"
-             v-show="showControl">
-            <span class="progress"> </span>
-            <span class="bkg"> </span>
-            <div class="progressBtn">
-                <n-icon size="16">
-                    <VehicleSubway16Regular/>
+            <!--            下方控制台-->
+            <div class="progressMask"
+                 @click="handleProgress"
+                 v-show="showControl">
+                <span class="progress"> </span>
+                <span class="bkg"> </span>
+                <div class="progressBtn">
+                    <n-icon size="16">
+                        <VehicleSubway16Regular/>
+                    </n-icon>
+                </div>
+            </div>
+            <div class="videoPlayCtrl"
+                 @mouseenter="handlePlayCtrlEnter"
+                 v-show="showControl">
+                <n-icon
+                        class="preControl" :size=controlBtnSize>
+                    <Previous20Regular/>
                 </n-icon>
-            </div>
-        </div>
-        <div class="videoPlayCtrl"
-             @mouseenter="handlePlayCtrlEnter"
-             v-show="showControl">
-            <n-icon
-                    class="preControl" :size=controlBtnSize>
-                <Previous20Regular/>
-            </n-icon>
-            <!--                播放/暂停按钮-->
-            <n-icon
-                    v-show="playStatus" class="playControl" :size=controlBtnSize @click="handlePlay">
-                <PausePresentationOutlined/>
-            </n-icon>
-            <n-icon v-show="!playStatus" class="playControl" :size=controlBtnSize @click="handlePlay">
-                <LiveTvRound/>
-            </n-icon>
+                <!--                播放/暂停按钮-->
+                <n-icon
+                        v-show="playStatus" class="playControl" :size=controlBtnSize @click="handlePlay">
+                    <PausePresentationOutlined/>
+                </n-icon>
+                <n-icon v-show="!playStatus" class="playControl" :size=controlBtnSize @click="handlePlay">
+                    <LiveTvRound/>
+                </n-icon>
 
-            <!--            下一个视频-->
-            <n-icon
-                    class="nextControl" :size=controlBtnSize>
-                <Next20Regular/>
-            </n-icon>
+                <!--            下一个视频-->
+                <n-icon
+                        class="nextControl" :size=controlBtnSize>
+                    <Next20Regular/>
+                </n-icon>
 
 
-            <!--                显示时间-->
-            <div class="timeView"
-                 @click="handleTimeTextClick"
-                 v-show=!showTimeEditInput
-            >{{controlTimeView.playTime}}/{{controlTimeView.duration}}
-            </div>
+                <!--                显示时间-->
+                <div class="timeView"
+                     @click="handleTimeTextClick"
+                     v-show=!showTimeEditInput
+                >{{controlTimeView.playTime}}/{{controlTimeView.duration}}
+                </div>
 
-            <!--            评论按钮-->
-            <n-icon class="movieComment"
-                    :size=controlBtnSize
-                    @click="handleCommentBtn"
-            >
-                <CommentEdit20Regular/>
-            </n-icon>
+                <!--            评论按钮-->
+                <n-icon class="movieComment"
+                        :size=controlBtnSize
+                        @click="handleCommentBtn"
+                >
+                    <CommentEdit20Regular/>
+                </n-icon>
 
-            <div v-show="CommentContentShow"
-                 class="CommentContent">
+                <div v-show="CommentContentShow"
+                     class="CommentContent">
                 <textarea ref="CommentContentRef"
                           v-model=CommentSubmitStr
                           @keyup.enter="handleCommentSubmit"
                           class="CommentInput"/>
-                <div class="CommentSubmit"
-                >
-                    <n-checkbox
-                            v-model:checked=CommentSubmitPic
-                            size="large" label="提交图片"/>
-                    <n-icon
-                            @click="handleCommentSubmit"
-                            class="CommentSend"
-                            :size=controlBtnSize>
-                        <Send20Regular/>
-                    </n-icon>
-                </div>
-            </div>
-
-            <input class="timeEdit"
-                   type="text"
-                   v-model=inputTime
-                   v-show=showTimeEditInput
-                   @keyup.enter="handleInputBlur"
-                   @blur="handleInputBlur"
-                   ref="refInput">
-            <n-icon class="coverSet" :size=controlBtnSize
-                    @click="handleClickClap">
-                <Camera/>
-            </n-icon>
-
-            <!--                声音调整按钮-->
-
-            <n-icon
-                    v-show=volumeBtnShow
-                    @mouseenter="volumeControlMouseEnter"
-                    @mouseleave="volumeControlMouseLeave"
-                    @click="volumeControlClick"
-                    class="volumeControl" :size=controlBtnSize>
-                <VolumeUpFilled/>
-            </n-icon>
-            <n-icon
-                    v-show=!volumeBtnShow
-                    @mouseenter="volumeControlMouseEnter"
-                    @mouseleave="volumeControlMouseLeave"
-                    @click="volumeControlClick"
-                    class="volumeControl" :size=controlBtnSize>
-                <VolumeOffRound/>
-            </n-icon>
-
-            <!--            音量进度条显示-->
-            <div
-                    v-show=volumeShow
-                    @click="handleVolumeProgressClick"
-                    @mousedown="handleVolumeProgressDown"
-                    @mouseenter="handleVolumeBoxEnter"
-                    @mouseleave="handleVolumeBoxLeave"
-            >
-                <span class="volumeBox">
-                    {{volumePercent}}
-            </span>
-                <div
-                        class="volumeProgress"
-                        ref="volumeBoxRef">
-                    <div class="currentProgress">
-                        <div class="volumeMoveBtn"
-                        >
-                        </div>
+                    <div class="CommentSubmit"
+                    >
+                        <n-checkbox
+                                v-model:checked=CommentSubmitPic
+                                size="large" label="提交图片"/>
+                        <n-icon
+                                @click="handleCommentSubmit"
+                                class="CommentSend"
+                                :size=controlBtnSize>
+                            <Send20Regular/>
+                        </n-icon>
                     </div>
                 </div>
 
-
-            </div>
-            <!--                全屏按钮-->
-            <n-icon class="fullScreen" :size=controlBtnSize @click="handleFull">
-                <FullScreenMaximize24Filled/>
-            </n-icon>
-
-            <div v-show="controlNotifyShow"
-                 class="controlNotify">
-                {{notifyMsg}}
-            </div>
-
-        </div>
-
-        <!--            视频暂停时显示-->
-        <n-icon v-show=!playStatus class="tvOff" size="90">
-            <LiveTvRound/>
-        </n-icon>
-
-        <!--        展开评论列表按钮-->
-        <div v-show=showControl>
-            <n-icon v-show=!CommentListShow
-                    class="CommentListShowBtn" size="24"
-                    @click="handelCommentListShow">
-                <ChevronLeft28Regular/>
-            </n-icon>
-            <n-icon v-show=CommentListShow
-                    class="CommentListShowBtn" size="24"
-                    @click="handelCommentListShow">
-                <ChevronRight28Regular/>
-            </n-icon>
-        </div>
-
-
-        <div v-show=CommentListShow
-             class="CommentCards">
-            <div class="CommentCard"
-                 v-for="(item,index) in CommentListData">
-                <div class="CommentDot"
-                     :style="getRandomColor(index)">
-                </div>
-                <div class="CommentTimeText"
-                     :style="getRandomColor(index)"
-                     @dblclick="handleCommentTimeDblclick(index)">
-                    {{item.CommentFrameStr}} | {{item.CommentTime}} | {{index+1}} / {{commentListLen}}
-                </div>
-
-                <n-icon
-                        class="CommentDel" size="21"
-                        @click="handleCommentDel(index)">
-                    <Delete20Regular/>
+                <input class="timeEdit"
+                       type="text"
+                       v-model=inputTime
+                       v-show=showTimeEditInput
+                       @keyup.enter="handleInputBlur"
+                       @blur="handleInputBlur"
+                       ref="refInput">
+                <n-icon class="coverSet" :size=controlBtnSize
+                        @click="handleClickClap">
+                    <Camera/>
                 </n-icon>
 
-                <div class="CommentRight">
-                    <img v-show="item.CommentImage!==''" :src="setCoverData(item.CommentImage)"/>
-                    {{item.CommentStr}}
-                    <div style="clear:both;"></div>
+                <!--                声音调整按钮-->
+
+                <n-icon
+                        v-show=volumeBtnShow
+                        @mouseenter="volumeControlMouseEnter"
+                        @mouseleave="volumeControlMouseLeave"
+                        @click="volumeControlClick"
+                        class="volumeControl" :size=controlBtnSize>
+                    <VolumeUpFilled/>
+                </n-icon>
+                <n-icon
+                        v-show=!volumeBtnShow
+                        @mouseenter="volumeControlMouseEnter"
+                        @mouseleave="volumeControlMouseLeave"
+                        @click="volumeControlClick"
+                        class="volumeControl" :size=controlBtnSize>
+                    <VolumeOffRound/>
+                </n-icon>
+
+                <!--            音量进度条显示-->
+                <div
+                        v-show=volumeShow
+                        @click="handleVolumeProgressClick"
+                        @mousedown="handleVolumeProgressDown"
+                        @mouseenter="handleVolumeBoxEnter"
+                        @mouseleave="handleVolumeBoxLeave"
+                >
+                <span class="volumeBox">
+                    {{volumePercent}}
+            </span>
+                    <div
+                            class="volumeProgress"
+                            ref="volumeBoxRef">
+                        <div class="currentProgress">
+                            <div class="volumeMoveBtn"
+                            >
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+                <!--                全屏按钮-->
+                <n-icon class="fullScreen" :size=controlBtnSize @click="handleFull">
+                    <FullScreenMaximize24Filled/>
+                </n-icon>
+
+                <div v-show="controlNotifyShow"
+                     class="controlNotify">
+                    {{notifyMsg}}
+                </div>
+
+            </div>
+
+            <!--            视频暂停时显示-->
+            <n-icon v-show=!playStatus class="tvOff" size="90">
+                <LiveTvRound/>
+            </n-icon>
+
+            <!--        展开评论列表按钮-->
+            <div v-show=showControl>
+                <n-icon v-show=!CommentListShow
+                        class="CommentListShowBtn" size="24"
+                        @click="handelCommentListShow">
+                    <ChevronLeft28Regular/>
+                </n-icon>
+                <n-icon v-show=CommentListShow
+                        class="CommentListShowBtn" size="24"
+                        @click="handelCommentListShow">
+                    <ChevronRight28Regular/>
+                </n-icon>
+            </div>
+
+
+            <div v-show=CommentListShow
+                 class="CommentCards">
+                <div class="CommentCard"
+                     v-for="(item,index) in CommentListData">
+                    <div class="CommentDot"
+                         :style="getRandomColor(index)">
+                    </div>
+                    <div class="CommentTimeText"
+                         :style="getRandomColor(index)"
+                         @dblclick="handleCommentTimeDblclick(index)">
+                        {{item.CommentFrameStr}} | {{item.CommentTime}} | {{index+1}} / {{commentListLen}}
+                    </div>
+
+                    <n-icon
+                            class="CommentDel" size="21"
+                            @click="handleCommentDel(index)">
+                        <Delete20Regular/>
+                    </n-icon>
+
+                    <div class="CommentRight">
+                        <img v-show="item.CommentImage!==''" :src="setCoverData(item.CommentImage)"/>
+                        {{item.CommentStr}}
+                        <div style="clear:both;"></div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="RightCommentList">
-        <n-card class="CollList" title="合集列表">
-            <n-grid x-gap="15" y-gap="15" :cols="4"
-            >
-                <n-gi v-for="(item,index) in videoData">
-                    <n-tooltip placement="bottom" trigger="hover">
-                        <template #trigger>
-                            <n-button size="large"
-                                      :color="getCollListBtnColor(index)"
-                                      @click="handleCollListBtnClick(index)"
-                            >
-                                {{index+1}}
-                            </n-button>
+        <div class="RightCommentList">
+            <n-card class="CollList" title="合集列表">
+                <n-grid x-gap="15" y-gap="15" :cols="4"
+                >
+                    <n-gi v-for="(item,index) in videoData">
+                        <n-tooltip placement="bottom" trigger="hover">
+                            <template #trigger>
+                                <n-button size="large"
+                                          :color="getCollListBtnColor(index)"
+                                          @click="handleCollListBtnClick(index)"
+                                >
+                                    {{index+1}}
+                                </n-button>
+                            </template>
+                            <span> {{item.Title}} </span>
+                        </n-tooltip>
+                    </n-gi>
+                </n-grid>
+            </n-card>
+
+            <n-card class="CollList" title="评论列表">
+                <template #header-extra>
+                    <n-switch :rail-style="railStyle">
+                        <template #checked>
+                            展开
                         </template>
-                        <span> {{item.Title}} </span>
-                    </n-tooltip>
-                </n-gi>
-            </n-grid>
-        </n-card>
+                        <template #unchecked>
+                            关闭
+                        </template>
+                    </n-switch>
+                </template>
 
-        <n-card class="CollList" title="评论列表">
-            <template #header-extra>
-                <n-switch :rail-style="railStyle">
-                    <template #checked>
-                        展开
-                    </template>
-                    <template #unchecked>
-                        关闭
-                    </template>
-                </n-switch>
-            </template>
+            </n-card>
 
-        </n-card>
+        </div>
+    </n-space>
 
-    </div>
 </template>
 
 <script setup>
@@ -643,7 +646,6 @@
         position: relative;
         display: flex;
         height: v-bind(videoHeight);
-        float: left;
 
         video {
             position: absolute;
@@ -1043,7 +1045,6 @@
     }
 
     .RightCommentList {
-        float: right;
         margin-left: 30px;
         width: 400px;
         height: 40px;

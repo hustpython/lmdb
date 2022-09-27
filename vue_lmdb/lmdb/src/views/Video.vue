@@ -5,7 +5,7 @@
             <div>
                 <LVideo :Id=routeID></LVideo>
             </div>
-            <n-divider/>
+
             <n-space style="height: 360px">
                 <!-- 左侧图片 -->
                 <img class="videoCardSize" :src="setCoverData(videoData[routeID].Cover)"/>
