@@ -149,7 +149,7 @@
 
     const route = useRoute();
 
-    const routeID = route.query.id;
+    const routeID = route.params.id;
 
     const formInstRef = ref(null);
     const labelTypes = ["success", "warning", "error", "info"];

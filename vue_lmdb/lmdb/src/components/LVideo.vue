@@ -38,6 +38,9 @@
                  @mouseenter="handlePlayCtrlEnter"
                  v-show="showControl">
                 <n-icon
+                        v-show="currentData.CollStr !== ''"
+                        @click="handlePlayPre"
+                        @mouseenter="handlePlayPreEnter"
                         class="preControl" :size=controlBtnSize>
                     <Previous20Regular/>
                 </n-icon>
@@ -52,10 +55,12 @@
 
                 <!--            下一个视频-->
                 <n-icon
+                        v-show="currentData.CollStr !== ''"
+                        @click="handlePlayNext"
+                        @mouseenter="handlePlayNextEnter"
                         class="nextControl" :size=controlBtnSize>
                     <Next20Regular/>
                 </n-icon>
-
 
                 <!--                显示时间-->
                 <div class="timeView"
@@ -207,15 +212,18 @@
         </div>
         <div class="RightCommentList">
             <n-card class="CollList"
-                    v-show="videoData[routeID.Id].CollStr !== ''"
+                    v-show="currentData.CollStr !== ''"
                     title="合集列表">
                 <template #header-extra>
-                    <n-switch :rail-style="railStyle">
+                    <n-switch
+                            v-model:value="CollListSwitchList"
+                            :rail-style="railStyle"
+                    >
                         <template #checked>
-                            单播
+                            连播
                         </template>
                         <template #unchecked>
-                            连播
+                            单播
                         </template>
                     </n-switch>
                 </template>
@@ -285,7 +293,11 @@
     var {videoData} = storeToRefs(videoDataStore);
 
     const routeID = defineProps(["Id"]);
-    const videoUrl = config.SERVER_API + videoData.value[routeID.Id].VideoUrl;
+    const currentData = ref(videoData.value[routeID.Id]);
+
+    const videoUrl = computed(() => {
+        return config.SERVER_API + currentData.value.VideoUrl;
+    });
 
     let lvideo = {};
 
@@ -334,21 +346,21 @@
     )
 
     const handleLoadStart = (e) => {
-        GetComment(videoData.value[routeID.Id].MId).then((res) => {
+        GetComment(currentData.value.MId).then((res) => {
             CommentListData.value = res.data;
         })
         lvideo = document.getElementById("lvideo");
         controlTimeView.duration = timeFilter(lvideo.duration);
-        if (videoData.value[routeID.Id].LastWatch > 0) {
-            e.target.currentTime = videoData.value[routeID.Id].LastWatch;
-            delayClearNotifyMsg("为您定位至:" + timeFilter(videoData.value[routeID.Id].LastWatch));
+        if (currentData.value.LastWatch > 0) {
+            e.target.currentTime = currentData.value.LastWatch;
+            delayClearNotifyMsg("为您定位至:" + timeFilter(currentData.value.LastWatch));
 
         }
-        if (videoData.value[routeID.Id].Duration.length !== 0) {
+        if (currentData.value.Duration.length !== 0) {
             return;
         }
         let updateTime = {
-            MId: videoData.value[routeID.Id].MId,
+            MId: currentData.value.MId,
             Duration: timeFilter(e.target.duration),
         };
         UpdateVideo(updateTime);
@@ -365,12 +377,24 @@
             lvideo.pause();
         }
     };
+
+    const CollListSwitchList = ref(true);
+
     const handleEnd = () => {
         playStatus.value = false;
+        if (!CollListSwitchList.value) {
+            return;
+        }
+        handlePlayNextEnter();
+        setTimeout(function () {
+            handlePlayNext();
+        }, 3000)
     }
+
+
     const handleTimeProgress = (e) => {
         progressBtnLeft.value = e.target.currentTime / e.target.duration * 100 + '%';
-        controlTimeView.playTime = timeFilter(e.target.currentTime)
+        controlTimeView.playTime = timeFilter(e.target.currentTime);
     }
     const handleFull = () => {
         if (!document.fullscreenElement) {
@@ -504,7 +528,7 @@
     const handleClickClap = () => {
         videoData.value[routeID.Id].Cover = getVideoCoverDataURL();
         let tmpCover = {
-            MId: videoData.value[routeID.Id].MId,
+            MId: currentData.value.MId,
             Cover: videoData.value[routeID.Id].Cover.slice(22),
         };
         UpdateVideo(tmpCover);
@@ -517,7 +541,7 @@
 
     const handlePause = () => {
         let updateTime = {
-            MId: videoData.value[routeID.Id].MId,
+            MId: currentData.value.MId,
             RecentWatch: getUTCTime(),
             LastWatch: Math.floor(lvideo.currentTime),
         };
@@ -570,7 +594,7 @@
             CommentFrameStr: timeFilter(lvideo.currentTime),
             CommentFrame: lvideo.currentTime,
             CommentTime: getCurrentTime(),
-            MId: videoData.value[routeID.Id].MId,
+            MId: currentData.value.MId,
         };
         try {
             AddComment(addData).then((res) => {
@@ -600,7 +624,7 @@
 
     const handleCommentDel = (index) => {
         DeleteComment({
-            MId: videoData.value[routeID.Id].MId,
+            MId: currentData.value.MId,
             CommentFrame: CommentListData.value[index].CommentFrame,
         });
         CommentListData.value.splice(index, 1);
@@ -647,7 +671,42 @@
     }
     const handleCollListBtnClick = (index) => {
         CollListSelected.value = index;
-        router.push({name: "#", query: {id: index}});
+        currentData.value = videoData.value[index];
+    }
+
+    const handlePlayPre = () => {
+        let temIndex = parseInt(CollListSelected.value) - 1;
+        if (temIndex < 0) {
+            return
+        }
+        CollListSelected.value = temIndex;
+        currentData.value = videoData.value[temIndex];
+    }
+
+    const handlePlayNext = () => {
+        let temIndex = parseInt(CollListSelected.value) + 1;
+        if (temIndex >= videoData.value.length) {
+            return
+        }
+        CollListSelected.value = temIndex;
+        currentData.value = videoData.value[temIndex];
+
+    }
+
+    const handlePlayPreEnter = () => {
+        let temIndex = parseInt(CollListSelected.value) - 1;
+        if (temIndex >= videoData.value.length) {
+            return
+        }
+        delayClearNotifyMsg("上一个:" + videoData.value[temIndex].Title);
+    }
+
+    const handlePlayNextEnter = () => {
+        let temIndex = parseInt(CollListSelected.value) + 1;
+        if (temIndex >= videoData.value.length) {
+            return
+        }
+        delayClearNotifyMsg("下一个:" + videoData.value[temIndex].Title);
     }
 
 </script>

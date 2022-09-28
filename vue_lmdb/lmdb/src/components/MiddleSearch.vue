@@ -55,13 +55,13 @@
                     videoDataStore.setVideoData(res.data);
                     for (let i = 0; i < res.data.length; i++) {
                         if (res.data[i].MId === temMId) {
-                            router.push({name: "video", query: {id: i}});
+                            router.push({name: "video", params: {id: i}});
                         }
                     }
                 }
             });
         } else {
-            router.push({name: "video", query: {id: value}});
+            router.push({name: "video", params: {id: value}});
         }
     };
 </script>
