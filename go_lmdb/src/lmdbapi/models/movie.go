@@ -149,7 +149,7 @@ func InsertOrUpdateMovieData(force bool, movieArray []*Movie) ([]*Movie, error) 
 			var movie Movie
 			if qs.Filter("MId", m.MId).One(&movie) == nil {
 				if movie.VideoUrl != m.VideoUrl {
-					_, err := ormOpr.Update(m, "video_url")
+					_, err := ormOpr.Update(m, []string{"video_url", "title"}...)
 					fmt.Printf("update videurl: %s,err:%s", m.VideoUrl, err)
 				}
 				if movie.PathValid != m.PathValid {

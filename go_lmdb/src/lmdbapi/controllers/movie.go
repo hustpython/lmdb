@@ -89,7 +89,7 @@ func procQueryData(rule models.Filter, searchExt string) ([]*models.Movie, error
 			p = strings.Replace(p, ":", "", -1)
 			tmpMovie := &models.Movie{
 				MId:      strconv.Itoa(k.Second()) + strconv.Itoa(int(s)),
-				Title:    strings.Trim(filepath.Base(p), base),
+				Title:    strings.TrimSuffix(filepath.Base(p), base),
 				VideoUrl: p,
 			}
 			movieArray = append(movieArray, tmpMovie)

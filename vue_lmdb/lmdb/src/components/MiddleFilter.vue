@@ -160,6 +160,10 @@
             value: 0,
         },
         {
+            label: 200,
+            value: 200,
+        },
+        {
             label: 400,
             value: 400,
         },
@@ -183,12 +187,16 @@
 
     var syncVideoForm = ref({
         MinSize: 400,
-        MovieExt: ["mp4"],
+        MovieExt: ["mp4", "MP4"],
     });
     const options = [
         {
             label: "mp4",
             value: "mp4",
+        },
+        {
+            label: "MP4",
+            value: "MP4",
         },
         {
             label: "mkv",
@@ -419,7 +427,7 @@
         .videoTabs {
             padding: 7px 17px 7px 17px;
             max-height: 300px;
-            overflow-y: scroll;
+            overflow: auto;
             @include phone {
                 display: none;
             }

@@ -1,215 +1,339 @@
 <template>
-    <n-space>
-        <div class="VideoContent">
-            <canvas id="localVideoCanvas" style="display: none"></canvas>
-            <video
+    <n-space justify="space-between">
+        <n-space vertical>
+            <div class="VideoContent">
+                <canvas id="localVideoCanvas" style="display: none"></canvas>
+                <video
+                        id="lvideo"
+                        :src=videoUrl
+                        autoplay
+                        @loadeddata="handleLoadStart"
+                        @click="handlePlay"
+                        @timeupdate="handleTimeProgress"
+                        @ended="handleEnd"
+                        @mousemove="handleMouseMove"
+                        @pause="handlePause"
+                        style="display: block"
+                        x5-video-player-type="h5"
+                        webkit-playsinline=""
+                        playsinline=""
+                        preload="metadata"
+                        crossorigin="anonymous"
+                ></video>
 
-                    id="lvideo"
-                    :src=videoUrl
-                    autoplay
-                    @loadeddata="handleLoadStart"
-                    @click="handlePlay"
-                    @timeupdate="handleTimeProgress"
-                    @ended="handleEnd"
-                    @mousemove="handleMouseMove"
-                    @pause="handlePause"
-                    style="display: block"
-                    x5-video-player-type="h5"
-                    webkit-playsinline=""
-                    playsinline=""
-                    preload="metadata"
-                    crossorigin="anonymous"
-            ></video>
 
-
-            <!--            下方控制台-->
-            <div class="progressMask"
-                 @click="handleProgress"
-                 v-show="showControl">
-                <span class="progress"> </span>
-                <span class="bkg"> </span>
-                <div class="progressBtn">
-                    <n-icon size="16">
-                        <VehicleSubway16Regular/>
+                <!--            下方控制台-->
+                <div class="progressMask"
+                     @click="handleProgress"
+                     v-show="showControl">
+                    <span class="progress"> </span>
+                    <span class="bkg"> </span>
+                    <div class="progressBtn">
+                        <n-icon size="16">
+                            <VehicleSubway16Regular/>
+                        </n-icon>
+                    </div>
+                </div>
+                <div class="videoPlayCtrl"
+                     @mouseenter="handlePlayCtrlEnter"
+                     v-show="showControl">
+                    <n-icon
+                            v-show="currentData.CollStr !== ''"
+                            @click="handlePlayPre"
+                            @mouseenter="handlePlayPreEnter"
+                            class="preControl" :size=controlBtnSize>
+                        <Previous20Regular/>
                     </n-icon>
-                </div>
-            </div>
-            <div class="videoPlayCtrl"
-                 @mouseenter="handlePlayCtrlEnter"
-                 v-show="showControl">
-                <n-icon
-                        v-show="currentData.CollStr !== ''"
-                        @click="handlePlayPre"
-                        @mouseenter="handlePlayPreEnter"
-                        class="preControl" :size=controlBtnSize>
-                    <Previous20Regular/>
-                </n-icon>
-                <!--                播放/暂停按钮-->
-                <n-icon
-                        v-show="playStatus" class="playControl" :size=controlBtnSize @click="handlePlay">
-                    <PausePresentationOutlined/>
-                </n-icon>
-                <n-icon v-show="!playStatus" class="playControl" :size=controlBtnSize @click="handlePlay">
-                    <LiveTvRound/>
-                </n-icon>
+                    <!--                播放/暂停按钮-->
+                    <n-icon
+                            v-show="playStatus" class="playControl" :size=controlBtnSize @click="handlePlay">
+                        <PausePresentationOutlined/>
+                    </n-icon>
+                    <n-icon v-show="!playStatus" class="playControl" :size=controlBtnSize @click="handlePlay">
+                        <LiveTvRound/>
+                    </n-icon>
 
-                <!--            下一个视频-->
-                <n-icon
-                        v-show="currentData.CollStr !== ''"
-                        @click="handlePlayNext"
-                        @mouseenter="handlePlayNextEnter"
-                        class="nextControl" :size=controlBtnSize>
-                    <Next20Regular/>
-                </n-icon>
+                    <!--            下一个视频-->
+                    <n-icon
+                            v-show="currentData.CollStr !== ''"
+                            @click="handlePlayNext"
+                            @mouseenter="handlePlayNextEnter"
+                            class="nextControl" :size=controlBtnSize>
+                        <Next20Regular/>
+                    </n-icon>
 
-                <!--                显示时间-->
-                <div class="timeView"
-                     @click="handleTimeTextClick"
-                     v-show=!showTimeEditInput
-                >{{controlTimeView.playTime}}/{{controlTimeView.duration}}
-                </div>
+                    <!--                显示时间-->
+                    <div class="timeView"
+                         @click="handleTimeTextClick"
+                         v-show=!showTimeEditInput
+                    >{{controlTimeView.playTime}}/{{controlTimeView.duration}}
+                    </div>
 
-                <!--            评论按钮-->
-                <n-icon class="movieComment"
-                        :size=controlBtnSize
-                        @click="handleCommentBtn"
-                >
-                    <CommentEdit20Regular/>
-                </n-icon>
+                    <!--            评论按钮-->
+                    <n-icon class="movieComment"
+                            :size=controlBtnSize
+                            @click="handleCommentBtn"
+                    >
+                        <CommentEdit20Regular/>
+                    </n-icon>
 
-                <div v-show="CommentContentShow"
-                     class="CommentContent">
+                    <div v-show="CommentContentShow"
+                         class="CommentContent">
                 <textarea ref="CommentContentRef"
                           v-model=CommentSubmitStr
                           @keyup.enter="handleCommentSubmit"
                           class="CommentInput"/>
-                    <div class="CommentSubmit"
-                    >
-                        <n-checkbox
-                                v-model:checked=CommentSubmitPic
-                                size="large" label="提交图片"/>
-                        <n-icon
-                                @click="handleCommentSubmit"
-                                class="CommentSend"
-                                :size=controlBtnSize>
-                            <Send20Regular/>
-                        </n-icon>
-                    </div>
-                </div>
-
-                <input class="timeEdit"
-                       type="text"
-                       v-model=inputTime
-                       v-show=showTimeEditInput
-                       @keyup.enter="handleInputBlur"
-                       @blur="handleInputBlur"
-                       ref="refInput">
-                <n-icon class="coverSet" :size=controlBtnSize
-                        @click="handleClickClap">
-                    <Camera/>
-                </n-icon>
-
-                <!--                声音调整按钮-->
-
-                <n-icon
-                        v-show=volumeBtnShow
-                        @mouseenter="volumeControlMouseEnter"
-                        @mouseleave="volumeControlMouseLeave"
-                        @click="volumeControlClick"
-                        class="volumeControl" :size=controlBtnSize>
-                    <VolumeUpFilled/>
-                </n-icon>
-                <n-icon
-                        v-show=!volumeBtnShow
-                        @mouseenter="volumeControlMouseEnter"
-                        @mouseleave="volumeControlMouseLeave"
-                        @click="volumeControlClick"
-                        class="volumeControl" :size=controlBtnSize>
-                    <VolumeOffRound/>
-                </n-icon>
-
-                <!--            音量进度条显示-->
-                <div
-                        v-show=volumeShow
-                        @click="handleVolumeProgressClick"
-                        @mousedown="handleVolumeProgressDown"
-                        @mouseenter="handleVolumeBoxEnter"
-                        @mouseleave="handleVolumeBoxLeave"
-                >
-                <span class="volumeBox">
-                    {{volumePercent}}
-            </span>
-                    <div
-                            class="volumeProgress"
-                            ref="volumeBoxRef">
-                        <div class="currentProgress">
-                            <div class="volumeMoveBtn"
-                            >
-                            </div>
+                        <div class="CommentSubmit"
+                        >
+                            <n-checkbox
+                                    v-model:checked=CommentSubmitPic
+                                    size="large" label="提交图片"/>
+                            <n-icon
+                                    @click="handleCommentSubmit"
+                                    class="CommentSend"
+                                    :size=controlBtnSize>
+                                <Send20Regular/>
+                            </n-icon>
                         </div>
                     </div>
 
-
-                </div>
-                <!--                全屏按钮-->
-                <n-icon class="fullScreen" :size=controlBtnSize @click="handleFull">
-                    <FullScreenMaximize24Filled/>
-                </n-icon>
-
-                <div v-show="controlNotifyShow"
-                     class="controlNotify">
-                    {{notifyMsg}}
-                </div>
-
-            </div>
-
-            <!--            视频暂停时显示-->
-            <n-icon v-show=!playStatus class="tvOff" size="90">
-                <LiveTvRound/>
-            </n-icon>
-
-            <!--        展开评论列表按钮-->
-            <div v-show=showControl>
-                <n-icon v-show=!CommentListShow
-                        class="CommentListShowBtn" size="24"
-                        @click="handelCommentListShow">
-                    <ChevronLeft28Regular/>
-                </n-icon>
-                <n-icon v-show=CommentListShow
-                        class="CommentListShowBtn" size="24"
-                        @click="handelCommentListShow">
-                    <ChevronRight28Regular/>
-                </n-icon>
-            </div>
-
-
-            <div v-show=CommentListShow
-                 class="CommentCards">
-                <div class="CommentCard"
-                     v-for="(item,index) in CommentListData">
-                    <div class="CommentDot"
-                         :style="getRandomColor(index)">
-                    </div>
-                    <div class="CommentTimeText"
-                         :style="getRandomColor(index)"
-                         @dblclick="handleCommentTimeDblclick(index)">
-                        {{item.CommentFrameStr}} | {{item.CommentTime}} | {{index+1}} / {{commentListLen}}
-                    </div>
-
-                    <n-icon
-                            class="CommentDel" size="21"
-                            @click="handleCommentDel(index)">
-                        <Delete20Regular/>
+                    <input class="timeEdit"
+                           type="text"
+                           v-model=inputTime
+                           v-show=showTimeEditInput
+                           @keyup.enter="handleInputBlur"
+                           @blur="handleInputBlur"
+                           ref="refInput">
+                    <n-icon class="coverSet" :size=controlBtnSize
+                            @click="handleClickClap">
+                        <Camera/>
                     </n-icon>
 
-                    <div class="CommentRight">
-                        <img v-show="item.CommentImage!==''" :src="setCoverData(item.CommentImage)"/>
-                        {{item.CommentStr}}
-                        <div style="clear:both;"></div>
+                    <!--                声音调整按钮-->
+
+                    <n-icon
+                            v-show=volumeBtnShow
+                            @mouseenter="volumeControlMouseEnter"
+                            @mouseleave="volumeControlMouseLeave"
+                            @click="volumeControlClick"
+                            class="volumeControl" :size=controlBtnSize>
+                        <VolumeUpFilled/>
+                    </n-icon>
+                    <n-icon
+                            v-show=!volumeBtnShow
+                            @mouseenter="volumeControlMouseEnter"
+                            @mouseleave="volumeControlMouseLeave"
+                            @click="volumeControlClick"
+                            class="volumeControl" :size=controlBtnSize>
+                        <VolumeOffRound/>
+                    </n-icon>
+
+                    <!--            音量进度条显示-->
+                    <div
+                            v-show=volumeShow
+                            @click="handleVolumeProgressClick"
+                            @mousedown="handleVolumeProgressDown"
+                            @mouseenter="handleVolumeBoxEnter"
+                            @mouseleave="handleVolumeBoxLeave"
+                    >
+                <span class="volumeBox">
+                    {{volumePercent}}
+            </span>
+                        <div
+                                class="volumeProgress"
+                                ref="volumeBoxRef">
+                            <div class="currentProgress">
+                                <div class="volumeMoveBtn"
+                                >
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                    <!--                全屏按钮-->
+                    <n-icon class="fullScreen" :size=controlBtnSize @click="handleFull">
+                        <FullScreenMaximize24Filled/>
+                    </n-icon>
+
+                    <div v-show="controlNotifyShow"
+                         class="controlNotify">
+                        {{notifyMsg}}
+                    </div>
+
+                </div>
+
+                <!--            视频暂停时显示-->
+                <n-icon v-show=!playStatus class="tvOff" size="90">
+                    <LiveTvRound/>
+                </n-icon>
+
+                <!--        展开评论列表按钮-->
+                <div v-show=showControl>
+                    <n-icon v-show=!CommentListShow
+                            class="CommentListShowBtn" size="24"
+                            @click="handelCommentListShow">
+                        <ChevronLeft28Regular/>
+                    </n-icon>
+                    <n-icon v-show=CommentListShow
+                            class="CommentListShowBtn" size="24"
+                            @click="handelCommentListShow">
+                        <ChevronRight28Regular/>
+                    </n-icon>
+                </div>
+
+
+                <div v-show=CommentListShow
+                     class="CommentCards">
+                    <div class="CommentCard"
+                         v-for="(item,index) in CommentListData">
+                        <div class="CommentDot"
+                             :style="getRandomColor(index)">
+                        </div>
+                        <div class="CommentTimeText"
+                             :style="getRandomColor(index)"
+                             @dblclick="handleCommentTimeDblclick(index)">
+                            {{item.CommentFrameStr}} | {{item.CommentTime}} | {{index+1}} / {{commentListLen}}
+                        </div>
+
+                        <n-icon
+                                class="CommentDel" size="21"
+                                @click="handleCommentDel(index)">
+                            <Delete20Regular/>
+                        </n-icon>
+
+                        <div class="CommentRight">
+                            <img v-show="item.CommentImage!==''" :src="setCoverData(item.CommentImage)"/>
+                            {{item.CommentStr}}
+                            <div style="clear:both;"></div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+            <n-space style="height: 360px;margin-top:30px">
+                <!-- 左侧图片 -->
+                <img class="videoCardSize" :src="setCoverData(currentData.Cover)"/>
+
+                <div v-show="!showEditForm">
+                    <n-space vertical style="width: 320px">
+                        <div>
+            <span style="font-size: 18px; float: left"
+            >{{ currentData.Title }}
+              <n-button
+                      v-show="currentData.CollStr !== ''"
+                      strong
+                      secondary
+                      type="tertiary"
+                      round
+                      size="tiny"
+                      style="margin-left: 10px"
+              >
+                <template #icon>
+                  <n-icon><FolderDetails/></n-icon>
+                </template>
+                合集
+              </n-button>
+            </span>
+                        </div>
+                        <n-space>
+                            <div v-for="(item, index) in currentData.TagArray">
+                                <n-tag :type="labelTypes[index]" round>
+                                    {{ item }}
+                                </n-tag>
+                            </div>
+                        </n-space>
+                        <n-ellipsis
+                                style="max-width: 320px"
+                                expand-trigger="click"
+                                line-clamp="3"
+                                :tooltip="false"
+                        >
+                            {{ currentData.Desc }}
+                        </n-ellipsis>
+                    </n-space>
+
+                </div>
+
+                <n-form
+                        v-show="showEditForm"
+                        class="middleInfo"
+                        ref="formInstRef"
+                        style="width: 320px"
+                        size="small"
+                        :model="videoFormModel"
+                        :rules="rules"
+                        label-placement="left"
+                >
+                    <n-form-item label="标题" path="Title">
+                        <n-input
+                                v-model:value="videoFormModel.Title"
+                                :default-value="videoFormModel.Title"
+                                placeholder="请输入标题"
+                        />
+                    </n-form-item>
+                    <n-form-item label="标签" path="TagArray">
+                        <n-select
+                                :default-value="videoFormModel.TagArray"
+                                placeholder="增加或删除标签"
+                                v-model:value="videoFormModel.TagArray"
+                                multiple
+                                :options="videoTagOption"
+                        />
+                    </n-form-item>
+                    <n-form-item label="介绍" path="Desc">
+                        <n-input
+                                v-model:value="videoFormModel.Desc"
+                                type="textarea"
+                                placeholder="请输入视频介绍信息"
+                                :default-value="videoFormModel.Desc"
+                        />
+                    </n-form-item>
+
+                    <n-form-item label="合集" path="CollStr">
+                        <n-select
+                                placeholder="创建或选择加入已有合集"
+                                :default-value="videoFormModel.CollStr"
+                                v-model:value="videoFormModel.CollStr"
+                                filterable
+                                tag
+                                :options="collOptions"
+                        />
+                    </n-form-item>
+                    <div style="display: flex; justify-content: flex-end">
+                        <n-button size="small" @click="handleClose"> 关闭</n-button>
+                        <n-button size="small" @click="handleRecover"> 恢复</n-button>
+                        <n-button size="small" @click="handleValidateClick"> 提交</n-button>
+                    </div>
+                </n-form>
+
+                <n-space vertical>
+                    <n-button
+                            @click="showEditForm = !showEditForm"
+                            strong
+                            secondary
+                            type="tertiary"
+                            round
+                            size="tiny"
+                    >
+                        <template #icon>
+                            <n-icon>
+                                <Edit/>
+                            </n-icon>
+                        </template>
+                        编辑
+                    </n-button>
+
+                    <n-button strong secondary type="tertiary" round size="tiny">
+                        <template #icon>
+                            <n-icon>
+                                <Favorite/>
+                            </n-icon>
+                        </template>
+                        收藏
+                    </n-button>
+                </n-space>
+            </n-space>
+        </n-space>
         <div class="RightCommentList">
             <n-card class="CollList"
                     v-show="currentData.CollStr !== ''"
@@ -271,20 +395,21 @@
         Previous20Regular, CommentEdit20Regular, Send20Regular, ChevronLeft28Regular,
         ChevronRight28Regular, Delete20Regular
     } from "@vicons/fluent";
+    import {Edit, FolderDetails, Favorite, Camera} from "@vicons/carbon";
     import {
         VolumeUpFilled,
         PausePresentationOutlined,
         VolumeOffRound,
         LiveTvRound,
     } from "@vicons/material";
-    import {Camera} from "@vicons/carbon";
+
     import {useRouter} from "vue-router";
 
     const router = useRouter();
 
     import {getUTCTime, timeFilter, timeStrToSec, getCurrentTime} from "@/api/timefilter";
-    import {ref, reactive, nextTick, computed, onBeforeUnmount} from "vue";
-    import {UpdateVideo, AddComment, GetComment, DeleteComment} from "@/api/videolist";
+    import {ref, reactive, nextTick, computed, onBeforeUnmount, onBeforeMount} from "vue";
+    import {UpdateVideo, AddComment, GetComment, DeleteComment, GetAllColl, DeleteMovieColl} from "@/api/videolist";
 
     import {storeToRefs} from "pinia";
     import {useVideoData} from "@/store/videoData";
@@ -346,6 +471,7 @@
     )
 
     const handleLoadStart = (e) => {
+        playStatus.value = true;
         GetComment(currentData.value.MId).then((res) => {
             CommentListData.value = res.data;
         })
@@ -526,10 +652,10 @@
     }
 
     const handleClickClap = () => {
-        videoData.value[routeID.Id].Cover = getVideoCoverDataURL();
+        videoData.value[CollListSelected.value].Cover = getVideoCoverDataURL();
         let tmpCover = {
             MId: currentData.value.MId,
-            Cover: videoData.value[routeID.Id].Cover.slice(22),
+            Cover: videoData.value[CollListSelected.value].Cover.slice(22),
         };
         UpdateVideo(tmpCover);
         delayClearNotifyMsg("为您截取一张图片");
@@ -545,6 +671,7 @@
             RecentWatch: getUTCTime(),
             LastWatch: Math.floor(lvideo.currentTime),
         };
+        videoData.value[CollListSelected.value].LastWatch = Math.floor(lvideo.currentTime);
         UpdateVideo(updateTime);
     };
 
@@ -672,6 +799,7 @@
     const handleCollListBtnClick = (index) => {
         CollListSelected.value = index;
         currentData.value = videoData.value[index];
+        updateVideoFormModel();
     }
 
     const handlePlayPre = () => {
@@ -681,6 +809,7 @@
         }
         CollListSelected.value = temIndex;
         currentData.value = videoData.value[temIndex];
+        updateVideoFormModel();
     }
 
     const handlePlayNext = () => {
@@ -690,7 +819,7 @@
         }
         CollListSelected.value = temIndex;
         currentData.value = videoData.value[temIndex];
-
+        updateVideoFormModel();
     }
 
     const handlePlayPreEnter = () => {
@@ -708,6 +837,115 @@
         }
         delayClearNotifyMsg("下一个:" + videoData.value[temIndex].Title);
     }
+
+
+    var showEditForm = ref(false);
+    const formInstRef = ref(null);
+    const labelTypes = ["success", "warning", "error", "info"];
+    var videoFormModel = ref({
+        Title: currentData.value.Title,
+        TagArray: currentData.value.TagArray,
+        Desc: currentData.value.Desc,
+        CollStr: currentData.value.CollStr,
+    });
+
+    const updateVideoFormModel = () => {
+        videoFormModel.value.Title = currentData.value.Title
+        videoFormModel.value.TagArray = currentData.value.TagArray
+        videoFormModel.value.Desc = currentData.value.Desc
+        videoFormModel.value.CollStr = currentData.value.CollStr
+    }
+    const rules = {
+        Title: {
+            required: true,
+            min: 1,
+            max: 15,
+            message: "标题最短长度为 1,最大长度为15",
+        },
+        TagArray: {
+            required: true,
+            type: "array",
+            min: 1,
+            max: 4,
+            message: "最新需要1个标签,最多可以填写4个标签",
+        },
+        Desc: {
+            required: false,
+            max: 300,
+            message: "介绍内容不能超过300",
+        },
+        CollStr: {
+            required: false,
+            max: 15,
+            message: "集合名称最大长度为15",
+        },
+    };
+
+    let collOptions = ref([{label: "", value: ""}]);
+    const videoTagOption = computed(() => {
+        let tmpOptions = [];
+        for (var i = 0; i < config.AllVideoTags.length; i++) {
+            tmpOptions.push({
+                label: config.AllVideoTags[i],
+                value: config.AllVideoTags[i],
+            });
+        }
+        return tmpOptions;
+    });
+    onBeforeMount(() => {
+        GetAllColl().then((res) => {
+            if (res.code == 200) {
+                for (var i = 0; i < res.data.length; i++) {
+                    collOptions.value.push({
+                        label: res.data[i],
+                        value: res.data[i],
+                    });
+                }
+            }
+        });
+    });
+
+
+    const handleRecover = () => {
+        videoFormModel.value.Title = currentData.value.Title;
+        videoFormModel.value.TagArray = [];
+        videoFormModel.value.TagArray.push(...currentData.value.TagArray);
+        videoFormModel.value.Desc = currentData.value.Desc;
+        videoFormModel.value.CollStr = currentData.value.CollStr;
+        formInstRef.value?.restoreValidation();
+    };
+
+    const handleClose = () => {
+        showEditForm.value = false;
+    };
+
+    const handleValidateClick = () => {
+        let getError = false;
+        formInstRef.value?.validate((errors) => {
+            if (errors) {
+                getError = true;
+                console.error(errors);
+            }
+        });
+
+        function procForm() {
+            if (getError === true) {
+                return;
+            }
+            videoFormModel.value.MId = currentData.value.MId;
+            UpdateVideo(videoFormModel.value);
+            videoData.value[CollListSelected.value].Title = videoFormModel.value.Title;
+            videoData.value[CollListSelected.value].Desc = videoFormModel.value.Desc;
+            videoData.value[CollListSelected.value].TagArray = videoFormModel.value.TagArray;
+            videoData.value[CollListSelected.value].CollStr = videoFormModel.value.CollStr;
+            if (videoFormModel.value.CollStr === "") {
+                DeleteMovieColl(videoFormModel.value.MId);
+            }
+            showEditForm.value = false;
+        }
+
+        setTimeout(procForm, 100);
+    };
 
 </script>
 
