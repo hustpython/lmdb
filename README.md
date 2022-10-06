@@ -43,15 +43,15 @@ bee run
 
 ### 本地视频快速搜索与过滤
 
-![](./readmeimg./1.png)
+![](https://github.com/hustpython/lmdb/blob/main/readmeimg/1.png)
 
 ### 数据持久化
 
-![](./readmeimg./2.png)
+![]([./readmeimg./2.png](https://github.com/hustpython/lmdb/blob/main/readmeimg/2.png))
 
 ### 批量创建合集
 
-![](./readmeimg./3.png)
+![]([./readmeimg./3.png](https://github.com/hustpython/lmdb/blob/main/readmeimg/3.png))
 
 ### 快捷键
 
