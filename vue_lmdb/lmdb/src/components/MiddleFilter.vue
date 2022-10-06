@@ -152,6 +152,10 @@
         BatchAddColl,
     } from "@/api/videolist";
 
+    import {useRouter} from "vue-router";
+
+    const router = useRouter();
+
     const notification = useNotification();
 
     const syncVideoSize = [
@@ -328,13 +332,14 @@
                         content: "视频已经是最新的了!",
                         duration: 3000,
                     });
-                    return;
+                } else {
+                    videoDataStore.addVideoData(res.data);
+                    notification.success({
+                        content: "成功从本地磁盘同步" + res.data.length + "个视频",
+                        duration: 3000,
+                    });
                 }
-                videoDataStore.addVideoData(res.data);
-                notification.success({
-                    content: "成功从本地磁盘同步" + res.data.length + "个视频",
-                    duration: 3000,
-                });
+                router.go(0);
             }
         });
     };
