@@ -43,7 +43,7 @@ bee run
 
 ### 本地视频快速搜索与过滤
 
-![](https://github.com/hustpython/lmdb/blob/main/readmeimg/1.png)
+![](../readmeimg/1.png)
 
 ### 数据持久化
 
