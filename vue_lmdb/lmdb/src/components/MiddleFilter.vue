@@ -190,7 +190,7 @@
     var tagIndex = ref(0);
 
     var syncVideoForm = ref({
-        MinSize: 400,
+        MinSize: 200,
         MovieExt: ["mp4", "MP4"],
     });
     const options = [
