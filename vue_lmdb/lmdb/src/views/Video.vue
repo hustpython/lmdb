@@ -28,8 +28,10 @@
     .videospace {
         float: left;
         margin-top: 30px;
-        margin-left: 60px;
+        margin-left: 30px;
+        @include phone() {
+            margin-left: 0px;
+            margin-top: 0px;
+        }
     }
-
-
 </style>

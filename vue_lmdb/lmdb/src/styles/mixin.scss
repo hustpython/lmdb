@@ -5,7 +5,7 @@ $homeBckHeight: 330px;
 $videoCardWidthPhone: 320px;
 
 @mixin phone() {
-  @media (max-width: 620px) {
+  @media (max-width: 1000px) {
     @content;
   }
 }

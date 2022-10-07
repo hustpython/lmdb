@@ -98,7 +98,7 @@
             border-radius: 30px;
             padding: 10px 20px;
             @include phone() {
-                display: none;
+                width: 50%;
             }
         }
     }

@@ -5,6 +5,7 @@
                 <canvas id="localVideoCanvas" style="display: none"></canvas>
                 <video
                         id="lvideo"
+                        ref="videoCon"
                         :src=videoUrl
                         autoplay
                         @loadeddata="handleLoadStart"
@@ -20,8 +21,6 @@
                         preload="metadata"
                         crossorigin="anonymous"
                 ></video>
-
-
                 <!--            下方控制台-->
                 <div class="progressMask"
                      @click="handleProgress"
@@ -210,13 +209,14 @@
                     </div>
                 </div>
             </div>
-            <n-space style="height: 360px;margin-top:30px">
-                <!-- 左侧图片 -->
-                <img class="videoCardSize" :src="setCoverData(currentData.Cover)"/>
+            <div class="LeftDownForm">
+                <n-space style="height: 360px;margin-top:30px">
+                    <!-- 左侧图片 -->
+                    <img class="videoCardSize" :src="setCoverData(currentData.Cover)"/>
 
-                <div v-show="!showEditForm">
-                    <n-space vertical style="width: 320px">
-                        <div>
+                    <div v-show="!showEditForm">
+                        <n-space vertical style="width: 320px">
+                            <div>
             <span style="font-size: 18px; float: left"
             >{{ currentData.Title }}
               <n-button
@@ -234,105 +234,107 @@
                 合集
               </n-button>
             </span>
-                        </div>
-                        <n-space>
-                            <div v-for="(item, index) in currentData.TagArray">
-                                <n-tag :type="labelTypes[index]" round>
-                                    {{ item }}
-                                </n-tag>
                             </div>
+                            <n-space>
+                                <div v-for="(item, index) in currentData.TagArray">
+                                    <n-tag :type="labelTypes[index]" round>
+                                        {{ item }}
+                                    </n-tag>
+                                </div>
+                            </n-space>
+                            <n-ellipsis
+                                    style="max-width: 320px"
+                                    expand-trigger="click"
+                                    line-clamp="3"
+                                    :tooltip="false"
+                            >
+                                {{ currentData.Desc }}
+                            </n-ellipsis>
                         </n-space>
-                        <n-ellipsis
-                                style="max-width: 320px"
-                                expand-trigger="click"
-                                line-clamp="3"
-                                :tooltip="false"
-                        >
-                            {{ currentData.Desc }}
-                        </n-ellipsis>
-                    </n-space>
 
-                </div>
-
-                <n-form
-                        v-show="showEditForm"
-                        class="middleInfo"
-                        ref="formInstRef"
-                        style="width: 320px"
-                        size="small"
-                        :model="videoFormModel"
-                        :rules="rules"
-                        label-placement="left"
-                >
-                    <n-form-item label="标题" path="Title">
-                        <n-input
-                                v-model:value="videoFormModel.Title"
-                                :default-value="videoFormModel.Title"
-                                placeholder="请输入标题"
-                        />
-                    </n-form-item>
-                    <n-form-item label="标签" path="TagArray">
-                        <n-select
-                                :default-value="videoFormModel.TagArray"
-                                placeholder="增加或删除标签"
-                                v-model:value="videoFormModel.TagArray"
-                                multiple
-                                :options="videoTagOption"
-                        />
-                    </n-form-item>
-                    <n-form-item label="介绍" path="Desc">
-                        <n-input
-                                v-model:value="videoFormModel.Desc"
-                                type="textarea"
-                                placeholder="请输入视频介绍信息"
-                                :default-value="videoFormModel.Desc"
-                        />
-                    </n-form-item>
-
-                    <n-form-item label="合集" path="CollStr">
-                        <n-select
-                                placeholder="创建或选择加入已有合集"
-                                :default-value="videoFormModel.CollStr"
-                                v-model:value="videoFormModel.CollStr"
-                                filterable
-                                tag
-                                :options="collOptions"
-                        />
-                    </n-form-item>
-                    <div style="display: flex; justify-content: flex-end">
-                        <n-button size="small" @click="handleClose"> 关闭</n-button>
-                        <n-button size="small" @click="handleRecover"> 恢复</n-button>
-                        <n-button size="small" @click="handleValidateClick"> 提交</n-button>
                     </div>
-                </n-form>
 
-                <n-space vertical>
-                    <n-button
-                            @click="showEditForm = !showEditForm"
-                            strong
-                            secondary
-                            type="tertiary"
-                            round
-                            size="tiny"
+                    <n-form
+                            v-show="showEditForm"
+                            class="middleInfo"
+                            ref="formInstRef"
+                            style="width: 320px"
+                            size="small"
+                            :model="videoFormModel"
+                            :rules="rules"
+                            label-placement="left"
                     >
-                        <template #icon>
-                            <n-icon>
-                                <Edit/>
-                            </n-icon>
-                        </template>
-                        编辑
-                    </n-button>
+                        <n-form-item label="标题" path="Title">
+                            <n-input
+                                    v-model:value="videoFormModel.Title"
+                                    :default-value="videoFormModel.Title"
+                                    placeholder="请输入标题"
+                            />
+                        </n-form-item>
+                        <n-form-item label="标签" path="TagArray">
+                            <n-select
+                                    :default-value="videoFormModel.TagArray"
+                                    placeholder="增加或删除标签"
+                                    v-model:value="videoFormModel.TagArray"
+                                    multiple
+                                    :options="videoTagOption"
+                            />
+                        </n-form-item>
+                        <n-form-item label="介绍" path="Desc">
+                            <n-input
+                                    v-model:value="videoFormModel.Desc"
+                                    type="textarea"
+                                    placeholder="请输入视频介绍信息"
+                                    :default-value="videoFormModel.Desc"
+                            />
+                        </n-form-item>
 
-                    <n-button strong secondary type="tertiary" round size="tiny">
-                        <template #icon>
-                            <n-icon>
-                                <Favorite/>
-                            </n-icon>
-                        </template>
-                        收藏
-                    </n-button>
+                        <n-form-item label="合集" path="CollStr">
+                            <n-select
+                                    placeholder="创建或选择加入已有合集"
+                                    :default-value="videoFormModel.CollStr"
+                                    v-model:value="videoFormModel.CollStr"
+                                    filterable
+                                    tag
+                                    :options="collOptions"
+                            />
+                        </n-form-item>
+                        <div style="display: flex; justify-content: flex-end">
+                            <n-button size="small" @click="handleClose"> 关闭</n-button>
+                            <n-button size="small" @click="handleRecover"> 恢复</n-button>
+                            <n-button size="small" @click="handleValidateClick"> 提交</n-button>
+                        </div>
+                    </n-form>
+
+                    <n-space vertical>
+                        <n-button
+                                @click="showEditForm = !showEditForm"
+                                strong
+                                secondary
+                                type="tertiary"
+                                round
+                                size="tiny"
+                        >
+                            <template #icon>
+                                <n-icon>
+                                    <Edit/>
+                                </n-icon>
+                            </template>
+                            编辑
+                        </n-button>
+
+                        <n-button strong secondary type="tertiary" round size="tiny">
+                            <template #icon>
+                                <n-icon>
+                                    <Favorite/>
+                                </n-icon>
+                            </template>
+                            收藏
+                        </n-button>
+                    </n-space>
                 </n-space>
-            </n-space>
+
+            </div>
         </n-space>
         <div class="RightCommentList">
             <n-card class="CollList"
@@ -424,14 +426,43 @@
         return config.SERVER_API + currentData.value.VideoUrl;
     });
 
+    const getVideoWidth = () => {
+        if (document.body.clientWidth > 1000) {
+            return "668px"
+        } else {
+            return document.body.clientWidth + "px";
+        }
+    }
+    const getVideoHeight = () => {
+        if (document.body.clientWidth > 1000) {
+            return "376px"
+        } else {
+            return document.body.clientWidth * 0.56 + "px";
+        }
+    }
+    let isFull = false;
+    window.onresize = () => {
+        if (document.body.clientWidth > 1000) {
+            videoCon.value.controls = false;
+        } else {
+            videoCon.value.controls = true;
+        }
+        if (isFull) {
+            videoWidth.value = "100%";
+        } else {
+            videoWidth.value = getVideoWidth();
+            videoHeight.value = getVideoHeight();
+        }
+    };
+
     let lvideo = {};
 
     const controlBtnSize = "24px";
 
     const progressBtnLeft = ref("0");
     const mouseLeft = ref("0px");
-    const videoWidth = ref("668px");
-    const videoHeight = ref("376px");
+    const videoWidth = ref(getVideoWidth());
+    const videoHeight = ref(getVideoHeight());
     const showControl = ref(true);
     const showTimeEditInput = ref(false);
     const controlNotifyShow = ref(false);
@@ -469,8 +500,11 @@
     const CommentListData = ref(
         []
     )
-
+    const videoCon = ref();
     const handleLoadStart = (e) => {
+        if (isMobile) {
+            videoCon.value.controls = true;
+        }
         playStatus.value = true;
         GetComment(currentData.value.MId).then((res) => {
             CommentListData.value = res.data;
@@ -494,6 +528,9 @@
 
     const playStatus = ref(true);
     const handlePlay = () => {
+        if (isMobile) {
+            return
+        }
         playStatus.value = !playStatus.value;
         if (lvideo.paused) {
             lvideo.play();
@@ -519,26 +556,36 @@
 
 
     const handleTimeProgress = (e) => {
+        if (isMobile) {
+            return;
+        }
         progressBtnLeft.value = e.target.currentTime / e.target.duration * 100 + '%';
         controlTimeView.playTime = timeFilter(e.target.currentTime);
     }
+
     const handleFull = () => {
         if (!document.fullscreenElement) {
+            isFull = true;
             document.querySelector('.VideoContent').requestFullscreen();
             videoWidth.value = "100%";
         } else {
+            isFull = false;
             document.exitFullscreen();
-            videoWidth.value = "668px";
+            videoWidth.value = getVideoWidth();
         }
     };
 
     document.addEventListener('fullscreenchange', () => {
         if (!document.fullscreenElement) {
-            videoWidth.value = "668px";
+            isFull = false;
+            videoWidth.value = getVideoWidth();
         }
     })
 
     const handleMouseMove = () => {
+        if (isMobile) {
+            return
+        }
         clearTimeout(videoControlTimer);
         showControl.value = true;
         if (lvideo.paused) {
@@ -831,6 +878,9 @@
     }
 
     const handlePlayNextEnter = () => {
+        if (currentData.valie.CollStr === '') {
+            return;
+        }
         let temIndex = parseInt(CollListSelected.value) + 1;
         if (temIndex >= videoData.value.length) {
             return
@@ -892,7 +942,11 @@
         }
         return tmpOptions;
     });
+    let isMobile = false;
     onBeforeMount(() => {
+        if (document.body.clientWidth <= 1000) {
+            isMobile = true;
+        }
         GetAllColl().then((res) => {
             if (res.code == 200) {
                 for (var i = 0; i < res.data.length; i++) {
@@ -966,6 +1020,9 @@
         }
 
         .progressMask {
+            @include phone() {
+                display: none;
+            }
             width: v-bind(videoWidth);
             cursor: pointer;
             position: absolute;
@@ -1008,6 +1065,9 @@
 
 
         .videoPlayCtrl {
+            @include phone() {
+                display: none;
+            }
             width: v-bind(videoWidth);
             height: 36px;
             position: absolute;
@@ -1178,6 +1238,7 @@
                 cursor: pointer;
                 top: $videoPlayCtrlBottom;
 
+
                 &:hover {
                     color: $BtnHoverColor;
                 }
@@ -1261,6 +1322,9 @@
 
 
         .tvOff {
+            @include phone() {
+                display: none;
+            }
             display: flex;
             position: absolute;
             right: 10px;
@@ -1268,6 +1332,9 @@
         }
 
         .CommentListShowBtn {
+            @include phone() {
+                display: none;
+            }
             display: flex;
             position: absolute;
             right: 5px;
@@ -1283,6 +1350,9 @@
         }
 
         .CommentCards {
+            @include phone() {
+                display: none;
+            }
             top: 5px;
             position: absolute;
             width: 360px;
@@ -1351,7 +1421,12 @@
                 }
             }
         }
+    }
 
+    .LeftDownForm {
+        @include phone() {
+            display: none;
+        }
     }
 
     .RightCommentList {
@@ -1359,6 +1434,10 @@
         width: 400px;
         max-height: 1000px;
         background-color: rgb(21, 21, 21, 0.3);
+        @include phone() {
+            width: 350px;
+            margin-left: 10px;
+        }
 
         .collapse {
             position: relative;
