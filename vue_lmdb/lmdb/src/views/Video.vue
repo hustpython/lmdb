@@ -7,12 +7,14 @@
         </div>
 
     </n-layout>
+    <Footer/>
 </template>
 
 <script setup>
     import {useRoute} from "vue-router";
     import Header from "@/components/Header.vue";
     import LVideo from "@/components/LVideo.vue";
+    import Footer from "@/components/Footer";
 
     const route = useRoute();
     const routeID = route.params.id;

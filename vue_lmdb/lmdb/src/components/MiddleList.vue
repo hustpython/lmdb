@@ -79,6 +79,18 @@
             </div>
         </div>
     </div>
+    <div class="videoListForPhone">
+        <n-list class="coll" v-for="(item, index) in videoData" hoverable clickable
+                bordered>
+            <n-list-item @click="setTitleHref(index)">
+                <n-thing
+                        :title="item.Title"
+                        content-style="margin-top: 10px; font-size:12px!important"
+                >
+                </n-thing>
+            </n-list-item>
+        </n-list>
+    </div>
 </template>
 
 <script setup>
@@ -441,5 +453,18 @@
         padding: 6px 15px 10px;
         position: relative;
         font-size: 14px;
+    }
+
+    .videoListForPhone {
+        margin-top: 20px;
+        display: none;
+
+        .coll {
+            @include theme();
+        }
+
+        @include phone() {
+            display: block;
+        }
     }
 </style>

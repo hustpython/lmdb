@@ -444,8 +444,10 @@
     window.onresize = () => {
         if (document.body.clientWidth > 1000) {
             videoCon.value.controls = false;
+            isMobile = false;
         } else {
             videoCon.value.controls = true;
+            isMobile = true;
         }
         if (isFull) {
             videoWidth.value = "100%";
@@ -528,10 +530,10 @@
 
     const playStatus = ref(true);
     const handlePlay = () => {
+        playStatus.value = !playStatus.value;
         if (isMobile) {
             return
         }
-        playStatus.value = !playStatus.value;
         if (lvideo.paused) {
             lvideo.play();
             showControl.value = false;
