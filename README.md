@@ -29,9 +29,15 @@ bee run
 ```
 ### 直接使用
 
-- 解压 lmdb\releases
+- 解压 lmdb\releases.zip
+
 - 进入releases文件夹
-- 双击 run.bat
+
+- 进入 js 目录，将js文件中 "192.168.31.54:9090" 
+
+  换成 自己的ip+port(主要是为了移动端能够访问本地PC后台)
+
+- 返回 双击 run.bat
 
 
 
@@ -43,15 +49,15 @@ bee run
 
 ### 本地视频快速搜索与过滤
 
-![](../readmeimg/1.png)
+![](/readmeimg/1.png)
 
 ### 数据持久化
 
-![]([./readmeimg./2.png](https://github.com/hustpython/lmdb/blob/main/readmeimg/2.png))
+![](./readmeimg./2.png)
 
 ### 批量创建合集
 
-![]([./readmeimg./3.png](https://github.com/hustpython/lmdb/blob/main/readmeimg/3.png))
+![](./readmeimg./3.png)
 
 ### 快捷键
 
