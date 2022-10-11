@@ -880,7 +880,7 @@
     }
 
     const handlePlayNextEnter = () => {
-        if (currentData.valie.CollStr === '') {
+        if (currentData.value.CollStr === '') {
             return;
         }
         let temIndex = parseInt(CollListSelected.value) + 1;
