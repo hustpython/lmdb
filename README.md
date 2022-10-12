@@ -11,6 +11,8 @@
 
 > 这是一个基于VUE + Go做的一个本地视频播放器项目，欢迎fork或star。
 
+预览地址(无后端数据) : https://hustpython.github.io/lmdb 
+
 ## 使用指南
 
 ### 本地开发
