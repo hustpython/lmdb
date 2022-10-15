@@ -39,7 +39,9 @@ bee run
 
   换成 自己的ip+port(主要是为了移动端能够访问本地PC后台)
 
-- 返回 双击 run.bat
+- 返回 双击 run.bat(本命令是打开index.html文件)，如果需要监听端口方便移动端访问需要在index.html命令
+
+  打开cmd，输入 http-server 回车
 
 
 
