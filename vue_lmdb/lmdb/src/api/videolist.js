@@ -84,7 +84,7 @@ export function DeleteMovieColl(param) {
 
 export function GetComment(param) {
     return httpRequest({
-        url: '/comment/?MId=' + param,
+        url: '/comment/mid/?MId=' + param,
         method: "GET",
     })
 }
@@ -102,5 +102,12 @@ export function AddComment(param) {
         url: '/comment',
         method: "POST",
         data: JSON.stringify(param),
+    })
+}
+
+export function GetCommentByColl(param) {
+    return httpRequest({
+        url: '/comment/coll/?Coll=' + param,
+        method: "GET",
     })
 }

@@ -12,22 +12,22 @@ $videoCardWidthPhone: 320px;
 
 @mixin theme() {
   [data-theme="deep"] & {
-    background-color: $lightBlue;
-    color: $lightPink  !important;
+    background-color: $lightBlue !important;
+    color: $lightPink !important;
   }
 
   [data-theme="light"] & {
-    background-color: $lightPink;
-    color: $lightBlue  !important;
+    background-color: $lightPink !important;
+    color: $lightBlue !important;
   }
 }
 
 .videoCardSize {
-  height: calc($videoCardWidth*0.56);
+  height: calc($videoCardWidth * 0.56);
   width: $videoCardWidth;
 
   @include phone {
-    height: calc($videoCardWidthPhone*0.56);
+    height: calc($videoCardWidthPhone * 0.56);
     width: $videoCardWidthPhone;
   }
 }

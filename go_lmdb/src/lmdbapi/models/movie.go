@@ -46,6 +46,7 @@ type Comment struct {
 	CommentTime     string
 	CommentImage    string
 	MId             string `orm:"-"`
+	Title           string `orm:"-"`
 	Movie           *Movie `orm:"null;rel(fk)"`
 }
 
@@ -283,6 +284,9 @@ func GetAllTags() ([]string, error) {
 
 func (c Coll) GetMoviesByColl() ([]*Movie, error) {
 	_, err := ormOpr.LoadRelated(&c, "Movies")
+	if err != nil {
+		return nil, err
+	}
 	for _, m := range c.Movies {
 		ormOpr.LoadRelated(m, "Tags")
 		for _, tag := range m.Tags {
@@ -291,9 +295,33 @@ func (c Coll) GetMoviesByColl() ([]*Movie, error) {
 		m.Tags = nil
 	}
 	sort.Slice(c.Movies, func(i, j int) bool {
-		return c.Movies[i].Title < c.Movies[j].Title
+		if len(c.Movies[i].Title) != len(c.Movies[j].Title) {
+			return len(c.Movies[i].Title) < len(c.Movies[j].Title)
+		} else {
+			return c.Movies[i].Title < c.Movies[j].Title
+		}
 	})
 	return c.Movies, err
+}
+
+func (c Coll) GetCommentsByColl() ([][]*Comment, error) {
+	_, err := ormOpr.LoadRelated(&c, "Movies")
+	if err != nil {
+		return nil, err
+	}
+	sort.Slice(c.Movies, func(i, j int) bool {
+		if len(c.Movies[i].Title) != len(c.Movies[j].Title) {
+			return len(c.Movies[i].Title) < len(c.Movies[j].Title)
+		} else {
+			return c.Movies[i].Title < c.Movies[j].Title
+		}
+	})
+	var res [][]*Comment
+	for _, m := range c.Movies {
+		d, _ := m.GetCommentsByMId()
+		res = append(res, d)
+	}
+	return res, nil
 }
 
 func (m Movie) DeleteColl() error {
@@ -334,6 +362,9 @@ func (m Movie) GetCommentsByMId() ([]*Comment, error) {
 	_, err := ormOpr.LoadRelated(&m, "Comments")
 	if err != nil {
 		return nil, err
+	}
+	for i := range m.Comments {
+		m.Comments[i].Title = m.Title
 	}
 	return m.Comments, nil
 }

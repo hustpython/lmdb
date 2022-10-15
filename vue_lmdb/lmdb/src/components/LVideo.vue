@@ -185,7 +185,7 @@
                 <div v-show=CommentListShow
                      class="CommentCards">
                     <div class="CommentCard"
-                         v-for="(item,index) in CommentListData">
+                         v-for="(item,index) in CommentListData[CollListSelected]">
                         <div class="CommentDot"
                              :style="getRandomColor(index)">
                         </div>
@@ -374,15 +374,38 @@
 
             <n-card class="CollList" title="评论列表">
                 <template #header-extra>
-                    <n-switch :rail-style="railStyle">
+                    <n-switch v-model:value="CommTableSwitch"
+                              :rail-style="railStyle">
                         <template #checked>
-                            关闭
+                            展开
                         </template>
                         <template #unchecked>
-                            展开
+                            关闭
                         </template>
                     </n-switch>
                 </template>
+
+                <table class="CommentTable" v-show="CommTableSwitch">
+                    <tbody v-for="(item,index) in CommentListData">
+                    <tr v-for="d in item">
+                        <td width="25%">{{d.CommentTime}}</td>
+                        <td width="60%">{{d.CommentStr}}</td>
+                        <td width="15%">
+                            <n-tooltip trigger="hover">
+                                <template #trigger>
+                                    <n-button
+                                            @click="handleCommentTableClick(index,d.CommentFrame)"
+                                    >跳转
+                                    </n-button>
+                                </template>
+                                跳转至{{d.Title}}{{d.CommentFrameStr}}
+                            </n-tooltip>
+                        </td>
+                    </tr>
+
+                    </tbody>
+
+                </table>
 
             </n-card>
 
@@ -411,7 +434,15 @@
 
     import {getUTCTime, timeFilter, timeStrToSec, getCurrentTime} from "@/api/timefilter";
     import {ref, reactive, nextTick, computed, onBeforeUnmount, onBeforeMount} from "vue";
-    import {UpdateVideo, AddComment, GetComment, DeleteComment, GetAllColl, DeleteMovieColl} from "@/api/videolist";
+    import {
+        UpdateVideo,
+        AddComment,
+        GetComment,
+        GetCommentByColl,
+        DeleteComment,
+        GetAllColl,
+        DeleteMovieColl
+    } from "@/api/videolist";
 
     import {storeToRefs} from "pinia";
     import {useVideoData} from "@/store/videoData";
@@ -508,9 +539,19 @@
             videoCon.value.controls = true;
         }
         playStatus.value = true;
-        GetComment(currentData.value.MId).then((res) => {
-            CommentListData.value = res.data;
-        })
+
+        if (CommentListData.value.length == 0) {
+            if (currentData.value.CollStr == "") {
+                GetComment(currentData.value.MId).then((res) => {
+                    CommentListData.value = [res.data];
+                })
+            } else {
+                GetCommentByColl(currentData.value.CollStr).then((res) => {
+                    CommentListData.value = res.data;
+                })
+            }
+        }
+
         lvideo = document.getElementById("lvideo");
         controlTimeView.duration = timeFilter(lvideo.duration);
         if (currentData.value.LastWatch > 0) {
@@ -544,7 +585,7 @@
     };
 
     const CollListSwitchList = ref(true);
-
+    const CommTableSwitch = ref(false);
     const handleEnd = () => {
         playStatus.value = false;
         if (!CollListSwitchList.value) {
@@ -755,7 +796,7 @@
         if (CommentSubmitStr.value.length <= 0 || CommentSubmitStr.value.length > CommentSubmitStrMaxLen) {
             return
         }
-        if (CommentListData.value.length > 15) {
+        if (CommentListData.value[CollListSelected.value].length > 15) {
             delayClearNotifyMsg("当前评论数量已经超过15");
             return;
         }
@@ -775,7 +816,7 @@
         try {
             AddComment(addData).then((res) => {
                 if (res.code === 200) {
-                    CommentListData.value.push(addData);
+                    CommentListData.value[CollListSelected.value].push(addData);
                 }
             })
         } catch (e) {
@@ -795,15 +836,15 @@
         return "background:" + randomColor[index % randomColor.length]
     }
     const handleCommentTimeDblclick = (index) => {
-        lvideo.currentTime = CommentListData.value[index].CommentFrame;
+        lvideo.currentTime = CommentListData.value[CollListSelected.value][index].CommentFrame;
     }
 
     const handleCommentDel = (index) => {
         DeleteComment({
             MId: currentData.value.MId,
-            CommentFrame: CommentListData.value[index].CommentFrame,
+            CommentFrame: CommentListData.value[CollListSelected.value][index].CommentFrame,
         });
-        CommentListData.value.splice(index, 1);
+        CommentListData.value[CollListSelected.value].splice(index, 1);
     }
 
     document.body.onkeydown = function (e) {
@@ -836,10 +877,15 @@
     }
 
     const commentListLen = computed(() => {
-        return CommentListData.value.length;
+        return CommentListData.value[CollListSelected.value].length;
     });
 
     const CollListSelected = ref(routeID.Id);
+
+    if (currentData.value.CollStr == "") {
+        CollListSelected.value = 0;
+    }
+
     const getCollListBtnColor = (index) => {
         if (index == CollListSelected.value) {
             return "#26C6DA";
@@ -1002,6 +1048,17 @@
 
         setTimeout(procForm, 100);
     };
+
+    const handleCommentTableClick = (index, t) => {
+        if (CollListSelected.value != index) {
+            CollListSelected.value = index
+            currentData.value = videoData.value[index];
+            updateVideoFormModel();
+        }
+        setTimeout(function () {
+            lvideo.currentTime = t;
+        }, 1000)
+    }
 
 </script>
 
@@ -1455,5 +1512,11 @@
             overflow: auto;
             @include theme();
         }
+    }
+
+    .CommentTable, td, th {
+        @include theme();
+        border: 1px solid $lightPink;
+        border-collapse: collapse;
     }
 </style>

@@ -237,6 +237,22 @@ func (m *MovieController) GetCommentsByMId() {
 	m.ServeJSON()
 }
 
+func (m *MovieController) GetCommentsByColl() {
+	coll := m.GetString("Coll")
+	if len(coll) == 0 {
+		m.setParamInvalid("Coll is null")
+		return
+	}
+	var movieModel = models.Coll{CollName: coll}
+	d, err := movieModel.GetCommentsByColl()
+	if err != nil {
+		m.setInternalError(err.Error())
+	} else {
+		m.Data["json"] = d
+	}
+	m.ServeJSON()
+}
+
 func (m *MovieController) AddCommentByMId() {
 	var comment models.Comment
 	err := m.BindJSON(&comment)
