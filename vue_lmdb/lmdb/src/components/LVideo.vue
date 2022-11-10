@@ -21,10 +21,67 @@
                         preload="metadata"
                         crossorigin="anonymous"
                 ></video>
+                <!--                 剪切控制界面-->
+                <div class="cutMask" v-show="cutMaskShow">
+                    <div>
+                        <n-space align="baseline">
+                            <n-button type="tertiary" size="tiny">
+                                确定
+                            </n-button>
+                            <n-button type="tertiary" size="tiny"
+                                      @click="handleCutCancle">
+                                取消
+                            </n-button>
+                            <n-popconfirm :show-icon="false">
+                                <template #trigger>
+                                    <n-button type="tertiary" size="tiny">
+                                        手动输入
+                                    </n-button>
+                                </template>
+                                <n-form
+                                        ref="formRef"
+                                        :model="model"
+                                        :rules="rules"
+                                        :size="size"
+                                        label-placement="top"
+                                >
+                                    <n-form-item label="剪切起始">
+                                        <n-input>
+                                        </n-input>
+                                    </n-form-item>
+                                    <n-form-item label="剪切结束">
+                                        <n-input>
+                                        </n-input>
+                                    </n-form-item>
+                                </n-form>
+                            </n-popconfirm>
+                        </n-space>
+                    </div>
+                    <div class="upMask"
+                         @click="handleCutMaskClick"></div>
+                    <div class="lowMask">
+                        <div class="needleEditor">
+                        </div>
+                        <div class="leftNeedle"></div>
+                        <div class="rightNeedle"></div>
+                        <n-dropdown
+                                trigger="hover"
+                                placement="bottom-start"
+                                :options="rightOptions"
+                                @select="handleSelect"
+                        >
+                            <n-icon size="20px">
+                                <Cut20Regular/>
+                            </n-icon>
+                        </n-dropdown>
+                    </div>
+
+                </div>
                 <!--            下方控制台-->
                 <div class="progressMask"
                      @click="handleProgress"
-                     v-show="showControl">
+                     v-show="showControl && !cutMaskShow"
+                >
                     <span class="progress"> </span>
                     <span class="bkg"> </span>
                     <div class="progressBtn">
@@ -35,7 +92,7 @@
                 </div>
                 <div class="videoPlayCtrl"
                      @mouseenter="handlePlayCtrlEnter"
-                     v-show="showControl">
+                     v-show="showControl && !cutMaskShow">
                     <n-icon
                             v-show="currentData.CollStr !== ''"
                             @click="handlePlayPre"
@@ -107,7 +164,13 @@
                             @click="handleClickClap">
                         <Camera/>
                     </n-icon>
+                    <!--                     视频剪切-->
+                    <n-icon
+                            class="cutControl" :size=controlBtnSize
+                            @click="handleCutBtn">
 
+                        <Cut20Regular/>
+                    </n-icon>
                     <!--                声音调整按钮-->
 
                     <n-icon
@@ -409,6 +472,11 @@
 
             </n-card>
 
+            <n-card class="CollList" title="剪切列表">
+
+
+            </n-card>
+
         </div>
     </n-space>
 
@@ -418,7 +486,7 @@
     import {
         VehicleSubway16Regular, FullScreenMaximize24Filled, Next20Regular,
         Previous20Regular, CommentEdit20Regular, Send20Regular, ChevronLeft28Regular,
-        ChevronRight28Regular, Delete20Regular
+        ChevronRight28Regular, Delete20Regular, Cut20Regular
     } from "@vicons/fluent";
     import {Edit, FolderDetails, Favorite, Camera} from "@vicons/carbon";
     import {
@@ -472,6 +540,7 @@
         }
     }
     let isFull = false;
+
     window.onresize = () => {
         if (document.body.clientWidth > 1000) {
             videoCon.value.controls = false;
@@ -534,7 +603,15 @@
         []
     )
     const videoCon = ref();
+
+
     const handleLoadStart = (e) => {
+        let RecentWatch = {
+            MId: currentData.value.MId,
+            RecentWatch: getUTCTime(),
+        };
+        UpdateVideo(RecentWatch);
+
         if (isMobile) {
             videoCon.value.controls = true;
         }
@@ -1060,6 +1137,36 @@
         }, 1000)
     }
 
+    // const showDropdownRef = ref(false);
+    // const xRef = ref(0);
+    // const yRef = ref(0);
+    const rightOptions = [
+        {
+            label: "剪切(左)",
+            key: "0"
+        },
+        {
+            label: "剪切(右)",
+            key: "1"
+        },
+    ]
+
+
+    const cutMaskShow = ref(false);
+    const handleCutBtn = () => {
+        showControl.value = false;
+        cutMaskShow.value = true;
+        if (lvideo.play()) {
+            lvideo.pause();
+        }
+    }
+
+    const handleCutCancle = () => {
+        cutMaskShow.value = false;
+    }
+    const handleCutMaskClick = (e) => {
+        progressBtnLeft.value = e.offsetX.toString() + "px";
+    }
 </script>
 
 <style scoped lang="scss">
@@ -1076,6 +1183,88 @@
             height: 100%;
             align-items: center;
             bottom: 0;
+        }
+
+        $MaskHeight: 130px;
+        $NeedleMaskHeight: 100px;
+        $LowMaskHeight: 70px;
+        $UpMaskHeight: 30px;
+        $LeftRightNeedleColor: #63bbd0;
+
+        .cutMask {
+            width: v-bind(videoWidth);
+            position: absolute;
+            display: flex;
+            height: $MaskHeight;
+            bottom: 0;
+
+            .upMask {
+                height: $UpMaskHeight;
+                width: inherit;
+                position: absolute;
+                display: flex;
+                background: rgb(17, 101, 154, 0.3);
+                bottom: $LowMaskHeight;
+            }
+
+            .lowMask {
+                height: $LowMaskHeight;
+                position: absolute;
+                display: flex;
+                width: inherit;
+                background: black;
+                bottom: 0;
+
+                .needleEditor {
+                    display: block;
+                    position: absolute;
+                    height: $NeedleMaskHeight;
+                    bottom: 0;
+                    width: 1px;
+                    background: white;
+                    left: v-bind(progressBtnLeft);
+                }
+
+                .leftNeedle {
+                    display: block;
+                    position: absolute;
+                    height: $LowMaskHeight;
+                    bottom: 0;
+                    width: 1px;
+                    background: $LeftRightNeedleColor;
+                    left: 0;
+                }
+
+                .rightNeedle {
+                    display: block;
+                    position: absolute;
+                    height: $LowMaskHeight;
+                    bottom: 0;
+                    width: 1px;
+                    background: $LeftRightNeedleColor;
+                    left: 100%;
+                }
+
+                .n-icon {
+                    display: none;
+                }
+
+                &:hover {
+                    .n-icon {
+                        display: block;
+                        left: calc(v-bind(progressBtnLeft) - 10px);
+                        top: 50%;
+
+                        &:hover {
+                            border-radius: 10px;
+                            background: green;
+                        }
+                    }
+
+                }
+            }
+
+
         }
 
         .progressMask {
@@ -1112,7 +1301,6 @@
             }
 
             .progress {
-                width: v-bind(videoWidth);
                 position: relative;
                 height: 2px;
                 width: v-bind(progressBtnLeft);
@@ -1303,6 +1491,17 @@
                 }
             }
 
+            .cutControl {
+                position: absolute;
+                right: 190px;
+                cursor: pointer;
+                top: $videoPlayCtrlBottom;
+
+
+                &:hover {
+                    color: $BtnHoverColor;
+                }
+            }
 
             $volumeViewBottom: 55px;
             $volumeViewHeight: 100px;
