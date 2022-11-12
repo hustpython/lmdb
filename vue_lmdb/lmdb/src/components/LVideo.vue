@@ -1,7 +1,8 @@
 <template>
     <n-space justify="space-between">
         <n-space vertical>
-            <div class="VideoContent">
+            <div class="VideoContent"
+                 ref="VideoContentRef">
                 <canvas id="localVideoCanvas" style="display: none"></canvas>
                 <video
                         id="lvideo"
@@ -22,59 +23,80 @@
                         crossorigin="anonymous"
                 ></video>
                 <!--                 剪切控制界面-->
-                <div class="cutMask" v-show="cutMaskShow">
-                    <div>
-                        <n-space align="baseline">
-                            <n-button type="tertiary" size="tiny">
+                <div class="cutMask"
+                     v-show="cutMaskShow">
+
+                    <div class="upMask"
+                         @click="handleCutMaskClick"
+                    >
+                        <span class="cutDuration">
+
+                        </span>
+                    </div>
+                    <div class="lowMask">
+                        <div class="leftCut"
+                             @mousedown="handleNeedleMove(0)"
+                             ref="leftNeedleRef">
+                            <n-icon size="24"
+                            >
+                                <WaterSharp/>
+                            </n-icon>
+                        </div>
+                        <div class="rightCut"
+                             @mousedown="handleNeedleMove(1)">
+                            <n-icon size="24">
+                                <WaterSharp/>
+                            </n-icon>
+                        </div>
+
+                        <n-space justify="space-around">
+                            <n-button type="tertiary" size="tiny"
+                                      @click="handleTimeModify">
+                                {{cutTimeModLabel}}
+                            </n-button>
+                            <div v-show="getLeftCutTimeShow"
+                            >
+                                {{getLeftCutTime}}
+                            </div>
+
+                            <input v-show="!getLeftCutTimeShow"
+                                   class="cutTimeInput"
+                                   type="text"
+                                   v-model=cutTimeInputModel.left
+                            >
+
+                            <div
+                                    v-show="getRightCutTimeShow"
+                            >
+                                {{getRightCutTime}}
+                            </div>
+
+                            <input
+                                    v-show="!getRightCutTimeShow"
+                                    class="cutTimeInput"
+                                    type="text"
+                                    v-model=cutTimeInputModel.right>
+
+                            <div class="currentTimeShow">
+                                截取时长 {{cutPlayTime}} / {{cutDuration}}
+                            </div>
+                            <n-button type="tertiary" size="tiny"
+                                      @click="handleCutPlay">
+                                {{cutPlayLabel}}
+                            </n-button>
+                            <n-button type="tertiary" size="tiny"
+                                      @click="handleCutSubmit"
+                            >
                                 确定
                             </n-button>
                             <n-button type="tertiary" size="tiny"
-                                      @click="handleCutCancle">
+                                      @click="handleCutCancle"
+                            >
                                 取消
                             </n-button>
-                            <n-popconfirm :show-icon="false">
-                                <template #trigger>
-                                    <n-button type="tertiary" size="tiny">
-                                        手动输入
-                                    </n-button>
-                                </template>
-                                <n-form
-                                        ref="formRef"
-                                        :model="model"
-                                        :rules="rules"
-                                        :size="size"
-                                        label-placement="top"
-                                >
-                                    <n-form-item label="剪切起始">
-                                        <n-input>
-                                        </n-input>
-                                    </n-form-item>
-                                    <n-form-item label="剪切结束">
-                                        <n-input>
-                                        </n-input>
-                                    </n-form-item>
-                                </n-form>
-                            </n-popconfirm>
                         </n-space>
                     </div>
-                    <div class="upMask"
-                         @click="handleCutMaskClick"></div>
-                    <div class="lowMask">
-                        <div class="needleEditor">
-                        </div>
-                        <div class="leftNeedle"></div>
-                        <div class="rightNeedle"></div>
-                        <n-dropdown
-                                trigger="hover"
-                                placement="bottom-start"
-                                :options="rightOptions"
-                                @select="handleSelect"
-                        >
-                            <n-icon size="20px">
-                                <Cut20Regular/>
-                            </n-icon>
-                        </n-dropdown>
-                    </div>
+
 
                 </div>
                 <!--            下方控制台-->
@@ -472,7 +494,7 @@
 
             </n-card>
 
-            <n-card class="CollList" title="剪切列表">
+            <n-card class="CollList" title="精彩片段">
 
 
             </n-card>
@@ -495,12 +517,12 @@
         VolumeOffRound,
         LiveTvRound,
     } from "@vicons/material";
-
+    import {WaterSharp} from "@vicons/ionicons5"
     import {useRouter} from "vue-router";
 
     const router = useRouter();
 
-    import {getUTCTime, timeFilter, timeStrToSec, getCurrentTime} from "@/api/timefilter";
+    import {getUTCTime, timeFilter, timeStrToSec, getCurrentTime, percent2Point} from "@/api/timefilter";
     import {ref, reactive, nextTick, computed, onBeforeUnmount, onBeforeMount} from "vue";
     import {
         UpdateVideo,
@@ -509,7 +531,8 @@
         GetCommentByColl,
         DeleteComment,
         GetAllColl,
-        DeleteMovieColl
+        DeleteMovieColl,
+        CutVideoByMId
     } from "@/api/videolist";
 
     import {storeToRefs} from "pinia";
@@ -568,6 +591,24 @@
     const showControl = ref(true);
     const showTimeEditInput = ref(false);
     const controlNotifyShow = ref(false);
+    // 剪切模式
+    let VideoContentRef = ref();
+
+    const cutWaterColorLow = "rgb(39, 117, 182, 0.6)";
+    const cutWaterColor = "rgb(39, 117, 182)";
+
+    const leftNeedleColor = ref(cutWaterColor);
+    const rightNeedleColor = ref(cutWaterColorLow);
+    const leftNeedlePosi = ref(0);
+    const rightNeedlePosi = ref("100%");
+
+    const isLeftNeedleActive = ref(true);
+    const cutDuration = ref(0);
+    const cutPlayTime = ref("00:00:00");
+    const cutMaskShow = ref(false);
+
+    const cutPlayLabel = ref("开始预览");
+
     let videoControlTimer;
 
     let controlNotifyShowTimer;
@@ -587,8 +628,9 @@
         })
 
     const handleProgress = (e) => {
-        progressBtnLeft.value = e.offsetX.toString() + "px";
-        lvideo.currentTime = e.offsetX / e.target.clientWidth * lvideo.duration;
+        let bfb = e.offsetX / e.target.clientWidth;
+        progressBtnLeft.value = bfb * 100 + '%';
+        lvideo.currentTime = bfb * lvideo.duration;
     };
     const delayClearNotifyMsg = (z) => {
         notifyMsg.value = z;
@@ -648,6 +690,9 @@
 
     const playStatus = ref(true);
     const handlePlay = () => {
+        if (cutMaskShow.value) {
+            return;
+        }
         playStatus.value = !playStatus.value;
         if (isMobile) {
             return
@@ -681,7 +726,17 @@
         }
         progressBtnLeft.value = e.target.currentTime / e.target.duration * 100 + '%';
         controlTimeView.playTime = timeFilter(e.target.currentTime);
+        if (cutMaskShow.value && !lvideo.paused) {
+            cutPlayTime.value = timeFilter(e.target.currentTime -
+                percent2Point(leftNeedlePosi.value) * e.target.duration);
+            if (e.target.currentTime / e.target.duration > percent2Point(rightNeedlePosi.value)) {
+                lvideo.pause();
+                cutPlayLabel.value = "开始预览";
+                playStatus.value = false;
+            }
+        }
     }
+
 
     const handleFull = () => {
         if (!document.fullscreenElement) {
@@ -925,6 +980,9 @@
     }
 
     document.body.onkeydown = function (e) {
+        if (cutMaskShow.value) {
+            return;
+        }
         var e = event || window.event || arguments.callee.caller.arguments[0];
         // 空格
         if (e.keyCode == 32) {
@@ -1137,25 +1195,33 @@
         }, 1000)
     }
 
-    // const showDropdownRef = ref(false);
-    // const xRef = ref(0);
-    // const yRef = ref(0);
-    const rightOptions = [
-        {
-            label: "剪切(左)",
-            key: "0"
-        },
-        {
-            label: "剪切(右)",
-            key: "1"
-        },
-    ]
+    // 全部转成百分比
 
+    const handleCutPlay = () => {
+        cutPlayTime.value = "00:00:00";
+        if (lvideo.paused) {
+            lvideo.currentTime = percent2Point(leftNeedlePosi.value) * lvideo.duration;
+            lvideo.play();
+            cutPlayLabel.value = "预览暂停"
+            playStatus.value = true;
+        } else {
+            lvideo.pause();
+            cutPlayLabel.value = "开始预览";
+            playStatus.value = false;
+        }
+    }
 
-    const cutMaskShow = ref(false);
     const handleCutBtn = () => {
+        cutPlayTime.value = "00:00:00";
         showControl.value = false;
         cutMaskShow.value = true;
+        playStatus.value = false;
+        if (leftNeedlePosi.value === 0) {
+            leftNeedlePosi.value = progressBtnLeft.value;
+        }
+        cutDuration.value = timeFilter((percent2Point(rightNeedlePosi.value) - percent2Point(leftNeedlePosi.value)) * lvideo.duration);
+        getLeftCutTime.value = timeFilter(percent2Point(leftNeedlePosi.value) * lvideo.duration);
+        getRightCutTime.value = timeFilter(percent2Point(rightNeedlePosi.value) * lvideo.duration);
         if (lvideo.play()) {
             lvideo.pause();
         }
@@ -1164,9 +1230,135 @@
     const handleCutCancle = () => {
         cutMaskShow.value = false;
     }
+
+    const getLeftCutTime = ref("0");
+    const getRightCutTime = ref("0");
+
+    const getLeftCutTimeShow = ref(true);
+    const getRightCutTimeShow = ref(true);
+
     const handleCutMaskClick = (e) => {
-        progressBtnLeft.value = e.offsetX.toString() + "px";
+        cutPlayTime.value = "00:00:00";
+        if (lvideo.play()) {
+            lvideo.pause();
+            cutPlayLabel.value = "开始预览";
+        }
+        let point = (e.clientX - VideoContentRef.value.offsetLeft) /
+            VideoContentRef.value.clientWidth;
+
+        if (isLeftNeedleActive.value) {
+            if (percent2Point(rightNeedlePosi.value) - point < 0) {
+                point = percent2Point(rightNeedlePosi.value);
+            }
+            leftNeedlePosi.value = point * 100 + '%';
+        } else {
+            if (point - percent2Point(leftNeedlePosi.value) < 0) {
+                point = percent2Point(leftNeedlePosi.value);
+            }
+            rightNeedlePosi.value = point * 100 + '%';
+        }
+        lvideo.currentTime = lvideo.duration * point;
+        cutDuration.value = timeFilter((percent2Point(rightNeedlePosi.value) - percent2Point(leftNeedlePosi.value)) * lvideo.duration);
+        getLeftCutTime.value = timeFilter(percent2Point(leftNeedlePosi.value) * lvideo.duration);
+        getRightCutTime.value = timeFilter(percent2Point(rightNeedlePosi.value) * lvideo.duration);
     }
+
+    const handleNeedleMove = (key, e) => {
+        cutPlayTime.value = "00:00:00";
+        if (lvideo.play()) {
+            lvideo.pause();
+            cutPlayLabel.value = "开始预览";
+        }
+        let point = 0;
+        document.onmousemove = (e) => {
+            point = (e.clientX - VideoContentRef.value.offsetLeft) /
+                VideoContentRef.value.clientWidth;
+            if (point < 0) {
+                point = 0;
+            } else if (point > 1) {
+                point = 1;
+            }
+            switch (key) {
+                case 0:
+                    leftNeedleColor.value = cutWaterColor;
+                    rightNeedleColor.value = cutWaterColorLow;
+                    isLeftNeedleActive.value = true;
+                    if (percent2Point(rightNeedlePosi.value) - point < 0) {
+                        return
+                    }
+                    leftNeedlePosi.value = point * 100 + '%';
+                    break;
+                case 1:
+                    rightNeedleColor.value = cutWaterColor;
+                    leftNeedleColor.value = cutWaterColorLow;
+                    isLeftNeedleActive.value = false;
+                    if (point - percent2Point(leftNeedlePosi.value) < 0) {
+                        return
+                    }
+                    rightNeedlePosi.value = point * 100 + '%';
+                    break;
+            }
+            lvideo.currentTime = lvideo.duration * point;
+            cutDuration.value = timeFilter((percent2Point(rightNeedlePosi.value) - percent2Point(leftNeedlePosi.value)) * lvideo.duration);
+            getLeftCutTime.value = timeFilter(percent2Point(leftNeedlePosi.value) * lvideo.duration);
+            getRightCutTime.value = timeFilter(percent2Point(rightNeedlePosi.value) * lvideo.duration);
+        };
+        document.onmouseup = function () {
+            document.onmousemove = document.onmouseup = null;
+        };
+
+        return false;
+    }
+
+    const cutTimeModLabel = ref("手动调整");
+    const cutTimeInputModel = ref(
+        {
+            left: "",
+            right: ""
+        }
+    )
+    const handleTimeModify = () => {
+        if (getLeftCutTimeShow.value) {
+            cutTimeModLabel.value = "确认调整"
+            cutTimeInputModel.value.left = getLeftCutTime.value;
+            cutTimeInputModel.value.right = getRightCutTime.value;
+        } else {
+            cutTimeModLabel.value = "手动调整"
+            let t1 = timeStrToSec(cutTimeInputModel.value.left);
+            let t2 = timeStrToSec(cutTimeInputModel.value.right);
+            if (t2 === getRightCutTime.value && t1 === getLeftCutTime.value) {
+                return;
+            }
+            if (0 < t1 < lvideo.duration && 0 < t2 < lvideo.duration && t1 < t2) {
+                let point = t1 / lvideo.duration;
+                lvideo.currentTime = lvideo.duration * point;
+                leftNeedlePosi.value = point * 100 + '%';
+                let point2 = t2 / lvideo.duration;
+                rightNeedlePosi.value = point2 * 100 + '%';
+                cutDuration.value = timeFilter(Math.ceil((percent2Point(rightNeedlePosi.value) - percent2Point(leftNeedlePosi.value)) * lvideo.duration));
+                getLeftCutTime.value = timeFilter(percent2Point(leftNeedlePosi.value) * lvideo.duration);
+                getRightCutTime.value = timeFilter(percent2Point(rightNeedlePosi.value) * lvideo.duration);
+            }
+        }
+        getLeftCutTimeShow.value = !getLeftCutTimeShow.value;
+        getRightCutTimeShow.value = !getRightCutTimeShow.value;
+
+    }
+
+    const handleCutSubmit = () => {
+        let cutDurationSec = timeStrToSec(cutDuration.value);
+        if (cutDurationSec === 0) {
+            return;
+        }
+        let data = {
+            start: timeStrToSec(getLeftCutTime.value),
+            duration: cutDurationSec,
+            mid: currentData.value.MId
+        }
+        CutVideoByMId(data);
+        cutMaskShow.value = false;
+    }
+
 </script>
 
 <style scoped lang="scss">
@@ -1185,10 +1377,10 @@
             bottom: 0;
         }
 
-        $MaskHeight: 130px;
-        $NeedleMaskHeight: 100px;
-        $LowMaskHeight: 70px;
-        $UpMaskHeight: 30px;
+        $MaskHeight: 70px;
+        $NeedleMaskHeight: 10px;
+        $LowMaskHeight: 60px;
+        $UpMaskHeight: 4px;
         $LeftRightNeedleColor: #63bbd0;
 
         .cutMask {
@@ -1197,6 +1389,9 @@
             display: flex;
             height: $MaskHeight;
             bottom: 0;
+            $cutWaterColorLow: rgb(39, 117, 182, 0.6);
+            $cutWaterColor: rgb(39, 117, 182);
+            $waterIconOffset: 12px;
 
             .upMask {
                 height: $UpMaskHeight;
@@ -1205,65 +1400,77 @@
                 display: flex;
                 background: rgb(17, 101, 154, 0.3);
                 bottom: $LowMaskHeight;
+                cursor: pointer;
+
+                .cutDuration {
+                    display: block;
+                    position: absolute;
+                    left: v-bind(leftNeedlePosi);
+                    width: calc(v-bind(rightNeedlePosi) - v-bind(leftNeedlePosi));
+                    height: inherit;
+                    background: $cutWaterColor;
+                }
             }
+
 
             .lowMask {
                 height: $LowMaskHeight;
                 position: absolute;
                 display: flex;
                 width: inherit;
-                background: black;
+                background: #1c2938;
                 bottom: 0;
 
-                .needleEditor {
+                .cutTimeInput {
+                    border: none;
+                    width: 70px;
+                    outline: medium;
+                    cursor: text;
+                    background: rgb(189, 189, 189, 0.3);
+                    user-select: none;
+                }
+
+                .leftCut {
+                    left: calc(v-bind(leftNeedlePosi) - $waterIconOffset);
                     display: block;
                     position: absolute;
-                    height: $NeedleMaskHeight;
-                    bottom: 0;
-                    width: 1px;
-                    background: white;
-                    left: v-bind(progressBtnLeft);
-                }
+                    cursor: pointer;
 
-                .leftNeedle {
-                    display: block;
-                    position: absolute;
-                    height: $LowMaskHeight;
-                    bottom: 0;
-                    width: 1px;
-                    background: $LeftRightNeedleColor;
-                    left: 0;
-                }
-
-                .rightNeedle {
-                    display: block;
-                    position: absolute;
-                    height: $LowMaskHeight;
-                    bottom: 0;
-                    width: 1px;
-                    background: $LeftRightNeedleColor;
-                    left: 100%;
-                }
-
-                .n-icon {
-                    display: none;
-                }
-
-                &:hover {
                     .n-icon {
                         display: block;
-                        left: calc(v-bind(progressBtnLeft) - 10px);
-                        top: 50%;
+                        color: v-bind(leftNeedleColor);
+                        transition: color .5s;
 
                         &:hover {
-                            border-radius: 10px;
-                            background: green;
+                            color: $cutWaterColor;
                         }
                     }
+                }
 
+                .rightCut {
+                    left: calc(v-bind(rightNeedlePosi) - $waterIconOffset);
+                    display: block;
+                    position: absolute;
+                    cursor: pointer;
+
+                    .n-icon {
+                        display: block;
+                        color: v-bind(rightNeedleColor);
+                        transform: rotateY(180deg);
+                        transition: color .5s;
+
+                        &:hover {
+                            color: $cutWaterColor;
+                        }
+                    }
+                }
+
+                .n-space {
+                    display: block;
+                    position: absolute;
+                    top: 30px;
                 }
             }
-
 
         }
 
@@ -1586,7 +1793,7 @@
             display: flex;
             position: absolute;
             right: 10px;
-            bottom: 75px;
+            bottom: 30%;
         }
 
         .CommentListShowBtn {
@@ -1596,7 +1803,7 @@
             display: flex;
             position: absolute;
             right: 5px;
-            bottom: 210px;
+            bottom: 60%;
             align-items: center;
             height: 80px;
             background-color: rgb(21, 21, 21, .4);

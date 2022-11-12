@@ -111,3 +111,11 @@ export function GetCommentByColl(param) {
         method: "GET",
     })
 }
+
+export function CutVideoByMId(param) {
+    return httpRequest({
+        url: '/ffmpeg/cut',
+        method: "POST",
+        data: JSON.stringify(param),
+    })
+}

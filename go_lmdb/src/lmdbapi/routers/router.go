@@ -56,6 +56,9 @@ func init() {
 			beego.NSRouter("", &controllers.MovieController{}, "POST:AddCommentByMId"),
 			beego.NSRouter("", &controllers.MovieController{}, "DELETE:DelCommentByCId"),
 		),
+		beego.NSNamespace("/ffmpeg",
+			beego.NSRouter("cut/", &controllers.FfmpegController{}, "POST:CutVideo"),
+		),
 	)
 	beego.AddNamespace(ns)
 

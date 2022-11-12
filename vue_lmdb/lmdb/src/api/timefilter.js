@@ -6,6 +6,9 @@ export const timeFilter = (val) => {
     var h = Math.floor(val / 60 / 60);
     var m = Math.floor(val / 60 % 60);
     var s = Math.floor(val % 60);
+    if (s < 0) {
+        return "00:00:00"
+    }
     return p(h) + ':' + p(m) + ':' + p(s);
 }
 
@@ -31,4 +34,10 @@ export function getCurrentTime() {
     let m = date.getMinutes(); //获取分钟
     let s = date.getSeconds(); //获取秒
     return `${year} ${mon} ${da} ${h}:${m}:${s}`;
+}
+
+export function percent2Point(percent) {
+    let point = percent.replace("%", "");
+    point = point / 100;
+    return point;
 }
