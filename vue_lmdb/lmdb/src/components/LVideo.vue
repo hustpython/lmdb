@@ -2035,7 +2035,7 @@
     .RightCommentList {
         margin-left: 30px;
         width: 400px;
-        max-height: 1000px;
+        height: 100%;
         background-color: rgb(21, 21, 21, 0.3);
         @include phone() {
             width: 350px;
