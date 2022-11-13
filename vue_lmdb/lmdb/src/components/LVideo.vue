@@ -84,11 +84,24 @@
                                       @click="handleCutPlay">
                                 {{cutPlayLabel}}
                             </n-button>
-                            <n-button type="tertiary" size="tiny"
-                                      @click="handleCutSubmit"
+
+
+                            <n-popconfirm
+                                    :show-icon="false"
+                                    @positive-click="handleCutSubmit"
+                                    positive-text="确认!"
+                                    negative-text="取消!"
                             >
-                                确定
-                            </n-button>
+                                <template #trigger>
+                                    <n-button type="tertiary" size="tiny"
+
+                                    >
+                                        确定
+                                    </n-button>
+                                </template>
+                                <n-input v-model:value="cutVideoDesc" type="textarea" placeholder="写下你的感谢，方便回忆"/>
+                            </n-popconfirm>
+
                             <n-button type="tertiary" size="tiny"
                                       @click="handleCutCancle"
                             >
@@ -497,7 +510,7 @@
             <n-card class="CollList" title="精彩片段">
                 <div class="cutList" v-for="(item,index) in cutListData">
                     <n-space>
-                        <div style="width: 240px;padding: 0">
+                        <div style="width: 200px;padding: 0">
                             <img :src="setCoverData(item.poster)"
                                  v-bind:class="{active:index===cutCardActiveIndex}"
                                  @click="handleCutImgClick(index)">
@@ -507,31 +520,42 @@
                         </div>
 
                         <n-space vertical>
-                           <span>
-                               起始: {{item.start}}
-                           </span>
+                            <n-ellipsis :line-clamp="2" style="max-width: 120px;height: 45px;color: #f0f5e5">
+                                {{item.desc}}
+                            </n-ellipsis>
                             <span>
-                               结束: {{item.end}}
+                               {{item.start}} / {{item.end}}
                            </span>
 
+                            <n-space>
+                                <n-tooltip trigger="hover">
+                                    <template #trigger>
+                                        <n-button type="tertiary" size="tiny"
+                                                  @click="handleOpenCutVideo(index)"
+                                        >
+                                            打开
+                                        </n-button>
+                                    </template>
+                                    打开{{item.Path}}所在文件夹
+                                </n-tooltip>
 
-                            <n-tooltip trigger="hover">
-                                <template #trigger>
-                                    <n-button type="tertiary" size="tiny"
-                                              @click="handleOpenCutVideo(index)"
-                                    >
-                                        打开
-                                    </n-button>
-                                </template>
-                                打开{{item.Path}}所在文件夹
-                            </n-tooltip>
-                            <n-button type="tertiary" size="tiny"
-                                      @click="handleDelCutVideo(index)"
-                            >
-                                删除
-                            </n-button>
+
+                                <n-popconfirm
+                                        :show-icon="false"
+                                        @positive-click="handleDelCutVideo(index)"
+                                        positive-text="确认!"
+                                        negative-text="取消!"
+                                >
+                                    <template #trigger>
+                                        <n-button type="tertiary" size="tiny"
+                                        >
+                                            删除
+                                        </n-button>
+                                    </template>
+                                    确认删除{{item.Path}}吗?
+                                </n-popconfirm>
+                            </n-space>
                         </n-space>
-
                     </n-space>
 
                 </div>
@@ -556,7 +580,9 @@
     } from "@vicons/material";
     import {WaterSharp} from "@vicons/ionicons5"
     import {useRouter} from "vue-router";
+    import {useNotification} from "naive-ui";
 
+    const notification = useNotification();
     const router = useRouter();
 
     import {getUTCTime, timeFilter, timeStrToSec, getCurrentTime, percent2Point} from "@/api/timefilter";
@@ -1238,6 +1264,7 @@
     // 全部转成百分比
     const cutListData = ref([]);
     const cutCardActiveIndex = ref(-1);
+    const cutVideoDesc = ref("");
     const handleCutPlay = () => {
         cutPlayTime.value = "00:00:00";
         if (lvideo.paused) {
@@ -1397,8 +1424,10 @@
             start: getLeftCutTime.value,
             end: getRightCutTime.value,
             mid: currentData.value.MId,
+            desc: cutVideoDesc.value,
             poster: temPoster.slice(22),
         }
+
         CutVideoByMId(data).then((res) => {
             if (res.code === 200) {
                 cutListData.value.push({
@@ -1406,20 +1435,33 @@
                     duration: cutDuration.value,
                     start: getLeftCutTime.value,
                     end: getRightCutTime.value,
+                    desc: cutVideoDesc.value,
                     Path: res.data.Path,
                 })
+                notification.success({
+                    content: "剪切成功",
+                    duration: 3000,
+                });
+                cutMaskShow.value = false;
             }
         });
-        cutMaskShow.value = false;
     }
 
     const handleOpenCutVideo = (index) => {
         OpenCutVideoByPath(cutListData.value[index].Path)
+        notification.success({
+            content: "打开" + cutListData.value[index].Path + "成功",
+            duration: 3000,
+        });
     }
 
     const handleDelCutVideo = (index) => {
         DelCutVideoByPath(cutListData.value[index].Path).then((res) => {
             if (res.code === 200) {
+                notification.success({
+                    content: "删除" + cutListData.value[index].Path + "成功",
+                    duration: 3000,
+                });
                 cutListData.value.splice(index, 1);
             }
         });
@@ -1449,6 +1491,7 @@
         getRightCutTime.value = cutListData.value[index].end;
         leftNeedlePosi.value = timeStrToSec(cutListData.value[index].start) / lvideo.duration * 100 + '%';
         rightNeedlePosi.value = timeStrToSec(cutListData.value[index].end) / lvideo.duration * 100 + '%';
+        cutVideoDesc.value = cutListData.value[index].desc;
         if (lvideo.play()) {
             lvideo.pause();
             cutPlayLabel.value = "开始预览";
@@ -2008,7 +2051,7 @@
         }
 
         .CollList {
-            max-height: 600px;
+            max-height: 500px;
             background-color: rgb(21, 21, 21, 0.3);
             overflow: auto;
             @include theme();
@@ -2036,7 +2079,7 @@
                 }
 
                 img {
-                    width: 240px;
+                    width: 200px;
                     border-radius: 3px;
                     cursor: pointer;
 

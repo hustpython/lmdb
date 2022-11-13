@@ -7,6 +7,7 @@ type CutInfo struct {
 	Mid      string `json:"mid"`
 	Poster   string `json:"poster"`
 	Path     string `orm:"pk";json:"path"`
+	Desc     string `json:"desc"`
 	Movie    *Movie `orm:"null;rel(fk)"`
 }
 
