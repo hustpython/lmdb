@@ -99,7 +99,7 @@
                                         确定
                                     </n-button>
                                 </template>
-                                <n-input v-model:value="cutVideoDesc" type="textarea" placeholder="写下你的感谢，方便回忆"/>
+                                <n-input v-model:value="cutVideoDesc" type="textarea" placeholder="写下你的感想，方便回忆"/>
                             </n-popconfirm>
 
                             <n-button type="tertiary" size="tiny"
