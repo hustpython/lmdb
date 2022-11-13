@@ -24,4 +24,5 @@ func (m *ErrorController) setNotFound(errorMsg string) {
 func (m *ErrorController) setInternalError(errorMsg string) {
 	m.Ctx.Output.SetStatus(http.StatusInternalServerError)
 	m.Data["json"] = errorMsg
+	m.ServeJSON()
 }

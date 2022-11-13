@@ -25,6 +25,7 @@ type Movie struct {
 	Tags        []*Tag     `orm:"rel(m2m)"`
 	TagArray    []string   `orm:"-"`
 	Comments    []*Comment `orm:"reverse(many)"`
+	CutInfos    []*CutInfo `orm:"reverse(many)"`
 }
 
 type Tag struct {
@@ -74,7 +75,7 @@ var ormOpr orm.Ormer
 
 func init() {
 	logs.SetLogger(logs.AdapterConsole)
-	orm.RegisterModel(new(Movie), new(Coll), new(Tag), new(Comment))
+	orm.RegisterModel(new(Movie), new(Coll), new(Tag), new(Comment), new(CutInfo))
 	orm.RegisterDataBase("default", "sqlite3", "./lmdb.db")
 	orm.RunSyncdb("default", false, true)
 	ormOpr = orm.NewOrm()
@@ -370,10 +371,8 @@ func (m Movie) GetCommentsByMId() ([]*Comment, error) {
 }
 
 func (m Comment) AddCommentByMId() error {
-	if _, e := ormOpr.Insert(&m); e != nil {
-		return e
-	}
-	return nil
+	_, e := ormOpr.Insert(&m)
+	return e
 }
 
 func (m Comment) DelCommentByMId() error {
@@ -466,4 +465,13 @@ func GetMovieByRecent() ([]*Movie, error) {
 		return m[i].RecentWatch > m[j].RecentWatch
 	})
 	return m, nil
+}
+
+func GetMovieByMId(mid string) *Movie {
+	m := Movie{MId: mid}
+	err := ormOpr.Read(&m)
+	if err != nil {
+		return nil
+	}
+	return &m
 }

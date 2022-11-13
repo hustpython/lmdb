@@ -495,10 +495,47 @@
             </n-card>
 
             <n-card class="CollList" title="精彩片段">
+                <div class="cutList" v-for="(item,index) in cutListData">
+                    <n-space>
+                        <div style="width: 240px;padding: 0">
+                            <img :src="setCoverData(item.poster)"
+                                 v-bind:class="{active:index===cutCardActiveIndex}"
+                                 @click="handleCutImgClick(index)">
+                            <span class="cutPostDuration">
+                                {{item.duration}}
+                            </span>
+                        </div>
+
+                        <n-space vertical>
+                           <span>
+                               起始: {{item.start}}
+                           </span>
+                            <span>
+                               结束: {{item.end}}
+                           </span>
 
 
+                            <n-tooltip trigger="hover">
+                                <template #trigger>
+                                    <n-button type="tertiary" size="tiny"
+                                              @click="handleOpenCutVideo(index)"
+                                    >
+                                        打开
+                                    </n-button>
+                                </template>
+                                打开{{item.Path}}所在文件夹
+                            </n-tooltip>
+                            <n-button type="tertiary" size="tiny"
+                                      @click="handleDelCutVideo(index)"
+                            >
+                                删除
+                            </n-button>
+                        </n-space>
+
+                    </n-space>
+
+                </div>
             </n-card>
-
         </div>
     </n-space>
 
@@ -532,7 +569,10 @@
         DeleteComment,
         GetAllColl,
         DeleteMovieColl,
-        CutVideoByMId
+        CutVideoByMId,
+        OpenCutVideoByPath,
+        DelCutVideoByPath,
+        GetCutVidosByMId
     } from "@/api/videolist";
 
     import {storeToRefs} from "pinia";
@@ -670,7 +710,7 @@
                 })
             }
         }
-
+        getCutInfosByMId(currentData.value.MId);
         lvideo = document.getElementById("lvideo");
         controlTimeView.duration = timeFilter(lvideo.duration);
         if (currentData.value.LastWatch > 0) {
@@ -1196,7 +1236,8 @@
     }
 
     // 全部转成百分比
-
+    const cutListData = ref([]);
+    const cutCardActiveIndex = ref(-1);
     const handleCutPlay = () => {
         cutPlayTime.value = "00:00:00";
         if (lvideo.paused) {
@@ -1229,6 +1270,7 @@
 
     const handleCutCancle = () => {
         cutMaskShow.value = false;
+        cutCardActiveIndex.value = -1;
     }
 
     const getLeftCutTime = ref("0");
@@ -1346,19 +1388,72 @@
     }
 
     const handleCutSubmit = () => {
-        let cutDurationSec = timeStrToSec(cutDuration.value);
-        if (cutDurationSec === 0) {
+        if (cutDuration.value === "00:00:00") {
             return;
         }
+        let temPoster = getVideoCoverDataURL();
         let data = {
-            start: timeStrToSec(getLeftCutTime.value),
-            duration: cutDurationSec,
-            mid: currentData.value.MId
+            duration: cutDuration.value,
+            start: getLeftCutTime.value,
+            end: getRightCutTime.value,
+            mid: currentData.value.MId,
+            poster: temPoster.slice(22),
         }
-        CutVideoByMId(data);
+        CutVideoByMId(data).then((res) => {
+            if (res.code === 200) {
+                cutListData.value.push({
+                    poster: temPoster,
+                    duration: cutDuration.value,
+                    start: getLeftCutTime.value,
+                    end: getRightCutTime.value,
+                    Path: res.data.Path,
+                })
+            }
+        });
         cutMaskShow.value = false;
     }
 
+    const handleOpenCutVideo = (index) => {
+        OpenCutVideoByPath(cutListData.value[index].Path)
+    }
+
+    const handleDelCutVideo = (index) => {
+        DelCutVideoByPath(cutListData.value[index].Path).then((res) => {
+            if (res.code === 200) {
+                cutListData.value.splice(index, 1);
+            }
+        });
+    }
+
+    const getCutInfosByMId = (MId) => {
+        GetCutVidosByMId(MId).then((res) => {
+            if (res.code === 200) {
+                cutListData.value = res.data;
+            }
+        })
+    }
+
+    const handleCutImgClick = (index) => {
+        if (cutMaskShow.value) {
+            return
+        }
+
+        cutCardActiveIndex.value = index;
+        cutPlayTime.value = "00:00:00";
+        showControl.value = false;
+        cutMaskShow.value = true;
+        playStatus.value = false;
+
+        cutDuration.value = cutListData.value[index].duration;
+        getLeftCutTime.value = cutListData.value[index].start;
+        getRightCutTime.value = cutListData.value[index].end;
+        leftNeedlePosi.value = timeStrToSec(cutListData.value[index].start) / lvideo.duration * 100 + '%';
+        rightNeedlePosi.value = timeStrToSec(cutListData.value[index].end) / lvideo.duration * 100 + '%';
+        if (lvideo.play()) {
+            lvideo.pause();
+            cutPlayLabel.value = "开始预览";
+        }
+    }
 </script>
 
 <style scoped lang="scss">
@@ -1917,6 +2012,40 @@
             background-color: rgb(21, 21, 21, 0.3);
             overflow: auto;
             @include theme();
+
+            .cutList {
+                width: 100%;
+                height: 100%;
+
+                .active {
+                    box-shadow: 0 0 2px 2px lightblue;
+                }
+
+                .cutPostDuration {
+                    position: relative;
+                    bottom: 30px;
+                    left: 10px;
+                    height: 20px;
+                    line-height: 20px;
+                    transition: opacity 0.3s;
+                    font-size: 13px;
+                    background-color: rgba(43, 104, 165, 0.4);
+                    color: #fff;
+                    border-radius: 2px;
+                    padding: 0;
+                }
+
+                img {
+                    width: 240px;
+                    border-radius: 3px;
+                    cursor: pointer;
+
+                    &:hover {
+                        box-shadow: 0 0 2px 2px lightblue;
+                    }
+                }
+
+            }
         }
     }
 

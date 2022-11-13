@@ -119,3 +119,24 @@ export function CutVideoByMId(param) {
         data: JSON.stringify(param),
     })
 }
+
+export function OpenCutVideoByPath(param) {
+    return httpRequest({
+        url: '/ffmpeg/cut/?Path=' + param,
+        method: "PUT",
+    })
+}
+
+export function DelCutVideoByPath(param) {
+    return httpRequest({
+        url: '/ffmpeg/cut/?Path=' + param,
+        method: "DELETE",
+    })
+}
+
+export function GetCutVidosByMId(param) {
+    return httpRequest({
+        url: '/ffmpeg/cut/?MId=' + param,
+        method: "GET",
+    })
+}
