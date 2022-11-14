@@ -1284,9 +1284,7 @@
         showControl.value = false;
         cutMaskShow.value = true;
         playStatus.value = false;
-        if (leftNeedlePosi.value === 0) {
-            leftNeedlePosi.value = progressBtnLeft.value;
-        }
+        leftNeedlePosi.value = progressBtnLeft.value;
         cutDuration.value = timeFilter((percent2Point(rightNeedlePosi.value) - percent2Point(leftNeedlePosi.value)) * lvideo.duration);
         getLeftCutTime.value = timeFilter(percent2Point(leftNeedlePosi.value) * lvideo.duration);
         getRightCutTime.value = timeFilter(percent2Point(rightNeedlePosi.value) * lvideo.duration);
