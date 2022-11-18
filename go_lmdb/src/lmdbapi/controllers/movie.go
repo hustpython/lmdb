@@ -304,6 +304,16 @@ func (m *MovieController) BatchAddColl() {
 	}
 }
 
+func (m *MovieController) GetMoviesByFavourite() {
+	d, err := models.GetMovieByFavourite()
+	if err != nil {
+		m.setInternalError(err.Error())
+		return
+	}
+	m.Data["json"] = d
+	m.ServeJSON()
+}
+
 func loopClearInvalidData() {
 	for {
 		time.Sleep(time.Hour)

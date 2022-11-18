@@ -11,21 +11,23 @@ import (
 )
 
 type Movie struct {
-	MId         string `orm:"pk"`
-	LastWatch   int64
-	RecentWatch int64
-	PathValid   bool
-	Duration    string
-	VideoUrl    string
-	Title       string
-	Desc        string
-	Cover       string
-	Coll        *Coll `orm:"null;rel(fk)"`
-	CollStr     string
-	Tags        []*Tag     `orm:"rel(m2m)"`
-	TagArray    []string   `orm:"-"`
-	Comments    []*Comment `orm:"reverse(many)"`
-	CutInfos    []*CutInfo `orm:"reverse(many)"`
+	MId             string `orm:"pk"`
+	LastWatch       int64
+	RecentWatch     int64
+	PathValid       bool
+	Duration        string
+	VideoUrl        string
+	Title           string
+	Desc            string
+	Cover           string
+	Favourite       bool
+	FavouriteUpdate string `orm:"-"`
+	Coll            *Coll  `orm:"null;rel(fk)"`
+	CollStr         string
+	Tags            []*Tag     `orm:"rel(m2m)"`
+	TagArray        []string   `orm:"-"`
+	Comments        []*Comment `orm:"reverse(many)"`
+	CutInfos        []*CutInfo `orm:"reverse(many)"`
 }
 
 type Tag struct {
@@ -183,6 +185,9 @@ func (m Movie) UpdateMovieData() error {
 	}
 	if m.LastWatch != 0 {
 		updateCol = append(updateCol, "last_watch")
+	}
+	if len(m.FavouriteUpdate) != 0 {
+		updateCol = append(updateCol, "favourite")
 	}
 	if len(m.CollStr) != 0 {
 		updateCol = append(updateCol, "coll_str")
@@ -474,4 +479,17 @@ func GetMovieByMId(mid string) *Movie {
 		return nil
 	}
 	return &m
+}
+
+func GetMovieByFavourite() ([]*Movie, error) {
+	var movies []*Movie
+	_, err := ormOpr.QueryTable("movie").Filter("favourite", true).All(&movies)
+	for _, m := range movies {
+		ormOpr.LoadRelated(m, "Tags")
+		for _, tag := range m.Tags {
+			m.TagArray = append(m.TagArray, tag.TagName)
+		}
+		m.Tags = nil
+	}
+	return movies, err
 }

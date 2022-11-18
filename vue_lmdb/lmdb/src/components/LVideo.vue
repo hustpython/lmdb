@@ -354,7 +354,6 @@
 
                     <n-form
                             v-show="showEditForm"
-                            class="middleInfo"
                             ref="formInstRef"
                             style="width: 320px"
                             size="small"
@@ -418,16 +417,19 @@
                                     <Edit/>
                                 </n-icon>
                             </template>
-                            编辑
+
                         </n-button>
 
-                        <n-button strong secondary type="tertiary" round size="tiny">
+                        <n-button
+                                @click="handleProcFavourite"
+                                v-bind:class="{favoriteActive:currentData.Favourite}"
+                                strong secondary type="tertiary" round size="tiny">
                             <template #icon>
                                 <n-icon>
-                                    <Favorite/>
+                                    <FavoriteSharp/>
                                 </n-icon>
                             </template>
-                            收藏
+
                         </n-button>
                     </n-space>
                 </n-space>
@@ -571,12 +573,13 @@
         Previous20Regular, CommentEdit20Regular, Send20Regular, ChevronLeft28Regular,
         ChevronRight28Regular, Delete20Regular, Cut20Regular
     } from "@vicons/fluent";
-    import {Edit, FolderDetails, Favorite, Camera} from "@vicons/carbon";
+    import {Edit, FolderDetails, Camera} from "@vicons/carbon";
     import {
         VolumeUpFilled,
         PausePresentationOutlined,
         VolumeOffRound,
         LiveTvRound,
+        FavoriteSharp
     } from "@vicons/material";
     import {WaterSharp} from "@vicons/ionicons5"
     import {useRouter} from "vue-router";
@@ -1495,6 +1498,18 @@
             cutPlayLabel.value = "开始预览";
         }
     }
+
+
+    const handleProcFavourite = () => {
+        currentData.value.Favourite = !currentData.value.Favourite;
+        let favourite = {
+            MId: currentData.value.MId,
+            Favourite: currentData.value.Favourite,
+            FavouriteUpdate: "FavouriteUpdate"
+        };
+        UpdateVideo(favourite);
+    }
+
 </script>
 
 <style scoped lang="scss">
@@ -2094,5 +2109,9 @@
         @include theme();
         border: 1px solid $lightPink;
         border-collapse: collapse;
+    }
+
+    .favoriteActive {
+        color: #e77c8e;
     }
 </style>

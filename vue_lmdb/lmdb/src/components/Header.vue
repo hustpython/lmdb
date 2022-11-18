@@ -10,7 +10,7 @@
         <n-menu
                 class="header-menu"
                 mode="horizontal"
-                default-value="首页"
+                :default-value="props.activeMenuItem"
                 :render-label="renderMenuLabel"
                 :options="options"
         />
@@ -35,7 +35,7 @@
 </template>
 
 <script setup>
-    import {h, reactive, onBeforeMount} from "vue";
+    import {h, reactive, defineProps, onBeforeMount} from "vue";
     import {useDarkTheme} from "@/store/themeData";
     import {Search} from "@vicons/carbon";
 
@@ -51,7 +51,7 @@
             setAttribute("light");
         }
     });
-
+    const props = defineProps(["activeMenuItem"]);
     const setAttribute = (theme) => {
         window.document.documentElement.setAttribute("data-theme", theme);
     };

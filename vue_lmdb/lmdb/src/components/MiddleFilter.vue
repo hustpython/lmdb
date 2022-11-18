@@ -18,6 +18,7 @@
                     </n-dropdown>
                 </n-tab>
                 <n-tab name="5"> 最近</n-tab>
+                <n-tab name="6"> 喜欢</n-tab>
                 <n-tab name="4"> 隐藏</n-tab>
             </n-tabs>
             <div class="pagenum">
@@ -139,7 +140,7 @@
     import {ref, computed, onBeforeMount} from "vue";
     import {useVideoData} from "@/store/videoData";
     import {storeToRefs} from "pinia";
-    import {SyncVideo, GetMoviesByRecent} from "@/api/videolist";
+    import {SyncVideo, GetMoviesByRecent, GetMoviesByFavourite} from "@/api/videolist";
     import {useNotification} from "naive-ui";
 
     import {
@@ -240,6 +241,17 @@
         tabVal.value = value;
         if (value === "5") {
             GetMoviesByRecent().then((res) => {
+                if (res.code == 200) {
+                    videoDataStore.setVideoData(res.data);
+                    notification.success({
+                        content: "成功查询到" + res.data.length + "个视频",
+                        duration: 1000,
+                    });
+                }
+            });
+        }
+        if (value === "6") {
+            GetMoviesByFavourite().then((res) => {
                 if (res.code == 200) {
                     videoDataStore.setVideoData(res.data);
                     notification.success({
