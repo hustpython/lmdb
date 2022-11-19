@@ -512,7 +512,7 @@
             <n-card class="CollList" title="精彩片段">
                 <div class="cutList" v-for="(item,index) in cutListData">
                     <n-space>
-                        <div style="width: 200px;padding: 0">
+                        <div style="width: 171px;padding: 0">
                             <img :src="setCoverData(item.poster)"
                                  v-bind:class="{active:index===cutCardActiveIndex}"
                                  @click="handleCutImgClick(index)">
@@ -522,10 +522,11 @@
                         </div>
 
                         <n-space vertical>
-                            <n-ellipsis :line-clamp="2" style="max-width: 120px;height: 45px;color: #f0f5e5">
+                            <n-ellipsis :line-clamp="2"
+                                        style="max-width: 120px;height: 30px;color: #f0f5e5;font-size: 12px">
                                 {{item.desc}}
                             </n-ellipsis>
-                            <span>
+                            <span style="font-size: 12px">
                                {{item.start}} / {{item.end}}
                            </span>
 
@@ -2047,7 +2048,7 @@
 
     .RightCommentList {
         margin-left: 30px;
-        width: 400px;
+        width: 360px;
         height: 100%;
         background-color: rgb(21, 21, 21, 0.3);
         @include phone() {
@@ -2092,7 +2093,7 @@
                 }
 
                 img {
-                    width: 200px;
+                    width: 171px;
                     border-radius: 3px;
                     cursor: pointer;
 

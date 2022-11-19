@@ -1,123 +1,52 @@
 <template>
-    <div class="imgbkg">
-        <div class="content_wrap">
-            <div class="title">
-                <h2 style="color: white; font-size: 2.2em; font-weight: 600; line-height: 2">
-                    欢迎！
-                </h2>
-                <h3 style="color: white; font-size: 1.8em; font-weight: 500; margin: 0">
-                    这里是你本地所有的影视，快来探索与创作！
-                </h3>
-            </div>
+    <div class="homebkg">
+        <n-carousel autoplay class="imgbkg">
+            <div v-for="(item,index) in rightItems">
 
-            <div class="select">
-                <n-select
-                        class="search"
-                        filterable
-                        :options="options"
-                        :on-update:value="handleSeleteed"
-                        placeholder="搜索电影、剧集、影评..."
-                />
             </div>
+        </n-carousel>
+        <div class="rightBox">
         </div>
     </div>
+
+
 </template>
 
 <script setup>
-    import {storeToRefs} from "pinia";
-    import {useVideoData} from "@/store/videoData";
-    import {useRouter} from "vue-router";
-    import {computed} from "vue";
-    import {GetMoviesByColl} from "@/api/videolist";
+    import {ref} from 'vue'
 
-    const imgurl = require("../assets/backimg.jpg");
+    const imgurl = require("../assets/classic.jpg");
+    const rightItems = ref(["小森林", "1212"]);
 
-    const videoDataStore = useVideoData();
-    var {videoData} = storeToRefs(videoDataStore);
-
-    const options = computed(() => {
-        let tmpOptions = [];
-        for (var i = 0; i < videoData.value.length; i++) {
-            tmpOptions.push({
-                label: videoData.value[i].Title,
-                value: i,
-            });
-        }
-        return tmpOptions;
-    });
-
-    const router = useRouter();
-    const handleSeleteed = (value) => {
-        let temMId = videoData.value[value].MId
-        if (videoData.value[value].CollStr.length != 0) {
-            GetMoviesByColl(videoData.value[value].CollStr).then((res) => {
-                if (res.code == 200) {
-                    videoDataStore.setVideoData(res.data);
-                    for (let i = 0; i < res.data.length; i++) {
-                        if (res.data[i].MId === temMId) {
-                            router.push({name: "video", params: {id: i}});
-                        }
-                    }
-                }
-            });
-        } else {
-            router.push({name: "video", params: {id: value}});
-        }
-    };
 </script>
 
 <style lang="scss">
-    .imgbkg {
+    .homebkg {
         width: 100%;
         margin-top: var(--headerTop);
-        overflow: hidden;
         height: $homeBckHeight;
-        background-image: v-bind("'url(' + imgurl + ')'");
-        background-size: 100%;
         @include phone {
-            height: 32px;
-            background-image: none;
+            height: 140px;
+        }
+
+        .imgbkg {
+            width: 65%;
+            left: 5%;
+            position: relative;
+            overflow: hidden;
+            background-image: v-bind("'url(' + imgurl + ')'");
+            background-size: 100%;
+            float: left;
+
+        }
+
+        .rightBox {
+            width: 25%;
+            height: inherit;
+            float: right;
+            margin-right: 5%;
+            background-color: hsla(0, 0%, 100%, .1);
         }
     }
 
-    .select {
-        width: 100%;
-        margin-top: 30px;
-        @include phone {
-            margin-top: 0;
-        }
-
-        .search {
-            @include theme();
-            width: 80%;
-            height: 32px;
-            line-height: 30px;
-            font-size: 1em;
-            border: 0;
-            outline: none;
-            border-radius: 30px;
-            padding: 10px 20px;
-            @include phone() {
-                width: 50%;
-            }
-        }
-    }
-
-    .content_wrap {
-        width: 680px;
-        text-align: left;
-        align-items: center;
-        margin-left: 100px;
-        margin-top: 20px;
-        position: absolute;
-        @include phone {
-            margin: 0;
-        }
-
-        .title {
-            @include phone {
-                display: none;
-            }
-        }
-    }
 </style>

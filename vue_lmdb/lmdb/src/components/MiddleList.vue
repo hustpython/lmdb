@@ -258,7 +258,7 @@
 
 <style lang="scss">
     div.cards {
-        margin: 15px;
+        margin: 0 50px;
         height: 100%;
         width: 0 auto;
         right: 10px;

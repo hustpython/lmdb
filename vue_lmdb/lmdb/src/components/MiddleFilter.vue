@@ -33,7 +33,7 @@
                 />
                 <n-badge
                         color="var(--tmdbLightGreen)"
-                        style="margin-right: 20px"
+                        style="margin: 20px"
                         :value="videodataNum"
                         processing
                 >
@@ -308,7 +308,7 @@
     const page = ref(1);
 
     // index.css 中修改时，需要同步修改
-    const videoCardWidth = 270;
+    const videoCardWidth = 255;
     var pageSize = ref(Math.floor(pageWidth.value / videoCardWidth) * 2);
 
     const handleUpdatePage = (page) => {
@@ -317,9 +317,9 @@
 
     const pageSizeArr = computed(() => {
         return [
-            Math.floor(pageWidth.value / videoCardWidth) * 1,
-            Math.floor(pageWidth.value / videoCardWidth) * 2,
-            Math.floor(pageWidth.value / videoCardWidth) * 3,
+            Math.floor((pageWidth.value - 100) / videoCardWidth) * 1,
+            Math.floor((pageWidth.value - 100) / videoCardWidth) * 2,
+            Math.floor((pageWidth.value - 100) / videoCardWidth) * 3,
         ];
     });
 
@@ -441,8 +441,9 @@
             display: none;
         }
 
+        margin: 30px 12px;
+
         .videoTabs {
-            padding: 7px 17px 7px 17px;
             max-height: 300px;
             overflow: auto;
             @include phone {
@@ -453,6 +454,7 @@
         .pagenum {
             display: inline-flex;
             align-items: center;
+            left: -10px;
         }
 
         .coll {
