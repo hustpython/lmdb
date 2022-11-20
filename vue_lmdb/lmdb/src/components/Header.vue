@@ -7,13 +7,6 @@
                 <n-gradient-text :size="24" type="success"> LMDB</n-gradient-text>
             </a>
         </div>
-        <n-menu
-                class="header-menu"
-                mode="horizontal"
-                :default-value="props.activeMenuItem"
-                :render-label="renderMenuLabel"
-                :options="options"
-        />
 
         <div class="nav-select">
             <n-select
@@ -26,27 +19,110 @@
         </div>
 
         <div class="nav-end">
-            <n-button
-                    @click="handleThemeClick"
-                    strong
-                    secondary
-                    style="margin-right: 30px"
-                    size="small"
-            >
-                {{ themeBtnText.text }}
-            </n-button>
-            <img style="height: 32px; width: 32px; border-radius: 16px" :src="avatarurl"/>
-        </div>
-        <div class="rightbar">
-            <n-icon size="30">
-                <Search/>
-            </n-icon>
+
+            <n-popover trigger="hover">
+                <template #trigger>
+                    <div class="notification">
+                        <n-icon
+                                size="27px"
+                        >
+                            <CircleNotificationsRound/>
+                        </n-icon>
+                        <span>
+                        消息
+                       </span>
+                    </div>
+                </template>
+                <n-space vertical>
+                    <n-card title="小卡片" size="small">
+                        卡片内容
+                    </n-card>
+                    <n-card title="中卡片" size="medium">
+                        卡片内容
+                    </n-card>
+                    <n-card title="大卡片" size="large">
+                        卡片内容
+                    </n-card>
+                    <n-card title="超大卡片" size="huge">
+                        卡片内容
+                    </n-card>
+                </n-space>
+            </n-popover>
+
+            <span style="width: 0.5px;height: 51%;background-color: hsla(0, 0%, 100%, .4);margin-right: 20px">
+
+            </span>
+
+            <n-popover trigger="hover">
+                <template #trigger>
+                    <img style="height: 32px; width: 32px; border-radius: 16px" :src="avatarurl"/>
+                </template>
+                <n-space>
+                    <n-card title="个人中心" size="small">
+                        <n-space vertical>
+                            <n-button @click="handleThemeClick">
+                                <template #icon>
+                                    <n-icon>
+                                        <SkinOutlined/>
+                                    </n-icon>
+                                </template>
+                                暗色主题
+                            </n-button>
+                            <n-button>
+                                <template #icon>
+                                    <n-icon>
+                                        <UserProfile/>
+                                    </n-icon>
+                                </template>
+                                个人资料
+                            </n-button>
+                            <n-button @click="handleAdminRoute">
+                                <template #icon>
+                                    <n-icon>
+                                        <DatabasePerson24Filled/>
+                                    </n-icon>
+                                </template>
+                                数据管理
+                            </n-button>
+                        </n-space>
+
+                    </n-card>
+                    <n-card title="创作中心" size="small">
+                        <n-space vertical>
+                            <n-button @click="handleThemeClick">
+                                <template #icon>
+                                    <n-icon>
+                                        <Cut20Regular/>
+                                    </n-icon>
+                                </template>
+                                剪切列表
+                            </n-button>
+                            <n-button>
+                                <template #icon>
+                                    <n-icon>
+                                        <Edit/>
+                                    </n-icon>
+                                </template>
+                                影评创作
+                            </n-button>
+                            <n-button>
+                                <template #icon>
+                                    <n-icon>
+                                        <PictureOutlined/>
+                                    </n-icon>
+                                </template>
+                                封面推荐
+                            </n-button>
+                        </n-space>
+                    </n-card>
+                </n-space>
+            </n-popover>
         </div>
     </n-layout-header>
 </template>
 
 <script setup>
-    import {h, reactive, defineProps, onBeforeMount, computed} from "vue";
+    import {reactive, onBeforeMount, computed} from "vue";
 
     import {storeToRefs} from "pinia";
     import {useVideoData} from "@/store/videoData";
@@ -54,7 +130,10 @@
     import {GetMoviesByColl} from "@/api/videolist";
 
     import {useDarkTheme} from "@/store/themeData";
-    import {Search} from "@vicons/carbon";
+    import {CircleNotificationsRound, CreateNewFolderOutlined} from "@vicons/material";
+    import {SkinOutlined, PictureOutlined} from "@vicons/antd";
+    import {Edit, UserProfile} from "@vicons/carbon";
+    import {DatabasePerson24Filled, Cut20Regular} from "@vicons/fluent"
 
     const darkThemeStore = useDarkTheme();
 
@@ -68,7 +147,7 @@
             setAttribute("light");
         }
     });
-    const props = defineProps(["activeMenuItem"]);
+
     const setAttribute = (theme) => {
         window.document.documentElement.setAttribute("data-theme", theme);
     };
@@ -98,32 +177,6 @@
         true
     );
 
-    const options = [
-        {
-            label: "首页",
-            key: "首页",
-            href: "/",
-        },
-        {
-            label: "视频",
-            key: "视频",
-        },
-        {
-            label: "剪辑",
-            key: "剪辑",
-        },
-        {
-            label: "影评",
-            key: "影评",
-        },
-    ];
-
-    const renderMenuLabel = (option) => {
-        if ("href" in option) {
-            return h("a", {href: option.href}, option.label);
-        }
-        return option.label;
-    };
 
     const selectOptions = computed(() => {
         let tmpOptions = [];
@@ -158,12 +211,16 @@
         }
     };
 
+    const handleAdminRoute = () => {
+        router.push({name: "admin"});
+    }
+
 </script>
 
 <style lang="scss">
     .nav {
         padding: 0 var(--side-padding);
-        grid-template-columns: calc(272px - var(--side-padding)) 300px 450px auto;
+        grid-template-columns: calc(272px - var(--side-padding)) auto auto;
         height: var(--headerTop);
         display: grid;
         z-index: 30;
@@ -189,24 +246,10 @@
             }
         }
 
-
-        .header-menu {
-            display: flex;
-            color: #8a2be2;
-            font-size: 15px;
-            align-items: center;
-            width: 280px;
-            padding: 0;
-            @include phone() {
-                display: none;
-            }
-        }
-
         .nav-select {
             display: flex;
             align-items: center;
             padding: 0;
-            margin-left: 60px;
             @include phone {
                 margin-left: -60px;
                 width: 250px;
@@ -221,28 +264,34 @@
         }
 
         .nav-end {
-            margin-right: 0;
             cursor: pointer;
             display: flex;
-            font-size: 27px;
-            color: white;
             align-items: center;
+            margin-left: 60%;
+
+            .notification {
+                display: flex;
+                margin-right: 30px;
+                color: hsla(0, 0%, 100%, .4);
+                flex-direction: column;
+                justify-content: space-between;
+                align-items: center;
+
+                span {
+                    color: hsla(0, 0%, 100%, .8);
+                    font-size: 10px;
+                    font-weight: 500;
+                    line-height: 20px;
+                    text-align: center;
+                    word-break: keep-all;
+                    letter-spacing: 1px;
+                }
+            }
 
             img {
                 @include phone() {
                     display: none;
                 }
-            }
-        }
-
-        .rightbar {
-            display: none;
-            @include phone() {
-                cursor: pointer;
-                display: flex;
-                color: $lightBlue;
-                align-items: center;
-                @include theme();
             }
         }
     }

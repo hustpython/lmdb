@@ -404,33 +404,60 @@
                     </n-form>
 
                     <n-space vertical>
-                        <n-button
-                                @click="showEditForm = !showEditForm"
-                                strong
-                                secondary
-                                type="tertiary"
-                                round
-                                size="tiny"
-                        >
-                            <template #icon>
-                                <n-icon>
-                                    <Edit/>
-                                </n-icon>
+                        <n-tooltip placement="bottom" trigger="hover">
+                            <template #trigger>
+                                <n-button
+                                        @click="showEditForm = !showEditForm"
+                                        strong
+                                        secondary
+                                        type="tertiary"
+                                        round
+                                        size="tiny"
+                                >
+                                    <template #icon>
+                                        <n-icon>
+                                            <MailSettings16Regular/>
+                                        </n-icon>
+                                    </template>
+                                </n-button>
                             </template>
+                            <span>编辑</span>
+                        </n-tooltip>
 
-                        </n-button>
-
-                        <n-button
-                                @click="handleProcFavourite"
-                                v-bind:class="{favoriteActive:currentData.Favourite}"
-                                strong secondary type="tertiary" round size="tiny">
-                            <template #icon>
-                                <n-icon>
-                                    <FavoriteSharp/>
-                                </n-icon>
+                        <n-tooltip placement="bottom" trigger="hover">
+                            <template #trigger>
+                                <n-button
+                                        @click="handleProcFavourite"
+                                        v-bind:class="{favoriteActive:currentData.Favourite}"
+                                        strong secondary type="tertiary" round size="tiny">
+                                    <template #icon>
+                                        <n-icon>
+                                            <FavoriteSharp/>
+                                        </n-icon>
+                                    </template>
+                                </n-button>
                             </template>
+                            <span>收藏</span>
+                        </n-tooltip>
 
-                        </n-button>
+                        <n-tooltip placement="bottom" trigger="hover">
+                            <template #trigger>
+                                <n-button
+                                        strong
+                                        secondary
+                                        type="tertiary"
+                                        round
+                                        size="tiny"
+                                >
+                                    <template #icon>
+                                        <n-icon>
+                                            <Edit/>
+                                        </n-icon>
+                                    </template>
+                                </n-button>
+                            </template>
+                            <span>写影评</span>
+                        </n-tooltip>
                     </n-space>
                 </n-space>
 
@@ -572,7 +599,7 @@
     import {
         VehicleSubway16Regular, FullScreenMaximize24Filled, Next20Regular,
         Previous20Regular, CommentEdit20Regular, Send20Regular, ChevronLeft28Regular,
-        ChevronRight28Regular, Delete20Regular, Cut20Regular
+        ChevronRight28Regular, Delete20Regular, Cut20Regular, MailSettings16Regular
     } from "@vicons/fluent";
     import {Edit, FolderDetails, Camera} from "@vicons/carbon";
     import {

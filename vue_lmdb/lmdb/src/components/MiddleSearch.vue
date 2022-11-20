@@ -23,7 +23,7 @@
 <style lang="scss">
     .homebkg {
         width: 100%;
-        margin-top: var(--headerTop);
+        margin-top: calc(var(--headerTop) + 30px);
         height: $homeBckHeight;
         @include phone {
             height: 140px;
@@ -44,7 +44,7 @@
             width: 25%;
             height: inherit;
             float: right;
-            margin-right: 5%;
+            margin-right: 7%;
             background-color: hsla(0, 0%, 100%, .1);
         }
     }

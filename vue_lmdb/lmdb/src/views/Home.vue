@@ -1,5 +1,5 @@
 <template>
-    <Header activeMenuItem="首页"/>
+    <Header/>
     <MiddleSearch/>
     <MiddleList/>
     <Footer/>

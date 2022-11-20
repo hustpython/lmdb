@@ -1,6 +1,8 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import {createRouter, createWebHashHistory} from 'vue-router'
 import Home from '../views/Home.vue'
 import Video from '../views/Video.vue'
+import Admin from '../views/Admin.vue'
+
 const routes = [
     {
         path: '/',
@@ -11,6 +13,11 @@ const routes = [
         path: '/video',
         name: 'video',
         component: Video
+    },
+    {
+        path: '/admin',
+        name: 'admin',
+        component: Admin
     },
 ]
 const router = createRouter({

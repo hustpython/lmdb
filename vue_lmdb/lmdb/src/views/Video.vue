@@ -1,5 +1,5 @@
 <template>
-    <Header activeMenuItem="视频"/>
+    <Header/>
     <n-layout class="videopage">
         <div class="videospace">
             <LVideo :Id=routeID></LVideo>
