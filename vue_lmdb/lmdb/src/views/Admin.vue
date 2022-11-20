@@ -10,75 +10,110 @@
                     class="theme"
                     bordered
                     collapse-mode="width"
-                    :collapsed-width="45"
+                    :collapsed-width="15"
                     :width="150"
+                    :collapsed="collapsed"
                     show-trigger
                     @collapse="collapsed = true"
                     @expand="collapsed = false"
             >
                 <n-menu
-                        :options="menuOptions"
                         :collapsed="collapsed"
                         :collapsed-width="64"
-                        key-field="key"
-                        label-field="label"
-                        children-field="children"
+                        :options="menuOptions"
+                        :default-value="selectedItem"
+                        :on-update:value="handleMenuUpdate"
                 />
             </n-layout-sider>
             <n-layout class="theme">
-                <span>内容</span>
+                <component :is="getMenuComponent"/>
             </n-layout>
         </n-layout>
     </n-space>
+
+    <Footer/>
 </template>
 
 <script setup>
     import Header from "@/components/Header.vue";
-    import {ref} from 'vue';
+    import Footer from "@/components/Footer";
+    import AdminTable from "@/components/admin/AdminTable.vue";
+    import AdminCutList from "@/components/admin/AdminCutList.vue";
+    import {ref, computed} from 'vue';
+    import {useRoute, useRouter} from "vue-router";
 
-    const collapsed = ref(true);
+    const route = useRoute();
+
+    const collapsed = ref(false);
+
     const menuOptions = [
         {
             type: "group",
             label: "个人中心",
-            key: "personal",
             children: [
                 {
                     label: "个人资料",
-                    key: "0-1",
+                    key: "0",
+                },
+                {
+                    label: "基本设置",
+                    key: "1",
                 },
                 {
                     label: "数据管理",
-                    key: "0-2",
+                    key: "2",
                 }
             ]
         },
         {
             type: "group",
             label: "创作中心",
-            key: "create",
             children: [
                 {
                     label: "剪切列表",
-                    key: "1-1",
+                    key: "3",
                 },
                 {
                     label: "影评创作",
-                    key: "1-2",
+                    key: "4",
                 },
                 {
                     label: "封面推荐",
-                    key: "1-3",
+                    key: "5",
                 }
             ]
         },
     ];
+
+    const selectedItem = ref("0");
+
+    if (route.params.id === undefined) {
+        selectedItem.value = "0";
+    } else {
+        selectedItem.value = route.params.id;
+    }
+
+    const getMenuComponent = computed(() => {
+        switch (selectedItem.value) {
+            case "2":
+                return AdminTable;
+            case "3":
+                return AdminCutList;
+            default:
+                return "";
+        }
+    })
+    const handleMenuUpdate = (v) => {
+        selectedItem.value = v;
+    }
+
 </script>
 
 <style scoped lang="scss">
     .adminSide {
         margin-left: 5%;
         margin-right: 5%;
+        height: 600px;
         margin-top: calc(var(--headerTop) + 15px);
     }
 

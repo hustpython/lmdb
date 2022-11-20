@@ -22,6 +22,18 @@ $videoCardWidthPhone: 320px;
   }
 }
 
+@mixin themeHeaderNotify() {
+  [data-theme="deep"] & {
+    background-color: $lightBlue !important;
+    color: hsla(0, 0%, 100%, .7) !important;
+  }
+
+  [data-theme="light"] & {
+    background-color: $lightPink !important;
+    color: $lightBlue !important;
+  }
+}
+
 .videoCardSize {
   height: calc($videoCardWidth * 0.56);
   width: $videoCardWidth;

@@ -1,5 +1,7 @@
 <template>
-    <n-layout-footer class="footer" bordered> 版权所有 mxq</n-layout-footer>
+    <n-layout-footer class="footer" bordered>
+        Copyright © 2022-2022 LMDB Made by MXQ
+    </n-layout-footer>
 </template>
 
 <script setup>
@@ -10,6 +12,7 @@
 <style scoped lang="scss">
     .footer {
         text-align: center;
-        @include theme();
+        line-height: 40px;
+        @include themeHeaderNotify();
     }
 </style>

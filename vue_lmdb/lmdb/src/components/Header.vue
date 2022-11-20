@@ -19,46 +19,46 @@
         </div>
 
         <div class="nav-end">
-
-            <n-popover trigger="hover">
+            <n-popover trigger="hover"
+                       style="background-color: hsla(0, 0%, 100%, .3)">
                 <template #trigger>
-                    <div class="notification">
+
+                    <n-badge class="notification" value="1" dot>
                         <n-icon
-                                size="27px"
+                                size="32px"
                         >
                             <CircleNotificationsRound/>
                         </n-icon>
-                        <span>
-                        消息
-                       </span>
-                    </div>
+                    </n-badge>
+
                 </template>
-                <n-space vertical>
-                    <n-card title="小卡片" size="small">
+                <n-space vertical
+
+                >
+                    <n-card
+                            style="background-color: hsla(0, 0%, 100%, .3)"
+                            title="小卡片" size="small">
                         卡片内容
                     </n-card>
-                    <n-card title="中卡片" size="medium">
-                        卡片内容
-                    </n-card>
-                    <n-card title="大卡片" size="large">
-                        卡片内容
-                    </n-card>
-                    <n-card title="超大卡片" size="huge">
-                        卡片内容
-                    </n-card>
+
                 </n-space>
             </n-popover>
 
-            <span style="width: 0.5px;height: 51%;background-color: hsla(0, 0%, 100%, .4);margin-right: 20px">
+            <span class="headerDiv"
+
+            >
 
             </span>
 
-            <n-popover trigger="hover">
+            <n-popover
+                    style="background-color: hsla(0, 0%, 100%, .3)"
+                    trigger="hover">
                 <template #trigger>
                     <img style="height: 32px; width: 32px; border-radius: 16px" :src="avatarurl"/>
                 </template>
                 <n-space>
-                    <n-card title="个人中心" size="small">
+                    <n-card style="background-color: hsla(0, 0%, 100%, .3)"
+                            title="个人中心" size="small">
                         <n-space vertical>
                             <n-button @click="handleThemeClick">
                                 <template #icon>
@@ -68,7 +68,7 @@
                                 </template>
                                 暗色主题
                             </n-button>
-                            <n-button>
+                            <n-button @click="handleAdminRoute(0)">
                                 <template #icon>
                                     <n-icon>
                                         <UserProfile/>
@@ -76,7 +76,7 @@
                                 </template>
                                 个人资料
                             </n-button>
-                            <n-button @click="handleAdminRoute">
+                            <n-button @click="handleAdminRoute(2)">
                                 <template #icon>
                                     <n-icon>
                                         <DatabasePerson24Filled/>
@@ -87,9 +87,10 @@
                         </n-space>
 
                     </n-card>
-                    <n-card title="创作中心" size="small">
+                    <n-card style="background-color: hsla(0, 0%, 100%, .3)"
+                            title="创作中心" size="small">
                         <n-space vertical>
-                            <n-button @click="handleThemeClick">
+                            <n-button @click="handleAdminRoute(3)">
                                 <template #icon>
                                     <n-icon>
                                         <Cut20Regular/>
@@ -97,7 +98,7 @@
                                 </template>
                                 剪切列表
                             </n-button>
-                            <n-button>
+                            <n-button @click="handleAdminRoute(4)">
                                 <template #icon>
                                     <n-icon>
                                         <Edit/>
@@ -105,7 +106,7 @@
                                 </template>
                                 影评创作
                             </n-button>
-                            <n-button>
+                            <n-button @click="handleAdminRoute(5)">
                                 <template #icon>
                                     <n-icon>
                                         <PictureOutlined/>
@@ -211,8 +212,8 @@
         }
     };
 
-    const handleAdminRoute = () => {
-        router.push({name: "admin"});
+    const handleAdminRoute = (i) => {
+        router.push({name: "admin", params: {id: i}});
     }
 
 </script>
@@ -272,26 +273,24 @@
             .notification {
                 display: flex;
                 margin-right: 30px;
-                color: hsla(0, 0%, 100%, .4);
                 flex-direction: column;
                 justify-content: space-between;
                 align-items: center;
-
-                span {
-                    color: hsla(0, 0%, 100%, .8);
-                    font-size: 10px;
-                    font-weight: 500;
-                    line-height: 20px;
-                    text-align: center;
-                    word-break: keep-all;
-                    letter-spacing: 1px;
-                }
+                @include themeHeaderNotify();
             }
 
             img {
                 @include phone() {
                     display: none;
                 }
+            }
+
+            .headerDiv {
+                width: 0.5px;
+                height: 51%;
+                background-color: hsla(0, 0%, 100%, .4);
+                margin-right: 20px;
+
             }
         }
     }

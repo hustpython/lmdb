@@ -37,7 +37,7 @@
                         :value="videodataNum"
                         processing
                 >
-                    记录数
+                    数量
                 </n-badge>
             </div>
         </n-space>
@@ -454,7 +454,7 @@
         .pagenum {
             display: inline-flex;
             align-items: center;
-            left: -10px;
+            margin-right: 15px;
         }
 
         .coll {
