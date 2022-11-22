@@ -1,85 +1,97 @@
 <template>
-
-    <!--    <n-card-->
-    <!--            title="C盘"-->
-    <!--            :bordered="true"-->
-    <!--            style="width: 40%;margin-left: 3%;background-color: transparent;border-width: 3px"-->
-    <!--            :segmented="{-->
-    <!--      content: true }"-->
-    <!--    >-->
-    <!--        <div ref="testChart" style="height:200px;width:300px;top: 10px"></div>-->
-    <!--    </n-card>-->
-    <n-card
-            title="磁盘使用情况"
-            :bordered="true"
-            style="width: 80%;margin-left: 3%;background-color: transparent;border-width: 3px"
-            :segmented="{
+    <div class="diskStyle">
+        <n-card v-for="(item,index) in diskInfos"
+                :title="item.DriveTypeStr"
+                :bordered="true"
+                size="small"
+                class="diskCard"
+                :segmented="{
       content: true , footer: 'soft'}"
-    >
-        <template #header-extra>
-            <n-space item-style="display: flex;" align="center">
-                <n-checkbox size="small" label="C(磁盘)"/>
-                <n-checkbox size="small" label="D(磁盘)"/>
-                <n-checkbox size="small" label="E(U盘)"/>
+        >
+            <template #header-extra>
+                <n-button text style="font-size: 24px"
+                          @click="handleOpenDir(index)">
+                    <n-icon size="24"
+                    >
+                        <FolderOpen20Regular/>
+                    </n-icon>
+                </n-button>
 
-            </n-space>
-        </template>
 
-        <n-space justify="space-between">
-            剩余
-            <n-progress type="circle" :percentage="20"
-                        color='#61649f'
-                        :rail-color="changeColor('#61649f', { alpha: 0.3 })"
+            </template>
+            <n-progress type="circle" :percentage="getRestPercent(index)"
+                        :color='getDiskUsageColor(index)'
+                        style="margin-left: 10%;width: 80%;"
+                        :rail-color="changeColor(getDiskUsageColor(index), { alpha: 0.3 })"
             >
-                <span style="text-align: center;font-size: 12px">80% 20G/150G</span>
+                <span style="text-align: center;font-size: 12px">剩余 {{getRestPercent(index)}}%<br>
+                    {{item.FreeSpaceStr}}/{{item.SizeStr}}
+                </span>
             </n-progress>
-            <n-progress type="circle" :percentage="20">
-                <span style="text-align: center;font-size: 12px"> 20G/150G</span>
-            </n-progress>
-            <n-progress type="circle" :percentage="20">
-                <span style="text-align: center;font-size: 12px"> 20G/150G</span>
-            </n-progress>
-        </n-space>
-        <template #footer>
 
-            <n-space vertical>
-                视频使用
-                <n-progress type="line" :percentage="20">
-                    40G / 150G
+            <template #footer>
+                <span style="text-align: center;font-size: 12px">
+                    视频占用 {{getVideoUsePercent(index)}}%
+                </span>
+                <n-progress type="line" :percentage="getVideoUsePercent(index)"
+                            :color='getDiskUsageColor(index)'
+                            :rail-color="changeColor(getDiskUsageColor(index), { alpha: 0.3 })">
+                    <span style="text-align: center;font-size: 12px">
+                        {{item.VideoSizeStr}}/{{item.SizeStr}}
+                    </span>
                 </n-progress>
-                <n-progress type="line" :percentage="20">
-                    40G / 150G
-                </n-progress>
-                <n-progress type="line" :percentage="20">
-                    40G / 150G
-                </n-progress>
-            </n-space>
-        </template>
 
-    </n-card>
-    <n-data-table
-            :columns="columns"
-            :data="data"
-            :pagination="pagination"
-            :bordered="false"
-    />
+            </template>
 
+        </n-card>
 
+    </div>
 </template>
 
 <script setup>
-    import * as echarts from 'echarts';
-    import {onMounted, ref} from 'vue';
+    import {onBeforeMount, ref} from 'vue';
     import {changeColor} from "seemly";
-    import {useThemeVars} from "naive-ui";
+    import {FolderOpen20Regular} from '@vicons/fluent';
+    import {GetDiskInfo, OpenCutVideoByPath} from "@/api/videolist";
 
-    const testChart = ref(null);
+    function getDiskUsageColor(i) {
+        let diskUsageColor = ["#2177b8", "#d276a3", "#41ae3c", "#fecc11", "#f2481b"];
+        return diskUsageColor[i % diskUsageColor.length];
+    }
 
-    const themeVars = useThemeVars();
-
-
+    let diskInfos = ref([]);
+    onBeforeMount(() => {
+        GetDiskInfo().then((res) => {
+            if (res.code === 200) {
+                diskInfos.value = res.data;
+            }
+        })
+    })
+    const getRestPercent = (i) => {
+        let s = diskInfos.value[i].FreeSpace / diskInfos.value[i].Size * 100;
+        return s.toFixed(1);
+    }
+    const getVideoUsePercent = (i) => {
+        let s = diskInfos.value[i].VideoSize / diskInfos.value[i].Size * 100;
+        return s.toFixed(1);
+    }
+    const handleOpenDir = (i) => {
+        OpenCutVideoByPath(diskInfos.value[i].DeviceID + ":");
+    }
 </script>
 
 <style scoped lang="scss">
+    .diskStyle {
+        display: flex;
+        flex-flow: row wrap;
+        height: 100%;
 
+        .diskCard {
+            width: 30%;
+            margin-left: 2.5%;
+            margin-top: 10px;
+            background-color: transparent;
+            border-width: 1.8px;
+        }
+    }
 </style>

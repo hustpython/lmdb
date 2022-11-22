@@ -65,6 +65,9 @@ func init() {
 			beego.NSRouter("cut/?:Path", &controllers.FfmpegController{}, "PUT:OpenCutVideo"),
 			beego.NSRouter("cut/?:MId", &controllers.FfmpegController{}, "GET:GetCutInfosByMId"),
 		),
+		beego.NSNamespace("/admin",
+			beego.NSRouter("disk/", &controllers.DiskController{}, "GET:GetDiskInfo"),
+		),
 	)
 	beego.AddNamespace(ns)
 

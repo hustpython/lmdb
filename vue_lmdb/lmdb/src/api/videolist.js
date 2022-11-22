@@ -147,3 +147,10 @@ export function GetCutVidosByMId(param) {
         method: "GET",
     })
 }
+
+export function GetDiskInfo() {
+    return httpRequest({
+        url: '/admin/disk',
+        method: "GET",
+    })
+}

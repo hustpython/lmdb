@@ -3,7 +3,13 @@ package controllers
 import (
 	"fmt"
 	"github.com/StackExchange/wmi"
+	"lmdbapi/models"
+	"strings"
 )
+
+type DiskController struct {
+	ErrorController
+}
 
 //PS C:\Users\mxq> Get-WmiObject Win32_logicaldisk
 
@@ -36,17 +42,50 @@ type logicalDisk struct {
 	Size      uint64
 }
 
-func getLogicalDisk() []logicalDisk {
+type logicalDiskRsp struct {
+	logicalDisk
+	DriveTypeStr string
+	FreeSpaceStr string
+	SizeStr      string
+	VideoSize    uint64
+	VideoSizeStr string
+	VideoCount   uint32
+}
+
+var driveTypeMap = map[uint32]string{
+	3: "硬盘",
+	2: "U盘",
+}
+
+func (d *DiskController) GetDiskInfo() {
 	var infos []logicalDisk
 	err := wmi.Query("Select DeviceID, DriveType, Size,FreeSpace from Win32_LogicalDisk", &infos)
 	if err != nil {
-		return nil
+		d.setInternalError(err.Error())
+		return
 	}
-	return infos
+	mRes := models.GetMovieSizeAndCount()
+	var resRsp []*logicalDiskRsp
+	for i := range infos {
+		var res logicalDiskRsp
+		res.logicalDisk = infos[i]
+		res.DeviceID = strings.Trim(infos[i].DeviceID, ":")
+		res.FreeSpaceStr = byteSizeTransform(infos[i].FreeSpace)
+		res.SizeStr = byteSizeTransform(infos[i].Size)
+		res.DriveTypeStr = res.DeviceID + "-" + driveTypeMap[infos[i].DriveType]
+		if mRes[res.DeviceID] != nil {
+			res.VideoSize = mRes[res.DeviceID].Size
+			res.VideoCount = mRes[res.DeviceID].Count
+			res.VideoSizeStr = byteSizeTransform(mRes[res.DeviceID].Size)
+		}
+		resRsp = append(resRsp, &res)
+	}
+	d.Data["json"] = resRsp
+	d.ServeJSON()
 }
 
 // 以1024作为基数
-func ByteCountIEC(b uint64) string {
+func byteSizeTransform(b uint64) string {
 	const unit = 1024
 	if b < unit {
 		return fmt.Sprintf("%d B", b)

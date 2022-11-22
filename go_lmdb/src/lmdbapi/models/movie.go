@@ -15,6 +15,7 @@ type Movie struct {
 	LastWatch       int64
 	RecentWatch     int64
 	PathValid       bool
+	Size            uint64
 	Duration        string
 	VideoUrl        string
 	Title           string
@@ -73,6 +74,11 @@ type Filter struct {
 	MovieExt []string
 }
 
+type MovieSizeCountMap struct {
+	Count uint32
+	Size  uint64
+}
+
 var ormOpr orm.Ormer
 
 func init() {
@@ -95,6 +101,34 @@ func QueryAllMovieData() ([]*Movie, error) {
 		m.Tags = nil
 	}
 	return movies, err
+}
+
+func GetMovieSizeAndCount() map[string]*MovieSizeCountMap {
+	var movies []*Movie
+	var res = make(map[string]*MovieSizeCountMap)
+	_, err := ormOpr.QueryTable("movie").Filter("path_valid", 0).All(&movies)
+	if err != nil {
+		return res
+	}
+	for _, m := range movies {
+		tempPath := strings.Split(m.VideoUrl, "/")
+		if len(tempPath) <= 0 {
+			continue
+		}
+		_, exist := res[tempPath[0]]
+
+		if exist {
+			res[tempPath[0]].Size += m.Size
+			res[tempPath[0]].Count++
+		} else {
+			res[tempPath[0]] = &MovieSizeCountMap{
+				Size:  m.Size,
+				Count: 1,
+			}
+		}
+
+	}
+	return res
 }
 
 func QuerySortMovie() ([]*CollWithMovie, error) {
@@ -159,6 +193,10 @@ func InsertOrUpdateMovieData(force bool, movieArray []*Movie) ([]*Movie, error) 
 				if movie.PathValid != m.PathValid {
 					_, err := ormOpr.Update(m, "path_valid")
 					fmt.Printf("update videurl: %s,err:%s", m.VideoUrl, err)
+				}
+				if movie.Size == 0 {
+					_, err := ormOpr.Update(m, "size")
+					fmt.Printf("update videurl: %s,err:%s", m.Size, err)
 				}
 			}
 		}

@@ -91,6 +91,7 @@ func procQueryData(rule models.Filter, searchExt string) ([]*models.Movie, error
 				MId:      strconv.Itoa(k.Second()) + strconv.Itoa(int(s)),
 				Title:    strings.TrimSuffix(filepath.Base(p), base),
 				VideoUrl: p,
+				Size:     uint64(s),
 			}
 			movieArray = append(movieArray, tmpMovie)
 		}
