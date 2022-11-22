@@ -1,0 +1,61 @@
+package controllers
+
+import (
+	"fmt"
+	"github.com/StackExchange/wmi"
+)
+
+//PS C:\Users\mxq> Get-WmiObject Win32_logicaldisk
+
+//DeviceID     : C:
+//DriveType    : 3
+//ProviderName :
+//FreeSpace    : 55401881600
+//Size         : 161061269504
+//VolumeName   : OS
+//
+//DeviceID     : D:
+//DriveType    : 3
+//ProviderName :
+//FreeSpace    : 4375560192
+//Size         : 79820746752
+//VolumeName   : Data
+//
+//DeviceID     : E:
+//DriveType    : 3 磁盘 2 U盘
+//ProviderName :
+//FreeSpace    : 494309482496
+//Size         : 1000202039296
+//VolumeName   : 数据
+// https://learn.microsoft.com/zh-cn/windows/win32/cimwin32prov/win32-logicaldisk
+
+type logicalDisk struct {
+	DeviceID  string
+	DriveType uint32
+	FreeSpace uint64
+	Size      uint64
+}
+
+func getLogicalDisk() []logicalDisk {
+	var infos []logicalDisk
+	err := wmi.Query("Select DeviceID, DriveType, Size,FreeSpace from Win32_LogicalDisk", &infos)
+	if err != nil {
+		return nil
+	}
+	return infos
+}
+
+// 以1024作为基数
+func ByteCountIEC(b uint64) string {
+	const unit = 1024
+	if b < unit {
+		return fmt.Sprintf("%d B", b)
+	}
+	div, exp := int64(unit), 0
+	for n := b / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %c",
+		float64(b)/float64(div), "KMGTPE"[exp])
+}
