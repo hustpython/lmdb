@@ -35,6 +35,7 @@ func init() {
 			beego.NSRouter("", &controllers.MovieController{}, "POST:RefreshMovies"),
 			beego.NSRouter("", &controllers.MovieController{}, "PUT:UpdateMovie"),
 			beego.NSRouter("", &controllers.MovieController{}, "GET:ShowMovies"),
+			beego.NSRouter("table", &controllers.MovieController{}, "GET:ShowMovieTables"),
 		),
 		beego.NSNamespace("/tag",
 			beego.NSRouter("/?:Tag", &controllers.MovieController{}, "GET:GetMovieByTag"),

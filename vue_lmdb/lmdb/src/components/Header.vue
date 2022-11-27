@@ -45,11 +45,8 @@
             </n-popover>
 
             <span class="headerDiv"
-
             >
-
             </span>
-
             <n-popover
                     style="background-color: hsla(0, 0%, 100%, .3)"
                     trigger="hover">
@@ -57,62 +54,30 @@
                     <img style="height: 32px; width: 32px; border-radius: 16px" :src="avatarurl"/>
                 </template>
                 <n-space>
-                    <n-card style="background-color: hsla(0, 0%, 100%, .3)"
-                            title="个人中心" size="small">
+                    <n-card v-for:="(item,index) in headerAdminMenu"
+                            style="background-color: hsla(0, 0%, 100%, .3)"
+                            :title=item.label
+                            size="small"
+                            hoverable>
                         <n-space vertical>
-                            <n-button @click="handleThemeClick">
-                                <template #icon>
-                                    <n-icon>
-                                        <SkinOutlined/>
-                                    </n-icon>
-                                </template>
-                                暗色主题
-                            </n-button>
-                            <n-button @click="handleAdminRoute(0)">
-                                <template #icon>
-                                    <n-icon>
-                                        <UserProfile/>
-                                    </n-icon>
-                                </template>
-                                个人资料
-                            </n-button>
-                            <n-button @click="handleAdminRoute(2)">
-                                <template #icon>
-                                    <n-icon>
-                                        <DatabasePerson24Filled/>
-                                    </n-icon>
-                                </template>
-                                数据管理
+                            <n-button v-for="(item1,index) in item.children"
+                                      @click="handleMenuClick(item1.key)">
+                                {{item1.label}}
                             </n-button>
                         </n-space>
-
                     </n-card>
-                    <n-card style="background-color: hsla(0, 0%, 100%, .3)"
-                            title="创作中心" size="small">
+                    <n-card
+                            style="background-color: hsla(0, 0%, 100%, .3)"
+                            title=其他
+                            size="small"
+                            hoverable>
                         <n-space vertical>
-                            <n-button @click="handleAdminRoute(3)">
-                                <template #icon>
-                                    <n-icon>
-                                        <Cut20Regular/>
-                                    </n-icon>
-                                </template>
-                                剪切列表
+                            <n-button
+                                    @click="handleThemeClick">
+                                切换主题
                             </n-button>
-                            <n-button @click="handleAdminRoute(4)">
-                                <template #icon>
-                                    <n-icon>
-                                        <Edit/>
-                                    </n-icon>
-                                </template>
-                                影评创作
-                            </n-button>
-                            <n-button @click="handleAdminRoute(5)">
-                                <template #icon>
-                                    <n-icon>
-                                        <PictureOutlined/>
-                                    </n-icon>
-                                </template>
-                                封面推荐
+                            <n-button>
+                                退出登录
                             </n-button>
                         </n-space>
                     </n-card>
@@ -124,17 +89,13 @@
 
 <script setup>
     import {reactive, onBeforeMount, computed} from "vue";
-
+    import {CircleNotificationsRound} from "@vicons/material";
     import {storeToRefs} from "pinia";
     import {useVideoData} from "@/store/videoData";
     import {useRouter} from "vue-router";
     import {GetMoviesByColl} from "@/api/videolist";
 
     import {useDarkTheme} from "@/store/themeData";
-    import {CircleNotificationsRound, CreateNewFolderOutlined} from "@vicons/material";
-    import {SkinOutlined, PictureOutlined} from "@vicons/antd";
-    import {Edit, UserProfile} from "@vicons/carbon";
-    import {DatabasePerson24Filled, Cut20Regular} from "@vicons/fluent"
 
     const darkThemeStore = useDarkTheme();
 
@@ -212,8 +173,10 @@
         }
     };
 
-    const handleAdminRoute = (i) => {
-        router.push({name: "admin", params: {id: i}});
+    const headerAdminMenu = menuConfig;
+
+    const handleMenuClick = (key) => {
+        router.push({name: "admin", params: {id: key}});
     }
 
 </script>

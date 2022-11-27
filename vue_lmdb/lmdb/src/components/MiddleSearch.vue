@@ -1,11 +1,26 @@
 <template>
     <div class="homebkg">
         <n-carousel autoplay class="imgbkg">
-            <div v-for="(item,index) in rightItems">
+            <n-carousel-item v-for="(item,index) in rightItems">
 
-            </div>
+            </n-carousel-item>
         </n-carousel>
         <div class="rightBox">
+            <n-carousel
+                    direction="vertical"
+                    show-arrow
+                    :slides-per-view="3"
+                    :space-between="15"
+                    :show-dots="false"
+                    mousewheel
+                    class="vertical"
+            >
+                <n-carousel-item
+                        style="width: 100%"
+                        class="verticalImg"
+                        v-for="(item,index) in rightItems">
+                </n-carousel-item>
+            </n-carousel>
         </div>
     </div>
 
@@ -16,7 +31,8 @@
     import {ref} from 'vue'
 
     const imgurl = require("../assets/classic.jpg");
-    const rightItems = ref(["小森林", "1212"]);
+    const rightItems = ref(["小森林", "1212", "121", "121", "12"]);
+
 
 </script>
 
@@ -44,8 +60,18 @@
             width: 25%;
             height: inherit;
             float: right;
-            margin-right: 7%;
+            margin-right: 8%;
             background-color: hsla(0, 0%, 100%, .1);
+
+            .vertical {
+                float: right;
+                width: 85%;
+
+                .verticalImg {
+                    background-image: v-bind("'url(' + imgurl + ')'");
+                    background-size: 100%;
+                }
+            }
         }
     }
 

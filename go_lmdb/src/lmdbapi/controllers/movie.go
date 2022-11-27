@@ -321,3 +321,8 @@ func loopClearInvalidData() {
 		models.ClearInvalidData()
 	}
 }
+
+func (m *MovieController) ShowMovieTables() {
+	m.Data["json"] = models.GetMovieTables()
+	m.ServeJSON()
+}

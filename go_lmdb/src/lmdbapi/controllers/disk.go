@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/StackExchange/wmi"
 	"lmdbapi/models"
 	"strings"
@@ -70,31 +69,16 @@ func (d *DiskController) GetDiskInfo() {
 		var res logicalDiskRsp
 		res.logicalDisk = infos[i]
 		res.DeviceID = strings.Trim(infos[i].DeviceID, ":")
-		res.FreeSpaceStr = byteSizeTransform(infos[i].FreeSpace)
-		res.SizeStr = byteSizeTransform(infos[i].Size)
+		res.FreeSpaceStr = models.ByteSizeTransform(infos[i].FreeSpace)
+		res.SizeStr = models.ByteSizeTransform(infos[i].Size)
 		res.DriveTypeStr = res.DeviceID + "-" + driveTypeMap[infos[i].DriveType]
 		if mRes[res.DeviceID] != nil {
 			res.VideoSize = mRes[res.DeviceID].Size
 			res.VideoCount = mRes[res.DeviceID].Count
-			res.VideoSizeStr = byteSizeTransform(mRes[res.DeviceID].Size)
+			res.VideoSizeStr = models.ByteSizeTransform(mRes[res.DeviceID].Size)
 		}
 		resRsp = append(resRsp, &res)
 	}
 	d.Data["json"] = resRsp
 	d.ServeJSON()
-}
-
-// 以1024作为基数
-func byteSizeTransform(b uint64) string {
-	const unit = 1024
-	if b < unit {
-		return fmt.Sprintf("%d B", b)
-	}
-	div, exp := int64(unit), 0
-	for n := b / unit; n >= unit; n /= unit {
-		div *= unit
-		exp++
-	}
-	return fmt.Sprintf("%.1f %c",
-		float64(b)/float64(div), "KMGTPE"[exp])
 }

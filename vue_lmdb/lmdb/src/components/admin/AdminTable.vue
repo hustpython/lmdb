@@ -1,97 +1,115 @@
 <template>
-    <div class="diskStyle">
-        <n-card v-for="(item,index) in diskInfos"
-                :title="item.DriveTypeStr"
-                :bordered="true"
-                size="small"
-                class="diskCard"
-                :segmented="{
-      content: true , footer: 'soft'}"
-        >
-            <template #header-extra>
-                <n-button text style="font-size: 24px"
-                          @click="handleOpenDir(index)">
-                    <n-icon size="24"
-                    >
-                        <FolderOpen20Regular/>
-                    </n-icon>
-                </n-button>
-
-
-            </template>
-            <n-progress type="circle" :percentage="getRestPercent(index)"
-                        :color='getDiskUsageColor(index)'
-                        style="margin-left: 10%;width: 80%;"
-                        :rail-color="changeColor(getDiskUsageColor(index), { alpha: 0.3 })"
-            >
-                <span style="text-align: center;font-size: 12px">剩余 {{getRestPercent(index)}}%<br>
-                    {{item.FreeSpaceStr}}/{{item.SizeStr}}
-                </span>
-            </n-progress>
-
-            <template #footer>
-                <span style="text-align: center;font-size: 12px">
-                    视频占用 {{getVideoUsePercent(index)}}%
-                </span>
-                <n-progress type="line" :percentage="getVideoUsePercent(index)"
-                            :color='getDiskUsageColor(index)'
-                            :rail-color="changeColor(getDiskUsageColor(index), { alpha: 0.3 })">
-                    <span style="text-align: center;font-size: 12px">
-                        {{item.VideoSizeStr}}/{{item.SizeStr}}
-                    </span>
-                </n-progress>
-
-            </template>
-
-        </n-card>
-
+    <!--    选中行 受控的排序 可展开 树型数据 可切换的可编辑表格 右键菜单-->
+    <!--    自定义选择项菜单-->
+    <div class="adminTable">
+        <n-data-table
+                :columns="columns"
+                :data="data"
+                :pagination="pagination"
+                striped
+                style="height: 540px"
+                flex-height
+                :row-props="rowProps"
+        />
     </div>
 </template>
 
 <script setup>
-    import {onBeforeMount, ref} from 'vue';
-    import {changeColor} from "seemly";
-    import {FolderOpen20Regular} from '@vicons/fluent';
-    import {GetDiskInfo, OpenCutVideoByPath} from "@/api/videolist";
+    import {ref, h, onBeforeMount} from 'vue'
+    import {NTag} from "naive-ui";
+    import {GetVideoTable, GetAllTags} from '@/api/videolist'
 
-    function getDiskUsageColor(i) {
-        let diskUsageColor = ["#2177b8", "#d276a3", "#41ae3c", "#fecc11", "#f2481b"];
-        return diskUsageColor[i % diskUsageColor.length];
-    }
-
-    let diskInfos = ref([]);
-    onBeforeMount(() => {
-        GetDiskInfo().then((res) => {
-            if (res.code === 200) {
-                diskInfos.value = res.data;
+    const columns = [
+        {
+            type: "selection",
+        },
+        {
+            title: "片名(合集名)",
+            key: "title",
+            width: 150,
+            ellipsis: {
+                tooltip: true
             }
+        },
+        {
+            title: "时长",
+            key: "durationStr",
+            sorter: (row1, row2) => row1.duration - row2.duration
+        },
+        {
+            title: "大小",
+            key: "sizeStr",
+            sorter: (row1, row2) => row1.size - row2.size
+        },
+        {
+            title: "介绍",
+            key: "desc",
+            width: 240,
+            ellipsis: {
+                tooltip: true
+            }
+        },
+        {
+            title: "标签",
+            key: "tags",
+            titleColSpan: 2,
+            render(row) {
+                const tags = row.tags.map((tagKey) => {
+                    return h(
+                        NTag,
+                        {
+                            style: {
+                                marginRight: '6px'
+                            },
+                            type: 'info',
+                            bordered: false
+                        },
+                        {
+                            default: () => tagKey
+                        }
+                    )
+                })
+                return tags
+            },
+        },
+        {
+            title: "最近",
+            key: "recentStr",
+            width: 150,
+            sorter: (row1, row2) => row1.recent - row2.recent
+        },
+        {
+            title: '在线',
+            key: 'online',
+            defaultFilter: ['是', '否'],
+            filterOptions: [
+                {
+                    label: '是',
+                    value: '是'
+                },
+                {
+                    label: '否',
+                    value: '否'
+                }
+            ],
+            filter(value, row) {
+                return row.online.indexOf(value) >= 0
+            }
+        }
+    ];
+    const data = ref([]);
+    const allTags = ref([""]);
+    const pagination = {pageSize: 20};
+    onBeforeMount(() => {
+        GetVideoTable().then((res) => {
+            data.value = res.data;
         })
     })
-    const getRestPercent = (i) => {
-        let s = diskInfos.value[i].FreeSpace / diskInfos.value[i].Size * 100;
-        return s.toFixed(1);
-    }
-    const getVideoUsePercent = (i) => {
-        let s = diskInfos.value[i].VideoSize / diskInfos.value[i].Size * 100;
-        return s.toFixed(1);
-    }
-    const handleOpenDir = (i) => {
-        OpenCutVideoByPath(diskInfos.value[i].DeviceID + ":");
-    }
 </script>
 
 <style scoped lang="scss">
-    .diskStyle {
-        display: flex;
-        flex-flow: row wrap;
-        height: 100%;
-
-        .diskCard {
-            width: 30%;
-            margin-left: 2.5%;
-            margin-top: 10px;
-            background-color: transparent;
-            border-width: 1.8px;
-        }
+    .adminTable {
+        margin-left: 18px;
+        margin-bottom: 20px;
     }
 </style>

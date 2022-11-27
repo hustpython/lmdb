@@ -154,3 +154,10 @@ export function GetDiskInfo() {
         method: "GET",
     })
 }
+
+export function GetVideoTable() {
+    return httpRequest({
+        url: '/movie/table',
+        method: "GET",
+    })
+}

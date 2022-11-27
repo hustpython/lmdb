@@ -2,7 +2,7 @@
     剪切列表...
 </template>
 
-<script setup lang="ts">
+<script setup>
 
 </script>
 

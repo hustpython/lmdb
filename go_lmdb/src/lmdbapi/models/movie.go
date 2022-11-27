@@ -7,7 +7,9 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
+	"time"
 )
 
 type Movie struct {
@@ -77,6 +79,25 @@ type Filter struct {
 type MovieSizeCountMap struct {
 	Count uint32
 	Size  uint64
+}
+
+type MovieTable struct {
+	Key         string   `json:"key"`
+	Title       string   `json:"title"`
+	DurationStr string   `json:"durationStr"`
+	Duration    int      `json:"duration"`
+	Desc        string   `json:"desc"`
+	Tags        []string `json:"tags"`
+	RecentStr   string   `json:"recentStr"`
+	SizeStr     string   `json:"sizeStr"`
+	Size        uint64   `json:"size"`
+	Recent      int64    `json:"recent"`
+	Online      string   `json:"online"`
+}
+
+type MovieTableWithChild struct {
+	MovieTable
+	Children []*MovieTableWithChild `json:"children"`
 }
 
 var ormOpr orm.Ormer
@@ -530,4 +551,115 @@ func GetMovieByFavourite() ([]*Movie, error) {
 		m.Tags = nil
 	}
 	return movies, err
+}
+
+func GetAllTabsWithKeyAndValue() {
+
+}
+
+func GetMovieTables() []*MovieTableWithChild {
+	var movies []*Movie
+	_, err := ormOpr.QueryTable("movie").All(&movies)
+	if err != nil {
+		return nil
+	}
+	var titleMap = make(map[string]struct{})
+	var res []*MovieTableWithChild
+	for _, m := range movies {
+		tmp := &MovieTableWithChild{}
+		if len(m.CollStr) != 0 {
+			if _, ok := titleMap[m.CollStr]; ok {
+				continue
+			}
+			tmp.Key = m.MId + "cj"
+			tmp.Title = m.CollStr
+			tmp.Tags = []string{}
+			titleMap[m.CollStr] = struct{}{}
+			coll := Coll{
+				CollName: m.CollStr,
+			}
+			m, err := coll.GetMoviesByColl()
+			if err != nil {
+				continue
+			}
+			tmp.Online = "否"
+			var tagMap = make(map[string]struct{})
+			for _, m1 := range m {
+				kk := setTableByMovie(m1)
+				if kk.Online == "是" {
+					tmp.Online = "是"
+				}
+				for _, t := range kk.Tags {
+					if _, ok := tagMap[t]; !ok {
+						tagMap[t] = struct{}{}
+						tmp.Tags = append(tmp.Tags, t)
+					}
+				}
+				tmp.Children = append(tmp.Children, kk)
+			}
+		} else {
+			tmp = setTableByMovie(m)
+		}
+		res = append(res, tmp)
+	}
+	return res
+}
+
+func setTableByMovie(m *Movie) *MovieTableWithChild {
+	var res = MovieTableWithChild{}
+	res.Key = m.MId
+	res.Title = m.Title
+	res.DurationStr = m.Duration
+	res.Duration = durationStr2Int(m.Duration)
+	res.Desc = m.Desc
+	res.RecentStr = timeInt2Date(m.RecentWatch)
+	res.Online = "是"
+	res.Size = m.Size
+	res.SizeStr = ByteSizeTransform(m.Size)
+	res.Tags = []string{}
+	if m.PathValid {
+		res.Online = "否"
+	}
+	res.Recent = m.RecentWatch
+	ormOpr.LoadRelated(m, "Tags")
+	for _, tag := range m.Tags {
+		res.Tags = append(res.Tags, tag.TagName)
+	}
+	return &res
+}
+
+func durationStr2Int(durationStr string) int {
+	timeStr := strings.Split(durationStr, ":")
+	if len(timeStr) == 3 {
+		h, _ := strconv.Atoi(timeStr[0])
+		m, _ := strconv.Atoi(timeStr[1])
+		s, _ := strconv.Atoi(timeStr[2])
+		return h*3600 + m*60 + s
+	} else {
+		return 0
+	}
+}
+
+func timeInt2Date(timeInt int64) string {
+	if (timeInt) == 0 {
+		return ""
+	}
+	timeLayout := "2006-01-02 15:04:05"
+	timeStr := time.Unix(timeInt, 0).Format(timeLayout)
+	return timeStr
+}
+
+// 以1024作为基数
+func ByteSizeTransform(b uint64) string {
+	const unit = 1024
+	if b < unit {
+		return fmt.Sprintf("%d B", b)
+	}
+	div, exp := int64(unit), 0
+	for n := b / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %c",
+		float64(b)/float64(div), "KMGTPE"[exp])
 }
