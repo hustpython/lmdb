@@ -584,10 +584,14 @@ func GetMovieTables() []*MovieTableWithChild {
 			}
 			tmp.Online = "否"
 			var tagMap = make(map[string]struct{})
+			var tmpRecent int64
 			for _, m1 := range m {
 				kk := setTableByMovie(m1)
 				if kk.Online == "是" {
 					tmp.Online = "是"
+				}
+				if m1.RecentWatch > tmpRecent {
+					tmpRecent = m1.RecentWatch
 				}
 				for _, t := range kk.Tags {
 					if _, ok := tagMap[t]; !ok {
@@ -597,6 +601,8 @@ func GetMovieTables() []*MovieTableWithChild {
 				}
 				tmp.Children = append(tmp.Children, kk)
 			}
+			tmp.Recent = tmpRecent
+			tmp.RecentStr = timeInt2Date(tmpRecent)
 		} else {
 			tmp = setTableByMovie(m)
 		}

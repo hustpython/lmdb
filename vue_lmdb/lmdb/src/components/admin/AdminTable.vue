@@ -5,8 +5,9 @@
         <n-data-table
                 :columns="columns"
                 :data="data"
+                :bordered="false"
+                :single-line="false"
                 :pagination="pagination"
-                striped
                 style="height: 540px"
                 flex-height
                 :row-props="rowProps"
@@ -52,7 +53,6 @@
         {
             title: "标签",
             key: "tags",
-            titleColSpan: 2,
             render(row) {
                 const tags = row.tags.map((tagKey) => {
                     return h(
@@ -99,7 +99,7 @@
     ];
     const data = ref([]);
     const allTags = ref([""]);
-    const pagination = {pageSize: 20};
+    const pagination = {pageSize: 30};
     onBeforeMount(() => {
         GetVideoTable().then((res) => {
             data.value = res.data;
@@ -111,5 +111,25 @@
     .adminTable {
         margin-left: 18px;
         margin-bottom: 20px;
+        margin-top: 10px;
+
+        ::v-deep(.n-data-table  ) {
+            background: transparent;
+            --n-merged-th-color: transparent;
+            --n-merged-td-color: transparent;
+            --n-merged-th-color-hover: transparent;
+            --n-merged-td-color-hover: transparent;
+            --n-merged-border-color: hsla(0, 0%, 100%, .4);
+
+        }
+
+        ::v-deep(.n-checkbox ) {
+            --n-merged-color-table: transparent;
+        }
+
+        ::v-deep(.n-data-table-th) {
+            --n-th-font-weight: 900;
+            color: hsla(0, 0%, 100%, .9);
+        }
     }
 </style>
