@@ -23,6 +23,22 @@
     const columns = [
         {
             type: "selection",
+            options: [
+                {
+                    label: "批量删除",
+                    key: "batchDelete",
+                    onSelect: (pageData) => {
+                        console.log(pageData);
+                    }
+                },
+                {
+                    label: "增加合集",
+                    key: "batchAddColl",
+                    onSelect: (pageData) => {
+                        console.log(pageData);
+                    }
+                }
+            ],
         },
         {
             title: "片名(合集名)",
@@ -34,18 +50,20 @@
         },
         {
             title: "时长",
+            width: 85,
             key: "durationStr",
             sorter: (row1, row2) => row1.duration - row2.duration
         },
         {
             title: "大小",
+            width: 72,
             key: "sizeStr",
             sorter: (row1, row2) => row1.size - row2.size
         },
         {
             title: "介绍",
             key: "desc",
-            width: 240,
+            width: 200,
             ellipsis: {
                 tooltip: true
             }
@@ -75,8 +93,14 @@
         {
             title: "最近",
             key: "recentStr",
-            width: 150,
+            width: 110,
             sorter: (row1, row2) => row1.recent - row2.recent
+        },
+        {
+            title: "最新",
+            key: "modifyTimeStr",
+            width: 110,
+            sorter: (row1, row2) => row1.modifyTime - row2.modifyTime
         },
         {
             title: '在线',
@@ -115,7 +139,7 @@
 
         ::v-deep(.n-data-table  ) {
             background: transparent;
-            --n-merged-th-color: transparent;
+            --n-merged-th-color: hsla(0, 0%, 100%, .1);
             --n-merged-td-color: transparent;
             --n-merged-th-color-hover: transparent;
             --n-merged-td-color-hover: transparent;
@@ -129,7 +153,6 @@
 
         ::v-deep(.n-data-table-th) {
             --n-th-font-weight: 900;
-            color: hsla(0, 0%, 100%, .9);
         }
     }
 </style>

@@ -18,6 +18,7 @@ type Movie struct {
 	RecentWatch     int64
 	PathValid       bool
 	Size            uint64
+	ModifyTime      int64
 	Duration        string
 	VideoUrl        string
 	Title           string
@@ -82,17 +83,19 @@ type MovieSizeCountMap struct {
 }
 
 type MovieTable struct {
-	Key         string   `json:"key"`
-	Title       string   `json:"title"`
-	DurationStr string   `json:"durationStr"`
-	Duration    int      `json:"duration"`
-	Desc        string   `json:"desc"`
-	Tags        []string `json:"tags"`
-	RecentStr   string   `json:"recentStr"`
-	SizeStr     string   `json:"sizeStr"`
-	Size        uint64   `json:"size"`
-	Recent      int64    `json:"recent"`
-	Online      string   `json:"online"`
+	Key           string   `json:"key"`
+	Title         string   `json:"title"`
+	DurationStr   string   `json:"durationStr"`
+	Duration      int      `json:"duration"`
+	Desc          string   `json:"desc"`
+	Tags          []string `json:"tags"`
+	RecentStr     string   `json:"recentStr"`
+	SizeStr       string   `json:"sizeStr"`
+	ModifyTime    int64    `json:"modifyTime"`
+	ModifyTimeStr string   `json:"modifyTimeStr"`
+	Size          uint64   `json:"size"`
+	Recent        int64    `json:"recent"`
+	Online        string   `json:"online"`
 }
 
 type MovieTableWithChild struct {
@@ -217,7 +220,11 @@ func InsertOrUpdateMovieData(force bool, movieArray []*Movie) ([]*Movie, error) 
 				}
 				if movie.Size == 0 {
 					_, err := ormOpr.Update(m, "size")
-					fmt.Printf("update videurl: %s,err:%s", m.Size, err)
+					fmt.Printf("update video size: %d,err:%s", m.Size, err)
+				}
+				if movie.ModifyTime == 0 {
+					_, err := ormOpr.Update(m, "modifyTime")
+					fmt.Printf("update video modifyTime: %d,err:%s", m.ModifyTime, err)
 				}
 			}
 		}
@@ -584,7 +591,7 @@ func GetMovieTables() []*MovieTableWithChild {
 			}
 			tmp.Online = "否"
 			var tagMap = make(map[string]struct{})
-			var tmpRecent int64
+			var tmpRecent, temModifyTime int64
 			for _, m1 := range m {
 				kk := setTableByMovie(m1)
 				if kk.Online == "是" {
@@ -592,6 +599,9 @@ func GetMovieTables() []*MovieTableWithChild {
 				}
 				if m1.RecentWatch > tmpRecent {
 					tmpRecent = m1.RecentWatch
+				}
+				if m1.ModifyTime > temModifyTime {
+					temModifyTime = m1.ModifyTime
 				}
 				for _, t := range kk.Tags {
 					if _, ok := tagMap[t]; !ok {
@@ -603,6 +613,8 @@ func GetMovieTables() []*MovieTableWithChild {
 			}
 			tmp.Recent = tmpRecent
 			tmp.RecentStr = timeInt2Date(tmpRecent)
+			tmp.ModifyTime = temModifyTime
+			tmp.ModifyTimeStr = timeInt2Date(temModifyTime)
 		} else {
 			tmp = setTableByMovie(m)
 		}
@@ -621,6 +633,8 @@ func setTableByMovie(m *Movie) *MovieTableWithChild {
 	res.RecentStr = timeInt2Date(m.RecentWatch)
 	res.Online = "是"
 	res.Size = m.Size
+	res.ModifyTime = m.ModifyTime
+	res.ModifyTimeStr = timeInt2Date(m.ModifyTime)
 	res.SizeStr = ByteSizeTransform(m.Size)
 	res.Tags = []string{}
 	if m.PathValid {
