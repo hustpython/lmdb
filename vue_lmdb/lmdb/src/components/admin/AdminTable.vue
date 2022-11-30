@@ -12,14 +12,34 @@
                 flex-height
                 :row-props="rowProps"
         />
+        <n-dropdown
+                style="background-color: hsla(0, 0%, 100%, .3)"
+                placement="bottom-start"
+                trigger="manual"
+                :x="xRef"
+                :y="yRef"
+                size="large"
+                :options="rightOptions"
+                :show="showDropdownRef"
+                :on-clickoutside="onClickoutside"
+                @select="handleSelect"
+        />
     </div>
 </template>
 
 <script setup>
-    import {ref, h, onBeforeMount} from 'vue'
-    import {NTag} from "naive-ui";
+    import {ref, h, onBeforeMount, nextTick} from 'vue'
+    import {NTag, NIcon} from "naive-ui";
     import {GetVideoTable, GetAllTags} from '@/api/videolist'
+    import {PlayOutline, FolderDetails, Delete} from "@vicons/carbon";
 
+    const renderIcon = (icon) => {
+        return () => {
+            return h(NIcon, null, {
+                default: () => h(icon)
+            });
+        };
+    };
     const columns = [
         {
             type: "selection",
@@ -129,6 +149,49 @@
             data.value = res.data;
         })
     })
+
+    const rightOptions = [
+        {
+            label: "播放",
+            key: "play",
+            icon: renderIcon(PlayOutline)
+        },
+        {
+            label: "打开",
+            key: "open",
+            icon: renderIcon(FolderDetails)
+        },
+        {
+            label: "删除",
+            key: "delete",
+            icon: renderIcon(Delete)
+        },
+
+    ];
+    const showDropdownRef = ref(false);
+    const xRef = ref(0);
+    const yRef = ref(0);
+    const onClickoutside = () => {
+        showDropdownRef.value = false;
+    }
+    const handleSelect = (key) => {
+        console.log(key)
+        showDropdownRef.value = false;
+    }
+    const rowProps = (row) => {
+        return {
+            onContextmenu: (e) => {
+                console.log(row.key);
+                e.preventDefault();
+                showDropdownRef.value = false;
+                nextTick().then(() => {
+                    showDropdownRef.value = true;
+                    xRef.value = e.clientX;
+                    yRef.value = e.clientY;
+                });
+            }
+        };
+    }
 </script>
 
 <style scoped lang="scss">

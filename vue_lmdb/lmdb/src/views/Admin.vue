@@ -74,10 +74,6 @@
 </script>
 
 <style scoped lang="scss">
-    adminMain {
-
-    }
-
     .adminSide {
         margin-left: 5%;
         margin-right: 5%;
