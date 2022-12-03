@@ -544,6 +544,11 @@ func GetMovieByMId(mid string) *Movie {
 	if err != nil {
 		return nil
 	}
+	ormOpr.LoadRelated(&m, "Tags")
+	for _, tag := range m.Tags {
+		m.TagArray = append(m.TagArray, tag.TagName)
+	}
+	m.Tags = nil
 	return &m
 }
 
@@ -558,10 +563,6 @@ func GetMovieByFavourite() ([]*Movie, error) {
 		m.Tags = nil
 	}
 	return movies, err
-}
-
-func GetAllTabsWithKeyAndValue() {
-
 }
 
 func GetMovieTables() []*MovieTableWithChild {
@@ -682,4 +683,39 @@ func ByteSizeTransform(b uint64) string {
 	}
 	return fmt.Sprintf("%.1f %c",
 		float64(b)/float64(div), "KMGTPE"[exp])
+}
+
+type searchMovieRes struct {
+	Label string `json:"label"`
+	Value string `json:"value"`
+}
+
+func ShowMoviesSearch() []*searchMovieRes {
+	var movies []*Movie
+	_, err := ormOpr.QueryTable("movie").All(&movies)
+	if err != nil {
+		return nil
+	}
+	var res []*searchMovieRes
+	for _, m := range movies {
+		res = append(res, &searchMovieRes{
+			Label: m.Title,
+			Value: m.MId,
+		})
+	}
+	return res
+}
+
+func GetMoviesByMId(mid string) ([]*Movie, error) {
+	m := GetMovieByMId(mid)
+	if m == nil {
+		return nil, nil
+	}
+	if len(m.CollStr) == 0 {
+		return []*Movie{m}, nil
+	}
+	c := Coll{
+		CollName: m.CollStr,
+	}
+	return c.GetMoviesByColl()
 }

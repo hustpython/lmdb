@@ -327,3 +327,22 @@ func (m *MovieController) ShowMovieTables() {
 	m.Data["json"] = models.GetMovieTables()
 	m.ServeJSON()
 }
+
+func (m *MovieController) ShowMoviesSearch() {
+	m.Data["json"] = models.ShowMoviesSearch()
+	m.ServeJSON()
+}
+
+func (m *MovieController) GetMoviesByMId() {
+	mid := m.GetString("MId")
+	if len(mid) == 0 {
+		m.setParamInvalid("MId is null")
+		return
+	}
+	d, err := models.GetMoviesByMId(mid)
+	if err != nil {
+		m.setInternalError(err.Error())
+	}
+	m.Data["json"] = d
+	m.ServeJSON()
+}

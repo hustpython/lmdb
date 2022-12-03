@@ -30,8 +30,9 @@
 <script setup>
     import {ref, h, onBeforeMount, nextTick} from 'vue'
     import {NTag, NIcon} from "naive-ui";
-    import {GetVideoTable, GetAllTags} from '@/api/videolist'
-    import {PlayOutline, FolderDetails, Delete} from "@vicons/carbon";
+    import {GetVideoTable} from '@/api/videolist'
+    import {PlayOutline, FolderDetails, Delete, Save} from "@vicons/carbon";
+    import {useRouter} from "vue-router";
 
     const renderIcon = (icon) => {
         return () => {
@@ -54,6 +55,13 @@
                 {
                     label: "增加合集",
                     key: "batchAddColl",
+                    onSelect: (pageData) => {
+                        console.log(pageData);
+                    }
+                },
+                {
+                    label: "另存为",
+                    key: "batchSave",
                     onSelect: (pageData) => {
                         console.log(pageData);
                     }
@@ -142,7 +150,6 @@
         }
     ];
     const data = ref([]);
-    const allTags = ref([""]);
     const pagination = {pageSize: 30};
     onBeforeMount(() => {
         GetVideoTable().then((res) => {
@@ -166,6 +173,11 @@
             key: "delete",
             icon: renderIcon(Delete)
         },
+        {
+            label: "另存为",
+            key: "save",
+            icon: renderIcon(Save)
+        },
 
     ];
     const showDropdownRef = ref(false);
@@ -174,14 +186,23 @@
     const onClickoutside = () => {
         showDropdownRef.value = false;
     }
+    let rightKeyValue = "";
+    const router = useRouter();
     const handleSelect = (key) => {
-        console.log(key)
         showDropdownRef.value = false;
+        let v = rightKeyValue.replace('cj', '');
+        switch (key) {
+            case "play":
+                router.push({name: "video", params: {id: v}});
+                break;
+            default:
+                console.log(v);
+        }
     }
     const rowProps = (row) => {
         return {
             onContextmenu: (e) => {
-                console.log(row.key);
+                rightKeyValue = row.key;
                 e.preventDefault();
                 showDropdownRef.value = false;
                 nextTick().then(() => {

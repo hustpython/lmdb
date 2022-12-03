@@ -237,21 +237,7 @@
     };
 
     const setTitleHref = (id) => {
-        let temMId = videoData.value[absoluteIndex(id)].MId
-        if (videoData.value[absoluteIndex(id)].CollStr.length != 0) {
-            GetMoviesByColl(videoData.value[absoluteIndex(id)].CollStr).then((res) => {
-                if (res.code == 200) {
-                    videoDataStore.setVideoData(res.data);
-                    for (let i = 0; i < res.data.length; i++) {
-                        if (res.data[i].MId === temMId) {
-                            router.push({name: "video", params: {id: i}});
-                        }
-                    }
-                }
-            });
-        } else {
-            router.push({name: "video", params: {id: absoluteIndex(id)}});
-        }
+        router.push({name: "video", params: {id: videoData.value[absoluteIndex(id)].MId}});
     }
 
 </script>

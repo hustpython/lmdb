@@ -21,7 +21,7 @@ export const timeStrToSec = (timeStr) => {
 
 export function getUTCTime() {
     let d1 = new Date();
-    let d2 = new Date(d1.getUTCFullYear(), d1.getUTCMonth(), d1.getUTCDate(), d1.getUTCHours(), d1.getUTCMinutes(), d1.getUTCSeconds());
+    let d2 = new Date(d1.getFullYear(), d1.getMonth(), d1.getDate(), d1.getHours(), d1.getMinutes(), d1.getSeconds());
     return Date.parse(d2) / 1000;
 }
 

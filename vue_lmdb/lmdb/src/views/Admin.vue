@@ -20,8 +20,7 @@
                         :collapsed="collapsed"
                         :collapsed-width="64"
                         :options="menuOptions"
-                        :default-value="selectedItem"
-                        :on-update:value="handleMenuUpdate"
+                        v-model:value="selectedItem"
                 />
             </n-layout-sider>
             <n-layout class="theme">
@@ -39,23 +38,25 @@
     import AdminChart from "@/components/admin/AdminChart.vue";
     import AdminTable from "@/components/admin/AdminTable.vue"
     import AdminCutList from "@/components/admin/AdminCutList.vue";
-    import {ref, computed} from 'vue';
+    import {ref, computed, watch} from 'vue';
     import {useRoute} from "vue-router";
 
     const route = useRoute();
-
     const collapsed = ref(false);
-
     const menuOptions = menuConfig;
+    const selectedItem = ref("个人资料");
 
-    const selectedItem = ref("0");
-
-    if (route.params.id === undefined) {
-        selectedItem.value = "0";
-    } else {
-        selectedItem.value = route.params.id;
-    }
-
+    watch(
+        () => route.params.id,
+        (newValue) => {
+            if (newValue === undefined) {
+                selectedItem.value = "个人资料";
+            } else {
+                selectedItem.value = newValue;
+            }
+        },
+        {immediate: true}
+    );
 
     const getMenuComponent = computed(() => {
         switch (selectedItem.value) {
@@ -67,9 +68,6 @@
                 return AdminCutList;
         }
     })
-    const handleMenuUpdate = (v) => {
-        selectedItem.value = v;
-    }
 
 </script>
 

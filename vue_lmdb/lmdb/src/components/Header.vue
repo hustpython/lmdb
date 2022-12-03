@@ -13,7 +13,7 @@
                     class="search"
                     filterable
                     :options="selectOptions"
-                    :on-update:value="handleSeleteed"
+                    :on-update:value="handleSelected"
                     placeholder="搜索电影、剧集、影评..."
             />
         </div>
@@ -88,12 +88,11 @@
 </template>
 
 <script setup>
-    import {reactive, onBeforeMount, computed} from "vue";
+    import {reactive, onBeforeMount, ref} from "vue";
     import {CircleNotificationsRound} from "@vicons/material";
-    import {storeToRefs} from "pinia";
-    import {useVideoData} from "@/store/videoData";
+
     import {useRouter} from "vue-router";
-    import {GetMoviesByColl} from "@/api/videolist";
+    import {GetSearchMovie} from "@/api/videolist";
 
     import {useDarkTheme} from "@/store/themeData";
 
@@ -140,37 +139,16 @@
     );
 
 
-    const selectOptions = computed(() => {
-        let tmpOptions = [];
-        for (var i = 0; i < videoData.value.length; i++) {
-            tmpOptions.push({
-                label: videoData.value[i].Title,
-                value: i,
-            });
-        }
-        return tmpOptions;
-    });
+    const selectOptions = ref([]);
 
-    const videoDataStore = useVideoData();
-    var {videoData} = storeToRefs(videoDataStore);
-
+    onBeforeMount(() => {
+        GetSearchMovie().then((res) => {
+            selectOptions.value = res.data
+        })
+    })
     const router = useRouter();
-    const handleSeleteed = (value) => {
-        let temMId = videoData.value[value].MId
-        if (videoData.value[value].CollStr.length != 0) {
-            GetMoviesByColl(videoData.value[value].CollStr).then((res) => {
-                if (res.code == 200) {
-                    videoDataStore.setVideoData(res.data);
-                    for (let i = 0; i < res.data.length; i++) {
-                        if (res.data[i].MId === temMId) {
-                            router.push({name: "video", params: {id: i}});
-                        }
-                    }
-                }
-            });
-        } else {
-            router.push({name: "video", params: {id: value}});
-        }
+    const handleSelected = (value) => {
+        router.push({name: "video", params: {id: value}});
     };
 
     const headerAdminMenu = menuConfig;

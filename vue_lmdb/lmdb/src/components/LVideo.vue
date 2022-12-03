@@ -309,9 +309,7 @@
             </div>
             <div class="LeftDownForm">
                 <n-space style="height: 360px;margin-top:30px">
-                    <!-- 左侧图片 -->
-                    <img class="videoCardSize" :src="setCoverData(currentData.Cover)"/>
-
+                    <img class="videoCardSize" :src="getVideoCover"/>
                     <div v-show="!showEditForm">
                         <n-space vertical style="width: 320px">
                             <div>
@@ -610,14 +608,14 @@
         FavoriteSharp
     } from "@vicons/material";
     import {WaterSharp} from "@vicons/ionicons5"
-    import {useRouter} from "vue-router";
+    import {useRoute} from "vue-router";
     import {useNotification} from "naive-ui";
 
     const notification = useNotification();
-    const router = useRouter();
+    const route = useRoute();
 
     import {getUTCTime, timeFilter, timeStrToSec, getCurrentTime, percent2Point} from "@/api/timefilter";
-    import {ref, reactive, nextTick, computed, onBeforeUnmount, onBeforeMount} from "vue";
+    import {ref, watch, reactive, nextTick, computed, onBeforeUnmount, onBeforeMount} from "vue";
     import {
         UpdateVideo,
         AddComment,
@@ -629,19 +627,45 @@
         CutVideoByMId,
         OpenCutVideoByPath,
         DelCutVideoByPath,
-        GetCutVidosByMId
+        GetCutVidosByMId,
+        GetMoviesByMId
     } from "@/api/videolist";
 
-    import {storeToRefs} from "pinia";
-    import {useVideoData} from "@/store/videoData";
+    const setVideoData = (Id) => {
+        GetMoviesByMId(Id).then((res) => {
+            if (res.code == 200) {
+                if (res.data === null) {
+                    return false;
+                }
+                videoData.value = res.data;
+                currentData.value = res.data[0];
+                res.data.forEach(function (v, i) {
+                    if (v.MId === Id) {
+                        currentData.value = v;
+                        CollListSelected.value = i;
+                        return true;
+                    }
+                });
+            }
+        });
+    }
+    // 监听路由变化
+    watch(
+        () => route.params.id,
+        (newValue) => {
+            setVideoData(newValue);
+        },
+        {immediate: true}
+    );
 
-    const videoDataStore = useVideoData();
-    var {videoData} = storeToRefs(videoDataStore);
-
-    const routeID = defineProps(["Id"]);
-    const currentData = ref(videoData.value[routeID.Id]);
+    const currentData = ref({});
+    const videoData = ref([{}]);
+    const CollListSelected = ref(0);
 
     const videoUrl = computed(() => {
+        if (currentData.value.VideoUrl === undefined) {
+            return "";
+        }
         return config.SERVER_API + currentData.value.VideoUrl;
     });
 
@@ -709,6 +733,16 @@
     let videoControlTimer;
 
     let controlNotifyShowTimer;
+
+    const getVideoCover = computed(() => {
+        if (videoData.value[CollListSelected.value].Cover === undefined) {
+            return "";
+        }
+        if (videoData.value[CollListSelected.value].Cover.indexOf(";") != -1) {
+            return videoData.value[CollListSelected.value].Cover;
+        }
+        return "data:image/png;base64," + videoData.value[CollListSelected.value].Cover;
+    })
 
     const setCoverData = (cover) => {
         if (cover.indexOf(";") != -1) {
@@ -1098,8 +1132,8 @@
         if (e.keyCode == 45) {
             handleClickClap()
         }
-        // Ctrl键，添加评论
-        if (e.keyCode == 17) {
+        // Ctrl+Alt键，添加评论
+        if (e.ctrlKey && e.altKey) {
             handleCommentBtn()
         }
         // Alt + A键 打开/关闭评论列表
@@ -1111,8 +1145,6 @@
     const commentListLen = computed(() => {
         return CommentListData.value[CollListSelected.value].length;
     });
-
-    const CollListSelected = ref(routeID.Id);
 
     if (currentData.value.CollStr == "") {
         CollListSelected.value = 0;
@@ -1172,11 +1204,13 @@
     var showEditForm = ref(false);
     const formInstRef = ref(null);
     const labelTypes = ["success", "warning", "error", "info"];
-    var videoFormModel = ref({
-        Title: currentData.value.Title,
-        TagArray: currentData.value.TagArray,
-        Desc: currentData.value.Desc,
-        CollStr: currentData.value.CollStr,
+    const videoFormModel = computed(() => {
+        return {
+            Title: currentData.value.Title,
+            TagArray: currentData.value.TagArray,
+            Desc: currentData.value.Desc,
+            CollStr: currentData.value.CollStr,
+        }
     });
 
     const updateVideoFormModel = () => {
@@ -1223,7 +1257,10 @@
         return tmpOptions;
     });
     let isMobile = false;
+
+
     onBeforeMount(() => {
+
         if (document.body.clientWidth <= 1000) {
             isMobile = true;
         }
@@ -1807,7 +1844,7 @@
                 position: absolute;
                 left: 280px;
                 top: -180px;
-                background: $commentBkgColor;
+                background: hsla(0, 0%, 100%, .3);
                 z-index: 1;
 
                 .CommentInput {

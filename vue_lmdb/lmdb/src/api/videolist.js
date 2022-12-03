@@ -161,3 +161,17 @@ export function GetVideoTable() {
         method: "GET",
     })
 }
+
+export function GetSearchMovie() {
+    return httpRequest({
+        url: '/movie/search',
+        method: "GET",
+    })
+}
+
+export function GetMoviesByMId(param) {
+    return httpRequest({
+        url: '/movie/play/?MId=' + param,
+        method: "GET",
+    })
+}
