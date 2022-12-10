@@ -175,3 +175,17 @@ export function GetMoviesByMId(param) {
         method: "GET",
     })
 }
+
+export function GetMovieByMId(param) {
+    return httpRequest({
+        url: '/movie/reco/?MId=' + param,
+        method: "GET",
+    })
+}
+
+export function GetTMDBByKeyWord(param) {
+    return httpRequest({
+        url: '/tmdb/?searchKey=' + param,
+        method: "GET",
+    })
+}

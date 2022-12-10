@@ -14,6 +14,9 @@ import (
 
 type Movie struct {
 	MId             string `orm:"pk"`
+	ReleaseDate     string
+	Poster          string
+	Vote            float32
 	LastWatch       int64
 	RecentWatch     int64
 	PathValid       bool

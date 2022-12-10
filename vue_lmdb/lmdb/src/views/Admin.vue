@@ -38,6 +38,7 @@
     import AdminChart from "@/components/admin/AdminChart.vue";
     import AdminTable from "@/components/admin/AdminTable.vue"
     import AdminCutList from "@/components/admin/AdminCutList.vue";
+    import AdminTmdbScrap from "@/components/admin/AdminTmdbScrap.vue";
     import {ref, computed, watch} from 'vue';
     import {useRoute} from "vue-router";
 
@@ -64,6 +65,8 @@
                 return AdminChart;
             case "数据表格":
                 return AdminTable;
+            case "视频刮削":
+                return AdminTmdbScrap;
             default:
                 return AdminCutList;
         }

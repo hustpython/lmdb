@@ -38,6 +38,7 @@ func init() {
 			beego.NSRouter("table", &controllers.MovieController{}, "GET:ShowMovieTables"),
 			beego.NSRouter("search", &controllers.MovieController{}, "GET:ShowMoviesSearch"),
 			beego.NSRouter("play/?:MId", &controllers.MovieController{}, "GET:GetMoviesByMId"),
+			beego.NSRouter("reco/?:MId", &controllers.MovieController{}, "GET:GetMovieByMId"),
 		),
 		beego.NSNamespace("/tag",
 			beego.NSRouter("/?:Tag", &controllers.MovieController{}, "GET:GetMovieByTag"),
@@ -70,6 +71,9 @@ func init() {
 		),
 		beego.NSNamespace("/admin",
 			beego.NSRouter("disk/", &controllers.DiskController{}, "GET:GetDiskInfo"),
+		),
+		beego.NSNamespace("/tmdb",
+			beego.NSRouter("", &controllers.TMdbController{}, "GET:GetTMdbDataByKeyWord"),
 		),
 	)
 	beego.AddNamespace(ns)
