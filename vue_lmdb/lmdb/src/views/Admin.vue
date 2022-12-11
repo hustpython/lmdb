@@ -24,7 +24,7 @@
                 />
             </n-layout-sider>
             <n-layout class="theme">
-                <component :is="getMenuComponent">
+                <component :is="getMenuComponent" :MId='spGXMID'>
                 </component>
             </n-layout>
         </n-layout>
@@ -46,14 +46,16 @@
     const collapsed = ref(false);
     const menuOptions = menuConfig;
     const selectedItem = ref("个人资料");
+    const spGXMID = ref();
 
     watch(
-        () => route.params.id,
+        () => route.params,
         (newValue) => {
             if (newValue === undefined) {
                 selectedItem.value = "个人资料";
             } else {
-                selectedItem.value = newValue;
+                selectedItem.value = newValue.id;
+                spGXMID.value = newValue.mid;
             }
         },
         {immediate: true}

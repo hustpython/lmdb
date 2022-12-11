@@ -162,13 +162,5 @@ func transImagePathToData64(imgPath string) string {
 		logs.Error(err)
 		return ""
 	}
-	base64Data := base64.StdEncoding.EncodeToString(data)
-	mimeType := http.DetectContentType(data)
-	switch mimeType {
-	case "image/jpeg":
-		base64Data = "data:image/jpeg;base64," + base64Data
-	case "image/png":
-		base64Data = "data:image/png;base64," + base64Data
-	}
-	return base64Data
+	return "data:image/png;base64," + base64.StdEncoding.EncodeToString(data)
 }

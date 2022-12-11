@@ -94,7 +94,7 @@
 </template>
 
 <script setup>
-    import {GetMoviesByColl, GetVideList, UpdateVideo} from "@/api/videolist";
+    import {GetVideList, UpdateVideo} from "@/api/videolist";
     import {reactive, ref, onBeforeMount} from "vue";
     import {timeFilter} from "@/api/timefilter";
     import {useVideoData} from "@/store/videoData";

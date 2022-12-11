@@ -32,7 +32,9 @@
     import {NTag, NIcon} from "naive-ui";
     import {GetVideoTable} from '@/api/videolist'
     import {PlayOutline, FolderDetails, Delete, Save} from "@vicons/carbon";
+    import {ArrowSync20Regular} from "@vicons/fluent"
     import {useRouter} from "vue-router";
+    import {getUTCTime} from "@/api/timefilter"
 
     const renderIcon = (icon) => {
         return () => {
@@ -164,6 +166,11 @@
             icon: renderIcon(PlayOutline)
         },
         {
+            label: "视频刮削",
+            key: "spgx",
+            icon: renderIcon(ArrowSync20Regular)
+        },
+        {
             label: "打开",
             key: "open",
             icon: renderIcon(FolderDetails)
@@ -194,6 +201,9 @@
         switch (key) {
             case "play":
                 router.push({name: "video", params: {id: v}});
+                break;
+            case "spgx":
+                router.push({name: "admin", params: {id: "视频刮削", mid: v, time: getUTCTime()}});
                 break;
             default:
                 console.log(v);

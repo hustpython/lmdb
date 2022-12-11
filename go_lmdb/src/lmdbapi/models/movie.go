@@ -240,6 +240,9 @@ func (m Movie) UpdateMovieData() error {
 	if len(m.Cover) != 0 {
 		updateCol = append(updateCol, "cover")
 	}
+	if len(m.Poster) != 0 {
+		updateCol = append(updateCol, "poster")
+	}
 	if len(m.Duration) != 0 {
 		updateCol = append(updateCol, "duration")
 	}
@@ -257,6 +260,12 @@ func (m Movie) UpdateMovieData() error {
 	}
 	if len(m.FavouriteUpdate) != 0 {
 		updateCol = append(updateCol, "favourite")
+	}
+	if len(m.ReleaseDate) != 0 {
+		updateCol = append(updateCol, "release_date")
+	}
+	if m.Vote != 0 {
+		updateCol = append(updateCol, "vote")
 	}
 	if len(m.CollStr) != 0 {
 		updateCol = append(updateCol, "coll_str")
