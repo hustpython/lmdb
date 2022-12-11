@@ -65,6 +65,12 @@
                     @click="handleReconClick">
                 开始识别
             </n-button>
+            <n-button
+                    style="margin-top: 15px;margin-left: 30px"
+                    :disabled="disableRecon"
+                    @click="handleReconPlay">
+                返回播放
+            </n-button>
 
             <n-divider v-show="showReconSelect"/>
             <div v-show="showReconSelect">
@@ -171,6 +177,7 @@
     import {NTooltip, NImage} from 'naive-ui'
 
     import {GetMovieByMId, GetTMDBByKeyWord, GetSearchMovie, UpdateVideo} from "@/api/videolist";
+    import {useRouter} from "vue-router";
 
     const selectOptions = ref([]);
     const selectDefaultValue = ref();
@@ -287,6 +294,12 @@
             }
         });
     }
+
+    const router = useRouter();
+    const handleReconPlay = () => {
+        router.push({name: "video", params: {id: currentData.value.MId}})
+    }
+
     const renderOption = ({node, option}) => h(NTooltip, null, {
         trigger: () => node,
         default: () => h(NImage, {

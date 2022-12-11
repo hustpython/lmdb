@@ -441,6 +441,21 @@
                         <n-tooltip placement="bottom" trigger="hover">
                             <template #trigger>
                                 <n-button
+                                        @click="handleVideoGx"
+                                        strong secondary type="tertiary" round size="tiny">
+                                    <template #icon>
+                                        <n-icon>
+                                            <ArrowSync20Regular/>
+                                        </n-icon>
+                                    </template>
+                                </n-button>
+                            </template>
+                            <span>刮削</span>
+                        </n-tooltip>
+
+                        <n-tooltip placement="bottom" trigger="hover">
+                            <template #trigger>
+                                <n-button
                                         strong
                                         secondary
                                         type="tertiary"
@@ -597,7 +612,7 @@
     import {
         VehicleSubway16Regular, FullScreenMaximize24Filled, Next20Regular,
         Previous20Regular, CommentEdit20Regular, Send20Regular, ChevronLeft28Regular,
-        ChevronRight28Regular, Delete20Regular, Cut20Regular, MailSettings16Regular
+        ChevronRight28Regular, Delete20Regular, Cut20Regular, MailSettings16Regular, ArrowSync20Regular
     } from "@vicons/fluent";
     import {Edit, FolderDetails, Camera} from "@vicons/carbon";
     import {
@@ -610,6 +625,7 @@
     import {WaterSharp} from "@vicons/ionicons5"
     import {useRoute} from "vue-router";
     import {useNotification} from "naive-ui";
+    import {useRouter} from "vue-router";
 
     const notification = useNotification();
     const route = useRoute();
@@ -1574,7 +1590,10 @@
         };
         UpdateVideo(favourite);
     }
-
+    const router = useRouter();
+    const handleVideoGx = () => {
+        router.push({name: "admin", params: {id: "视频刮削", mid: currentData.value.MId, time: getUTCTime()}});
+    }
 </script>
 
 <style scoped lang="scss">
