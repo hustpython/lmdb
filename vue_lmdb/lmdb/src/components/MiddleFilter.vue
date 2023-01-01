@@ -67,17 +67,9 @@
             </n-form-item>
 
             <n-form-item>
-                <n-popconfirm
-                        @positive-click="handleSbumitClick"
-                        positive-text="确认!"
-                        negative-text="取消!"
-                >
-                    <template #trigger>
-                        <n-button>提交</n-button>
-                    </template>
-                    确认从本地同步最小为 {{ syncVideoForm.MinSize }} M 的
-                    {{ syncVideoForm.MovieExt }}格式的视频吗? 有可能会导致网页上的数据被覆盖哦!
-                </n-popconfirm>
+                <n-button @click="handleSbumitClick"
+                >提交
+                </n-button>
                 <n-button
                         @click="filterCancel"
                         style="margin-left: 10px">取消
