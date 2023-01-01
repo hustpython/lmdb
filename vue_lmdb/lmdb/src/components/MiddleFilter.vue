@@ -3,10 +3,8 @@
         <n-space class="videoTabs" justify="space-between">
             <n-tabs
                     type="bar"
-                    default-value="4"
                     animated
                     v-model:value="tabVal"
-                    :on-update:value="handleUpdateValue"
             >
                 <n-tab name="1"> 筛选</n-tab>
                 <n-tab name="2"> 同步</n-tab>
@@ -18,8 +16,8 @@
                     </n-dropdown>
                 </n-tab>
                 <n-tab name="5"> 最近</n-tab>
+                <n-tab name="7"> 最新</n-tab>
                 <n-tab name="6"> 喜欢</n-tab>
-                <n-tab name="4"> 隐藏</n-tab>
             </n-tabs>
             <div class="pagenum">
                 <n-pagination
@@ -80,6 +78,10 @@
                     确认从本地同步最小为 {{ syncVideoForm.MinSize }} M 的
                     {{ syncVideoForm.MovieExt }}格式的视频吗? 有可能会导致网页上的数据被覆盖哦!
                 </n-popconfirm>
+                <n-button
+                        @click="filterCancel"
+                        style="margin-left: 10px">取消
+                </n-button>
             </n-form-item>
         </n-form>
 
@@ -137,7 +139,7 @@
 </template>
 
 <script setup>
-    import {ref, computed, onBeforeMount} from "vue";
+    import {ref, watch, computed, onBeforeMount} from "vue";
     import {useVideoData} from "@/store/videoData";
     import {storeToRefs} from "pinia";
     import {SyncVideo, GetMoviesByRecent, GetMoviesByFavourite} from "@/api/videolist";
@@ -187,7 +189,7 @@
     ];
 
     const videoDataStore = useVideoData();
-    var tabVal = ref();
+    var tabVal = ref("0");
     var tagIndex = ref(0);
 
     var syncVideoForm = ref({
@@ -237,8 +239,19 @@
         });
     });
 
+    const filterCancel = () => {
+        tabVal.value = "0";
+    }
+
+
+    watch(
+        () => tabVal.value,
+        (newValue) => {
+            handleUpdateValue(newValue);
+        }
+    )
+
     const handleUpdateValue = (value) => {
-        tabVal.value = value;
         if (value === "5") {
             GetMoviesByRecent().then((res) => {
                 if (res.code == 200) {
@@ -249,6 +262,12 @@
                     });
                 }
             });
+        }
+
+        if (value === "7") {
+            videoData.value.sort((a, b) => {
+                return b.ModifyTime - a.ModifyTime;
+            })
         }
         if (value === "6") {
             GetMoviesByFavourite().then((res) => {
@@ -336,8 +355,8 @@
         pageWidth.value = document.body.clientWidth;
     };
 
-    const handleSbumitClick = () => {
-        SyncVideo(syncVideoForm.value).then((res) => {
+    const handleSbumitClick = async () => {
+        await SyncVideo(syncVideoForm.value).then((res) => {
             if (res.code == 200) {
                 if (res.data === null) {
                     notification.success({
@@ -351,9 +370,9 @@
                         duration: 3000,
                     });
                 }
-                router.go(0);
             }
         });
+        tabVal.value = "7";
     };
 
     const collMenuOptions = [{
