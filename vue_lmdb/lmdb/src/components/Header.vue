@@ -199,7 +199,7 @@
 
             .search {
                 @include theme();
-                width: 80%;
+                width: 90%;
                 border: 0;
                 outline: none;
             }

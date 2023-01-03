@@ -452,7 +452,7 @@
             display: none;
         }
 
-        margin: 30px 12px;
+        margin: 90px 12px 30px 12px;
 
         .videoTabs {
             max-height: 300px;

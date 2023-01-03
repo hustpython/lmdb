@@ -21,7 +21,8 @@
                         playsinline=""
                         preload="metadata"
                         crossorigin="anonymous"
-                ></video>
+                >
+                </video>
                 <!--                 剪切控制界面-->
                 <div class="cutMask"
                      v-show="cutMaskShow">
